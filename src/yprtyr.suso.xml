@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_SUSO" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <TOBJ>
+    <OBJCT>YPRTYR</OBJCT>
+    <FIEL1>PR_TYPE</FIEL1>
+    <OCLSS>YCRM</OCLSS>
+   </TOBJ>
+   <TOBJT>
+    <LANGU>E</LANGU>
+    <OBJECT>YPRTYR</OBJECT>
+    <TTEXT>Process type read</TTEXT>
+   </TOBJT>
+   <TOBJVORFLG>
+    <OBJCT>YPRTYR</OBJCT>
+   </TOBJVORFLG>
+  </asx:values>
+ </asx:abap>
+</abapGit>

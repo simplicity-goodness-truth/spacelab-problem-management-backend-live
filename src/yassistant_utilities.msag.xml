@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_MSAG" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <T100A>
+    <ARBGB>YASSISTANT_UTILITIES</ARBGB>
+    <MASTERLANG>E</MASTERLANG>
+    <STEXT>Message class: Assistant Utilities</STEXT>
+   </T100A>
+   <T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>YASSISTANT_UTILITIES</ARBGB>
+     <MSGNR>000</MSGNR>
+     <TEXT>Utilities: cannot get &amp;1 user data</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>YASSISTANT_UTILITIES</ARBGB>
+     <MSGNR>001</MSGNR>
+     <TEXT>Utilities: not valid user</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>YASSISTANT_UTILITIES</ARBGB>
+     <MSGNR>002</MSGNR>
+     <TEXT>Utilities: timezone customizing missing for user</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>YASSISTANT_UTILITIES</ARBGB>
+     <MSGNR>003</MSGNR>
+     <TEXT>Utilities: incorrect GUID format</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>YASSISTANT_UTILITIES</ARBGB>
+     <MSGNR>004</MSGNR>
+     <TEXT>Utilities: unknown conversion format</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>YASSISTANT_UTILITIES</ARBGB>
+     <MSGNR>005</MSGNR>
+     <TEXT>Utilities: cannot find Business Partner of Organizational Unit</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>YASSISTANT_UTILITIES</ARBGB>
+     <MSGNR>006</MSGNR>
+     <TEXT>Utilities: user &amp;1 emails not found</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>YASSISTANT_UTILITIES</ARBGB>
+     <MSGNR>007</MSGNR>
+     <TEXT>Utilities: cannot get &amp;1 HTTP parameter value</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>YASSISTANT_UTILITIES</ARBGB>
+     <MSGNR>008</MSGNR>
+     <TEXT>Utilities: cannot get name for Business Partner  &amp;1</TEXT>
+    </T100>
+   </T100>
+  </asx:values>
+ </asx:abap>
+</abapGit>

@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_MSAG" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <T100A>
+    <ARBGB>YCRM_ORDER</ARBGB>
+    <MASTERLANG>E</MASTERLANG>
+    <STEXT>Custom CRM Order Message Class</STEXT>
+   </T100A>
+   <T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>YCRM_ORDER</ARBGB>
+     <MSGNR>000</MSGNR>
+     <TEXT>Custom CRM API: cannot get document by GUID &amp;1</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>YCRM_ORDER</ARBGB>
+     <MSGNR>001</MSGNR>
+     <TEXT>Custom CRM API: cannot set GUID of a new document</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>YCRM_ORDER</ARBGB>
+     <MSGNR>002</MSGNR>
+     <TEXT>Custom CRM API: process type hasn&apos;t been set</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>YCRM_ORDER</ARBGB>
+     <MSGNR>003</MSGNR>
+     <TEXT>Custom CRM API: standard CRM API internal error</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>YCRM_ORDER</ARBGB>
+     <MSGNR>004</MSGNR>
+     <TEXT>Custom CRM API: error while saving a document</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>YCRM_ORDER</ARBGB>
+     <MSGNR>005</MSGNR>
+     <TEXT>Custom CRM API: database access error</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>YCRM_ORDER</ARBGB>
+     <MSGNR>006</MSGNR>
+     <TEXT>Custom CRM API: error while saving custom fields of a document</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>YCRM_ORDER</ARBGB>
+     <MSGNR>007</MSGNR>
+     <TEXT>Custom CRM API: user &amp;1 doesn&apos;t have read rights for the process type</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>YCRM_ORDER</ARBGB>
+     <MSGNR>008</MSGNR>
+     <TEXT>Custom CRM API: user &amp;1 doesn&apos;t have rights for the process type</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>YCRM_ORDER</ARBGB>
+     <MSGNR>009</MSGNR>
+     <TEXT>Custom CRM API: user &amp;1 doesn&apos;t have create rights for the process type</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>YCRM_ORDER</ARBGB>
+     <MSGNR>010</MSGNR>
+     <TEXT>Custom CRM API: user &amp;1 doesn&apos;t have update rights for the process type</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>YCRM_ORDER</ARBGB>
+     <MSGNR>011</MSGNR>
+     <TEXT>Custom CRM API: error while getting texts of a document by GUID &amp;1</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>YCRM_ORDER</ARBGB>
+     <MSGNR>012</MSGNR>
+     <TEXT>Custom CRM API: &amp;1</TEXT>
+    </T100>
+   </T100>
+  </asx:values>
+ </asx:abap>
+</abapGit>

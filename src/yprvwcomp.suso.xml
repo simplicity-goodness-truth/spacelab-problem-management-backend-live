@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_SUSO" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <TOBJ>
+    <OBJCT>YPRVWCOMP</OBJCT>
+    <FIEL1>BU_PARTNER</FIEL1>
+    <OCLSS>YSLP</OCLSS>
+   </TOBJ>
+   <TOBJT>
+    <LANGU>E</LANGU>
+    <OBJECT>YPRVWCOMP</OBJECT>
+    <TTEXT>Problem view for Company</TTEXT>
+   </TOBJT>
+   <TOBJVORFLG>
+    <OBJCT>YPRVWCOMP</OBJCT>
+   </TOBJVORFLG>
+  </asx:values>
+ </asx:abap>
+</abapGit>
