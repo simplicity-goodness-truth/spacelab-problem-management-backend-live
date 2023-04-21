@@ -14,6 +14,14 @@ interface yif_custom_crm_order_update
         ip_loio type string
         ip_phio type string
       raising
+        ycx_crm_order_api_exc,
+
+    create_text
+      importing
+        ip_guid type crmt_object_guid
+        ip_text type string
+        ip_tdid type tdid
+      raising
         ycx_crm_order_api_exc.
 
 endinterface.

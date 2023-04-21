@@ -313,4 +313,31 @@ class ycl_slpm_user implementation.
     endif.
 
   endmethod.
+
+  method yif_slpm_user~is_auth_to_update_product.
+
+    authority-check object 'YPRUPPROD'
+      id 'YPROD_ID' field ip_product_id.
+
+    if sy-subrc = 0.
+
+      rb_authorized = abap_true.
+
+    endif.
+
+  endmethod.
+
+  method yif_slpm_user~is_auth_to_update_company.
+
+    authority-check object 'YPRUPCOMP'
+      id 'BU_PARTNER' field ip_company_bp.
+
+    if sy-subrc = 0.
+
+      rb_authorized = abap_true.
+
+    endif.
+
+  endmethod.
+
 endclass.

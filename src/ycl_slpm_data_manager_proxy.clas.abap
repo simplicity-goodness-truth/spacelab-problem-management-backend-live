@@ -1,4 +1,4 @@
-class YCL_SLPM_DATA_MANAGER_PROXY definition
+class ycl_slpm_data_manager_proxy definition
   public
   final
   create public .
@@ -92,7 +92,7 @@ class YCL_SLPM_DATA_MANAGER_PROXY definition
 
 endclass.
 
-class YCL_SLPM_DATA_MANAGER_PROXY implementation.
+class ycl_slpm_data_manager_proxy implementation.
 
   method set_app_logger.
 
@@ -242,7 +242,7 @@ class YCL_SLPM_DATA_MANAGER_PROXY implementation.
 
           raise exception type ycx_slpm_data_manager_exc
             exporting
-              textid = ycx_slpm_data_manager_exc=>internal_error
+              textid           = ycx_slpm_data_manager_exc=>internal_error
               ip_error_message = lcx_process_exception->get_text( ).
 
       endtry.
@@ -256,7 +256,9 @@ class YCL_SLPM_DATA_MANAGER_PROXY implementation.
 
   method yif_slpm_data_manager~update_problem.
 
-    data: ls_problem_old_state type ycrm_order_ts_sl_problem.
+    data: ls_problem_old_state type ycrm_order_ts_sl_problem,
+          lv_log_record_text   type string,
+          lv_product_id        type comt_product_id.
 
     " User has no authorizations to update problems
 
@@ -272,11 +274,47 @@ class YCL_SLPM_DATA_MANAGER_PROXY implementation.
 
     if mo_slpm_data_provider is bound.
 
+
+
       try.
 
           ls_problem_old_state = mo_slpm_data_provider->get_problem(
               exporting
                 ip_guid = ip_guid ).
+
+          " Check authorizations of a user to update a problem against a company
+
+          if ( mo_slpm_user->is_auth_to_update_company( ls_problem_old_state-companybusinesspartner ) eq abap_false ).
+
+            message e009(zslpm_data_manager) with sy-uname ls_problem_old_state-companybusinesspartner into lv_log_record_text.
+
+            mo_log->yif_logger~err( lv_log_record_text ).
+
+            raise exception type ycx_slpm_data_manager_exc
+              exporting
+                textid         = ycx_slpm_data_manager_exc=>no_auth_for_update_for_company
+                ip_system_user = sy-uname
+                ip_company_bp  = ls_problem_old_state-companybusinesspartner.
+
+          endif.
+
+          " Check authorizations of a user to update a problem against a product
+
+          lv_product_id = ls_problem_old_state-productname.
+
+          if ( mo_slpm_user->is_auth_to_update_product( lv_product_id ) eq abap_false ).
+
+            message e010(zslpm_data_manager) with sy-uname lv_product_id into lv_log_record_text.
+
+            mo_log->yif_logger~err( lv_log_record_text ).
+
+            raise exception type ycx_slpm_data_manager_exc
+              exporting
+                textid         = ycx_slpm_data_manager_exc=>no_auth_for_update_for_prod
+                ip_system_user = sy-uname
+                ip_product_id  = lv_product_id.
+
+          endif.
 
           rs_result = mo_slpm_data_provider->update_problem(
             exporting

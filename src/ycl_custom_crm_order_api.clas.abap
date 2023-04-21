@@ -1,4 +1,4 @@
-class YCL_CUSTOM_CRM_ORDER_API definition
+class ycl_custom_crm_order_api definition
   public
   create public .
 
@@ -78,7 +78,7 @@ class YCL_CUSTOM_CRM_ORDER_API definition
 
 endclass.
 
-class YCL_CUSTOM_CRM_ORDER_API implementation.
+class ycl_custom_crm_order_api implementation.
 
   method yif_custom_crm_order_read~get_guids_list.
 
@@ -2394,6 +2394,15 @@ ls_phio loio = ls_loio.
     lo_cl_ags_crm_1o_api->get_appointments(
         importing
             et_appointment = rt_appointments ).
+
+  endmethod.
+
+  method yif_custom_crm_order_update~create_text.
+
+    me->yif_custom_crm_order_create~create_text( exporting
+        ip_guid = ip_guid
+        ip_tdid = ip_tdid
+        ip_text = ip_text ).
 
   endmethod.
 
