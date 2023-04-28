@@ -549,7 +549,9 @@ cl_abap_format=>e_url ).
           ls_entity             like line of et_entityset,
           lo_slpm_product       type ref to yif_crm_service_product,
           lo_slpm_user          type ref to yif_slpm_user,
-          lt_filter_customer_bp type /iwbep/t_cod_select_options.
+          lt_filter_customer_bp type /iwbep/t_cod_select_options,
+          lo_bp_master_data     type ref to yif_bp_master_data,
+          lv_bp_num             type bu_partner.
 
     " Get filter
 
@@ -557,40 +559,54 @@ cl_abap_format=>e_url ).
         io_tech_request_context  = io_tech_request_context
         ip_property = 'COMPANYBUSINESSPARTNER' ).
 
-
-    " Get products, available for user
-
     try.
 
-        lo_slpm_user = new ycl_slpm_user( sy-uname ).
+        " Conversion with leading zeroes is required
 
-        lt_products = lo_slpm_user->get_slpm_products_of_user(  ).
+        lv_bp_num = lt_filter_customer_bp[ 1 ]-low.
 
-        loop at lt_products assigning field-symbol(<ls_product>) where  companybusinesspartner in lt_filter_customer_bp.
+        lo_bp_master_data  = new ycl_bp_master_data( lv_bp_num ).
 
-          ls_entity-guid = <ls_product>-guid.
-          ls_entity-id = <ls_product>-id.
-          ls_entity-name = <ls_product>-name.
-          ls_entity-companybusinesspartner = <ls_product>-companybusinesspartner.
-          lo_slpm_product = new ycl_crm_service_product( <ls_product>-guid ).
-          ls_entity-prioritiescount = lo_slpm_product->get_resp_profile_prio_count(  ).
+        lt_filter_customer_bp[ 1 ]-low = lo_bp_master_data->get_bp_number( ).
 
-          " We skip all products, which don't have proper priorities assigned
-          " through a response profile
+        " Get products, available for user
 
-          if ls_entity-prioritiescount > 0.
+        try.
 
-            append  ls_entity to et_entityset.
+            lo_slpm_user = new ycl_slpm_user( sy-uname ).
 
-          endif.
+            lt_products = lo_slpm_user->get_slpm_products_of_user(  ).
 
-          clear ls_entity.
-        endloop.
+            loop at lt_products assigning field-symbol(<ls_product>) where  companybusinesspartner in lt_filter_customer_bp.
 
-      catch ycx_system_user_exc ycx_slpm_configuration_exc into data(lcx_process_exception).
-        raise_exception( lcx_process_exception->get_text(  ) ).
+              ls_entity-guid = <ls_product>-guid.
+              ls_entity-id = <ls_product>-id.
+              ls_entity-name = <ls_product>-name.
+              ls_entity-companybusinesspartner = <ls_product>-companybusinesspartner.
+              lo_slpm_product = new ycl_crm_service_product( <ls_product>-guid ).
+              ls_entity-prioritiescount = lo_slpm_product->get_resp_profile_prio_count(  ).
+
+              " We skip all products, which don't have proper priorities assigned
+              " through a response profile
+
+              if ls_entity-prioritiescount > 0.
+
+                append  ls_entity to et_entityset.
+
+              endif.
+
+              clear ls_entity.
+            endloop.
+
+          catch ycx_system_user_exc ycx_slpm_configuration_exc into data(lcx_process_exception).
+            raise_exception( lcx_process_exception->get_text(  ) ).
+
+        endtry.
+
+      catch cx_sy_itab_line_not_found.
 
     endtry.
+
 
   endmethod.
 

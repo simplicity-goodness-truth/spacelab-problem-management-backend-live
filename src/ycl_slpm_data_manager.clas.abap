@@ -1,4 +1,4 @@
-class YCL_SLPM_DATA_MANAGER definition
+class ycl_slpm_data_manager definition
   public
   final
   create public .
@@ -92,7 +92,7 @@ class YCL_SLPM_DATA_MANAGER definition
 
 endclass.
 
-class YCL_SLPM_DATA_MANAGER implementation.
+class ycl_slpm_data_manager implementation.
 
   method set_app_logger.
 
@@ -341,8 +341,30 @@ class YCL_SLPM_DATA_MANAGER implementation.
         ls_result = me->yif_slpm_data_manager~get_problem(
                  exporting
                    ip_guid = <ls_crm_guid>-guid
-                  " io_slpm_problem_api = mo_slpm_problem_api
                    ).
+
+        " Filters processing
+
+        if it_filters is not initial.
+
+          lv_include_record = abap_true.
+
+          get reference of ls_result into lr_entity.
+
+          mo_slpm_problem_api->yif_custom_crm_order_organizer~is_order_matching_to_filters( exporting
+                          ir_entity         = lr_entity
+                          it_set_filters    = it_filters
+                          changing
+                            cp_include_record = lv_include_record
+                      ).
+
+          "   Executing filtering
+
+          if lv_include_record eq abap_false.
+            continue.
+          endif.
+
+        endif.
 
         " User can only see the companies for which he/she is authorized
 
@@ -370,29 +392,6 @@ class YCL_SLPM_DATA_MANAGER implementation.
           mo_log->yif_logger~warn( lv_log_record_text  ).
 
           continue.
-
-        endif.
-
-        " Filters processing
-
-        if it_filters is not initial.
-
-          lv_include_record = abap_true.
-
-          get reference of ls_result into lr_entity.
-
-          mo_slpm_problem_api->yif_custom_crm_order_organizer~is_order_matching_to_filters( exporting
-                          ir_entity         = lr_entity
-                          it_set_filters    = it_filters
-                          changing
-                            cp_include_record = lv_include_record
-                      ).
-
-          "   Executing filtering
-
-          if lv_include_record eq abap_false.
-            continue.
-          endif.
 
         endif.
 
