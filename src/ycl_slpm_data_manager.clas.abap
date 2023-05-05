@@ -109,11 +109,6 @@ class ycl_slpm_data_manager implementation.
 
   method yif_slpm_data_manager~create_attachment.
 
-*    data:
-*      lo_slpm_problem_api type ref to ycl_slpm_problem_api.
-*
-*    lo_slpm_problem_api = new ycl_slpm_problem_api(  ).
-
     mo_slpm_problem_api->yif_custom_crm_order_create~create_attachment(
       exporting
           ip_content = ip_content
@@ -146,10 +141,6 @@ class ycl_slpm_data_manager implementation.
 
   method yif_slpm_data_manager~create_text.
 
-*    data:
-*        lo_slpm_problem_api type ref to ycl_slpm_problem_api.
-*
-*    lo_slpm_problem_api = new ycl_slpm_problem_api(  ).
 
     mo_slpm_problem_api->yif_custom_crm_order_create~create_text(
         exporting
@@ -161,11 +152,6 @@ class ycl_slpm_data_manager implementation.
 
   method yif_slpm_data_manager~delete_attachment.
 
-*    data:
-*      lo_slpm_problem_api type ref to ycl_slpm_problem_api.
-*
-*    lo_slpm_problem_api = new ycl_slpm_problem_api(  ).
-
     mo_slpm_problem_api->yif_custom_crm_order_update~delete_attachment(
      exporting
             ip_guid = ip_guid
@@ -176,21 +162,11 @@ class ycl_slpm_data_manager implementation.
 
   method yif_slpm_data_manager~get_all_priorities.
 
-*    data:
-*    lo_slpm_problem_api type ref to ycl_slpm_problem_api.
-*
-*    lo_slpm_problem_api = new ycl_slpm_problem_api(  ).
-
     rt_priorities = mo_slpm_problem_api->yif_custom_crm_order_read~get_all_priorities_list(  ).
 
   endmethod.
 
   method yif_slpm_data_manager~get_attachment.
-
-*    data:
-*        lo_slpm_problem_api type ref to ycl_slpm_problem_api.
-*
-*    lo_slpm_problem_api = new ycl_slpm_problem_api(  ).
 
     er_attachment = mo_slpm_problem_api->yif_custom_crm_order_read~get_attachment_by_keys(
         exporting
@@ -202,11 +178,6 @@ class ycl_slpm_data_manager implementation.
 
   method yif_slpm_data_manager~get_attachments_list.
 
-*    data:
-*      lo_slpm_problem_api  type ref to ycl_slpm_problem_api.
-*
-*    lo_slpm_problem_api = new ycl_slpm_problem_api(  ).
-
     mo_slpm_problem_api->yif_custom_crm_order_read~get_attachments_list_by_guid(
     exporting
      ip_guid = ip_guid
@@ -217,11 +188,6 @@ class ycl_slpm_data_manager implementation.
   endmethod.
 
   method yif_slpm_data_manager~get_attachment_content.
-*
-*    data:
-*      lo_slpm_problem_api type ref to ycl_slpm_problem_api.
-*
-*    lo_slpm_problem_api = new ycl_slpm_problem_api(  ).
 
     mo_slpm_problem_api->yif_custom_crm_order_read~get_attachment_content_by_keys(
       exporting
@@ -235,11 +201,6 @@ class ycl_slpm_data_manager implementation.
   endmethod.
 
   method yif_slpm_data_manager~get_last_text.
-
-*    data:
-*        lo_slpm_problem_api type ref to ycl_slpm_problem_api.
-*
-*    lo_slpm_problem_api = new ycl_slpm_problem_api(  ).
 
     mo_slpm_problem_api->yif_custom_crm_order_read~get_last_text(
         exporting ip_guid = ip_guid ).
@@ -266,16 +227,6 @@ class ycl_slpm_data_manager implementation.
       lt_sl_problem_custom_package   type standard table of ycrm_order_ts_sl_problem.
 
     field-symbols <ls_custom_fields> type any table.
-
-*    if io_slpm_problem_api is bound.
-*
-*      lo_slpm_problem_api = io_slpm_problem_api.
-*
-*    else.
-*
-*      lo_slpm_problem_api = new ycl_slpm_problem_api(  ).
-*
-*    endif.
 
     ls_sl_problem_standard_package = mo_slpm_problem_api->yif_custom_crm_order_read~get_standard_fields_by_guid( ip_guid ).
 
@@ -423,11 +374,6 @@ class ycl_slpm_data_manager implementation.
 
   method yif_slpm_data_manager~get_texts.
 
-*    data:
-*        lo_slpm_problem_api  type ref to ycl_slpm_problem_api.
-*
-*    lo_slpm_problem_api = new ycl_slpm_problem_api(  ).
-
     mo_slpm_problem_api->yif_custom_crm_order_read~get_all_texts(
      exporting ip_guid = ip_guid
      importing et_texts = et_texts ).
@@ -447,10 +393,7 @@ class ycl_slpm_data_manager implementation.
   method yif_slpm_data_manager~update_problem.
 
     data:
-      "lo_slpm_problem_api type ref to ycl_slpm_problem_api,
       lr_problem          type ref to data.
-
-*    lo_slpm_problem_api = new ycl_slpm_problem_api(  ).
 
     get reference of is_problem into lr_problem.
 
@@ -462,9 +405,6 @@ class ycl_slpm_data_manager implementation.
 
     rs_result = me->yif_slpm_data_manager~get_problem( ip_guid ).
 
-
-
-
   endmethod.
 
 
@@ -473,12 +413,8 @@ class ycl_slpm_data_manager implementation.
     data:
       lv_possible_status_list type char200,
       lt_possible_status_list type table of j_estat,
-      "   lo_slpm_problem_api     type ref to ycl_slpm_problem_api,
       lt_all_statuses         type ycrm_order_tt_statuses,
       ls_status               type ycrm_order_ts_status.
-
-
-    "   lo_slpm_problem_api = new ycl_slpm_problem_api(  ).
 
     lt_all_statuses = mo_slpm_problem_api->yif_custom_crm_order_read~get_all_statuses_list(  ).
 
@@ -862,11 +798,6 @@ update_timestamp update_timezone
 
   method yif_slpm_data_manager~get_all_statuses.
 
-*    data:
-*        lo_slpm_problem_api     type ref to ycl_slpm_problem_api.
-*
-*    lo_slpm_problem_api = new ycl_slpm_problem_api(  ).
-
     rt_statuses = mo_slpm_problem_api->yif_custom_crm_order_read~get_all_statuses_list(  ).
 
   endmethod.
@@ -960,8 +891,7 @@ update_timestamp update_timezone
       try.
 
           lt_statuses = me->yif_slpm_data_manager~get_all_statuses(  ).
-          lt_priorities = me->yif_slpm_data_manager~get_all_priorities(
-).
+          lt_priorities = me->yif_slpm_data_manager~get_all_priorities( ).
 
           ls_sla_mpt_history-statusintext = lt_statuses[ code = <ls_sla_mpt_history>-statusin ]-text.
           ls_sla_mpt_history-statusouttext = lt_statuses[ code = <ls_sla_mpt_history>-statusout ]-text.
