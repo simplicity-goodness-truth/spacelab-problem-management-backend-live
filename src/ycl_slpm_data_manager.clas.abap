@@ -545,6 +545,7 @@ class ycl_slpm_data_manager implementation.
     cs_problem-requesterupdateenabled = switch #( cs_problem-status
               when 'E0001'    then abap_true
               when 'E0002'    then abap_true
+              when 'E0016'    then abap_true
                   else abap_false ).
 
     " Requester withdrawal: when is enabled
