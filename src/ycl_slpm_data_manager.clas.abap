@@ -453,8 +453,11 @@ class ycl_slpm_data_manager implementation.
 
   method add_problem_non_db_fields.
 
-    data: lo_slpm_customer type ref to yif_slpm_customer,
-          lo_company       type ref to yif_company.
+    data: lo_slpm_customer   type ref to yif_slpm_customer,
+          lo_company         type ref to yif_company,
+          lv_duration_sec    type integer,
+          lv_system_timezone type timezone,
+          lv_timestamp       type timestamp.
 
     me->fill_possible_problem_actions(
         changing
@@ -523,6 +526,46 @@ class ycl_slpm_data_manager implementation.
 
 
     "endif.
+
+    "Closed flag
+
+    cs_problem-closed = switch char4(  cs_problem-status
+                    when 'E0008'    then abap_true
+                    when 'E0010'    then abap_true
+                    else abap_false ).
+
+    " Total processing time
+
+    cs_problem-totalproctimeminutes = 0.
+
+    if ( cs_problem-closed eq abap_true ).
+
+      " For statuses Withdrawn (E0010) and Confirmed (E0008) it is a difference between completion timestamp
+      " and last change timestamp
+
+      lv_duration_sec = ycl_assistant_utilities=>calc_duration_btw_timestamps(
+        exporting
+            ip_timestamp_1 = cs_problem-created_at
+            ip_timestamp_2 = cs_problem-changedat ).
+
+
+    else.
+
+      " For statuses except Withdrawn (E0010) and Confirmed (E0008)  it is a difference between now and creation timestamp
+
+      lv_system_timezone =  ycl_assistant_utilities=>get_system_timezone(  ).
+
+      convert date sy-datum time sy-uzeit into time stamp lv_timestamp time zone lv_system_timezone.
+
+      lv_duration_sec = ycl_assistant_utilities=>calc_duration_btw_timestamps(
+        exporting
+            ip_timestamp_1 = cs_problem-created_at
+            ip_timestamp_2 = lv_timestamp ).
+
+    endif.
+
+    cs_problem-totalproctimeminutes = lv_duration_sec div 60.
+
 
   endmethod.
 
@@ -761,6 +804,7 @@ class ycl_slpm_data_manager implementation.
 
     lv_parameter_mask = switch char100( ip_application
               when 'yslpmmyprb'    then 'MYPROBLEMS'
+              when 'yslpmcrprb'    then 'NEWPROBLEM'
              ).
 
     if lv_parameter_mask is not initial.
