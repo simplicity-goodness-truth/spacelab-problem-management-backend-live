@@ -8,6 +8,7 @@ class ycl_slpm_dpc_ext definition
     methods /iwbep/if_mgw_appl_srv_runtime~create_stream redefinition.
     methods /iwbep/if_mgw_appl_srv_runtime~delete_stream redefinition.
   protected section.
+    methods problemhistoryhi_get_entityset redefinition.
     methods slampthistoryset_get_entityset redefinition.
     methods slairthistoryset_get_entityset redefinition.
     methods systemset_get_entityset redefinition.
@@ -545,19 +546,19 @@ cl_abap_format=>e_url ).
 
   method productset_get_entityset.
 
-    data: lt_products           type yslpm_tt_products,
-          ls_entity             like line of et_entityset,
-          lo_slpm_product       type ref to yif_crm_service_product,
-          lo_slpm_user          type ref to yif_slpm_user,
-          lt_filter_customer_bp type /iwbep/t_cod_select_options,
-          lo_bp_master_data     type ref to yif_bp_master_data,
-          lv_bp_num             type bu_partner.
+    data: lt_products            type yslpm_tt_products,
+          ls_entity              like line of et_entityset,
+          lo_crm_service_product type ref to yif_crm_service_product,
+          lo_slpm_user           type ref to yif_slpm_user,
+          lt_filter_customer_bp  type /iwbep/t_cod_select_options,
+          lo_bp_master_data      type ref to yif_bp_master_data,
+          lv_bp_num              type bu_partner,
+          lo_slpm_product        type ref to yif_slpm_product.
 
     " Get filter
 
-    lt_filter_customer_bp = get_filter_select_options(
-        io_tech_request_context  = io_tech_request_context
-        ip_property = 'COMPANYBUSINESSPARTNER' ).
+    lt_filter_customer_bp = get_filter_select_options( io_tech_request_context  = io_tech_request_context
+                                           ip_property = 'COMPANYBUSINESSPARTNER' ).
 
     try.
 
@@ -569,6 +570,7 @@ cl_abap_format=>e_url ).
 
         lt_filter_customer_bp[ 1 ]-low = lo_bp_master_data->get_bp_number( ).
 
+
         " Get products, available for user
 
         try.
@@ -577,14 +579,24 @@ cl_abap_format=>e_url ).
 
             lt_products = lo_slpm_user->get_slpm_products_of_user(  ).
 
-            loop at lt_products assigning field-symbol(<ls_product>) where  companybusinesspartner in lt_filter_customer_bp.
+            loop at lt_products assigning field-symbol(<ls_product>) where companybusinesspartner in lt_filter_customer_bp.
 
               ls_entity-guid = <ls_product>-guid.
               ls_entity-id = <ls_product>-id.
               ls_entity-name = <ls_product>-name.
               ls_entity-companybusinesspartner = <ls_product>-companybusinesspartner.
-              lo_slpm_product = new ycl_crm_service_product( <ls_product>-guid ).
-              ls_entity-prioritiescount = lo_slpm_product->get_resp_profile_prio_count(  ).
+
+
+              lo_slpm_product = new ycl_slpm_product( <ls_product>-guid ).
+
+              ls_entity-showpriorities = lo_slpm_product->is_show_priority_set(  ).
+
+              lo_crm_service_product ?= lo_slpm_product.
+
+              "lo_crm_service_product = new zcl_crm_service_product( <ls_product>-guid ).
+
+
+              ls_entity-prioritiescount = lo_crm_service_product->get_resp_profile_prio_count(  ).
 
               " We skip all products, which don't have proper priorities assigned
               " through a response profile
@@ -603,6 +615,7 @@ cl_abap_format=>e_url ).
 
         endtry.
 
+
       catch cx_sy_itab_line_not_found.
 
     endtry.
@@ -612,19 +625,24 @@ cl_abap_format=>e_url ).
 
   method productset_get_entity.
 
-    data: lv_guid         type comt_product_guid,
-          lo_slpm_product type ref to yif_crm_service_product.
+    data: lv_guid                type comt_product_guid,
+          lo_crm_service_product type ref to yif_crm_service_product,
+          lo_slpm_product        type ref to yif_slpm_product.
 
     loop at it_key_tab assigning field-symbol(<ls_guid>).
       move <ls_guid>-value to lv_guid.
     endloop.
 
-    lo_slpm_product = new ycl_crm_service_product( lv_guid ).
+    lo_slpm_product = new ycl_slpm_product( lv_guid ).
+
+    lo_crm_service_product ?= lo_slpm_product.
 
     er_entity-guid = lv_guid.
-    er_entity-id = lo_slpm_product->yif_crm_product~get_id( ).
-    er_entity-name = lo_slpm_product->yif_crm_product~get_name(  ).
-    er_entity-prioritiescount = lo_slpm_product->get_resp_profile_prio_count(  ).
+    er_entity-id = lo_crm_service_product->yif_crm_product~get_id( ).
+    er_entity-name = lo_crm_service_product->yif_crm_product~get_name(  ).
+    er_entity-prioritiescount = lo_crm_service_product->get_resp_profile_prio_count(  ).
+
+    er_entity-showpriorities =  lo_slpm_product->is_show_priority_set(  ).
 
   endmethod.
 
@@ -996,6 +1014,26 @@ cl_abap_format=>e_url ).
           raise_exception( lcx_process_exception->get_text(  ) ).
 
       endtry.
+
+    endif.
+
+  endmethod.
+
+  method problemhistoryhi_get_entityset.
+
+
+    data: lv_guid                       type crmt_object_guid,
+          lo_slpm_problem_history_store type ref to yif_slpm_problem_history_store.
+
+    read table it_key_tab into data(ls_key_tab) with key name = 'Guid'.
+
+    lv_guid = ls_key_tab-value.
+
+    if lv_guid is not initial.
+
+      lo_slpm_problem_history_store = new ycl_slpm_problem_history_store( lv_guid ).
+
+      et_entityset = lo_slpm_problem_history_store->get_problem_history_hierarchy(  ).
 
     endif.
 

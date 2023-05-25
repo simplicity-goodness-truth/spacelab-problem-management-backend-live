@@ -185,11 +185,12 @@ class ycl_slpm_data_manager_proxy implementation.
   method yif_slpm_data_manager~create_problem.
 
 
-    data: ls_problem_newstate          type ycrm_order_ts_sl_problem,
-          lo_slpm_prob_change_notifier type ref to yif_crm_order_change_notifier,
-          lo_slpm_user                 type ref to yif_slpm_user,
-          lv_log_record_text           type string,
-          lv_product_id                type comt_product_id.
+    data: ls_problem_newstate           type ycrm_order_ts_sl_problem,
+          lo_slpm_prob_change_notifier  type ref to yif_crm_order_change_notifier,
+          lo_slpm_user                  type ref to yif_slpm_user,
+          lv_log_record_text            type string,
+          lv_product_id                 type comt_product_id,
+          lo_slpm_problem_history_store type ref to yif_slpm_problem_history_store.
 
 
     " User has no authorizations to create problems
@@ -262,6 +263,12 @@ class ycl_slpm_data_manager_proxy implementation.
 
       endtry.
 
+      " History record creation
+
+      lo_slpm_problem_history_store = new ycl_slpm_problem_history_store( rs_result-guid ).
+
+      lo_slpm_problem_history_store->add_creation_event_record( rs_result ).
+
     endif.
 
   endmethod.
@@ -271,9 +278,10 @@ class ycl_slpm_data_manager_proxy implementation.
 
   method yif_slpm_data_manager~update_problem.
 
-    data: ls_problem_old_state type ycrm_order_ts_sl_problem,
-          lv_log_record_text   type string,
-          lv_product_id        type comt_product_id.
+    data: ls_problem_old_state          type ycrm_order_ts_sl_problem,
+          lv_log_record_text            type string,
+          lv_product_id                 type comt_product_id,
+          lo_slpm_problem_history_store type ref to yif_slpm_problem_history_store.
 
     " User has no authorizations to update problems
 
@@ -346,6 +354,12 @@ class ycl_slpm_data_manager_proxy implementation.
                      exporting
                      is_problem_new_state = rs_result
                      is_problem_old_state = ls_problem_old_state ).
+
+          " History record creation
+
+          lo_slpm_problem_history_store = new ycl_slpm_problem_history_store( rs_result-guid ).
+
+          lo_slpm_problem_history_store->add_update_event_record( is_problem ).
 
 
         catch ycx_crm_order_api_exc into data(lcx_process_exception).

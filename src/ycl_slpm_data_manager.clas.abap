@@ -457,7 +457,8 @@ class ycl_slpm_data_manager implementation.
           lo_company         type ref to yif_company,
           lv_duration_sec    type integer,
           lv_system_timezone type timezone,
-          lv_timestamp       type timestamp.
+          lv_timestamp       type timestamp,
+          lo_slpm_product    type ref to yif_slpm_product.
 
     me->fill_possible_problem_actions(
         changing
@@ -566,6 +567,12 @@ class ycl_slpm_data_manager implementation.
 
     cs_problem-totalproctimeminutes = lv_duration_sec div 60.
 
+    " Show Priorities
+
+    lo_slpm_product = new ycl_slpm_product( cs_problem-productguid ).
+
+    cs_problem-showpriorities = lo_slpm_product->is_show_priority_set(  ).
+
 
   endmethod.
 
@@ -605,6 +612,7 @@ class ycl_slpm_data_manager implementation.
               when 'E0002'    then abap_true
               when 'E0015'    then abap_true
               when 'E0016'    then abap_true
+              when 'E0005'    then abap_true
                   else abap_false )
         else abap_false ) .
 

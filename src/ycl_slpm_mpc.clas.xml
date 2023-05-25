@@ -186,6 +186,24 @@
      <ENTRY>30 Characters</ENTRY>
      <LENGTH>132</LENGTH>
     </item>
+    <item>
+     <ID>I</ID>
+     <KEY>030</KEY>
+     <ENTRY>Character Field Length = 10</ENTRY>
+     <LENGTH>132</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>031</KEY>
+     <ENTRY>Single-Character Flag</ENTRY>
+     <LENGTH>132</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>032</KEY>
+     <ENTRY>VALUE</ENTRY>
+     <LENGTH>132</LENGTH>
+    </item>
    </TPOOL>
    <DESCRIPTIONS>
     <SEOCOMPOTX>
@@ -217,6 +235,11 @@
      <CMPNAME>DEFINE_PROBLEM</CMPNAME>
      <LANGU>E</LANGU>
      <DESCRIPT>DEFINE_PROBLEM</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CMPNAME>DEFINE_PROBLEMHISTORYHIERARCHY</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>DEFINE_PROBLEMHISTORYHIERARCHY</DESCRIPT>
     </SEOCOMPOTX>
     <SEOCOMPOTX>
      <CMPNAME>DEFINE_PROCESSOR</CMPNAME>
