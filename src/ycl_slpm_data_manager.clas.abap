@@ -610,6 +610,7 @@ class ycl_slpm_data_manager implementation.
             switch char5( cs_problem-status
               when 'E0001'    then abap_true
               when 'E0002'    then abap_true
+              when 'E0003'    then abap_true
               when 'E0015'    then abap_true
               when 'E0016'    then abap_true
               when 'E0005'    then abap_true
@@ -813,6 +814,7 @@ class ycl_slpm_data_manager implementation.
     lv_parameter_mask = switch char100( ip_application
               when 'yslpmmyprb'    then 'MYPROBLEMS'
               when 'yslpmcrprb'    then 'NEWPROBLEM'
+              when 'yslpmprprb'    then 'PROCESSPROBLEM'
              ).
 
     if lv_parameter_mask is not initial.
@@ -867,7 +869,7 @@ update_timestamp update_timezone
 
     select guid apptguid problemguid irttimestamp irttimezone irtperc
         update_timestamp update_timezone statusin
-        statusout priorityin priorityout from yslpm_irt_hist into
+        statusout priorityin priorityout username manualchange from yslpm_irt_hist into
         corresponding fields of table lt_sla_irt_history
         where problemguid = ip_guid.
 

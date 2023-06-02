@@ -1,10 +1,15 @@
-class YCL_SLPM_PROB_CHANGE_NOTIFIER definition
+class ycl_slpm_prob_change_notifier definition
   public
 
   create public .
 
   public section.
-    interfaces yif_crm_order_change_notifier .
+    interfaces:
+
+      yif_crm_order_change_notifier,
+
+      yif_slpm_problem_observer .
+
     methods constructor
       importing
         io_active_configuration type ref to yif_slpm_configuration
@@ -108,7 +113,7 @@ class YCL_SLPM_PROB_CHANGE_NOTIFIER definition
 
 endclass.
 
-class YCL_SLPM_PROB_CHANGE_NOTIFIER implementation.
+class ycl_slpm_prob_change_notifier implementation.
 
   method get_problem_new_state.
     rs_problem_new_state = me->ms_problem_new_state.
@@ -491,6 +496,18 @@ ip_process_role
       endif.
 
     endloop.
+
+  endmethod.
+
+  method yif_slpm_problem_observer~problem_created.
+
+    me->yif_crm_order_change_notifier~notify(  ).
+
+  endmethod.
+
+  method yif_slpm_problem_observer~problem_updated.
+
+    me->yif_crm_order_change_notifier~notify(  ).
 
   endmethod.
 

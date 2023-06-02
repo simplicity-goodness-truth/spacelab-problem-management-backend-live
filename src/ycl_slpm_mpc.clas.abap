@@ -285,24 +285,24 @@ lo_ref_constraint->add_property( iv_principal_property = 'Guid'   iv_dependent_p
 
 * Navigation Properties for entity - Problem
 lo_entity_type = model->get_entity_type( iv_entity_name = 'Problem' ). "#EC NOTEXT
-lo_nav_property = lo_entity_type->create_navigation_property( iv_property_name  = 'Text' "#EC NOTEXT
-                                                              iv_abap_fieldname = 'TEXT' "#EC NOTEXT
-                                                              iv_association_name = 'ProblemToText' ). "#EC NOTEXT
-lo_nav_property = lo_entity_type->create_navigation_property( iv_property_name  = 'Attachment' "#EC NOTEXT
-                                                              iv_abap_fieldname = 'ATTACHMENT' "#EC NOTEXT
-                                                              iv_association_name = 'ProblemToAttachment' ). "#EC NOTEXT
-lo_nav_property = lo_entity_type->create_navigation_property( iv_property_name  = 'AvailableStatuses' "#EC NOTEXT
-                                                              iv_abap_fieldname = 'STAT' "#EC NOTEXT
-                                                              iv_association_name = 'ProblemToStatus' ). "#EC NOTEXT
-lo_nav_property = lo_entity_type->create_navigation_property( iv_property_name  = 'SLAIrtHistory' "#EC NOTEXT
-                                                              iv_abap_fieldname = 'SLAIRTHISTORY' "#EC NOTEXT
-                                                              iv_association_name = 'ProblemToSLAIrtHistory' ). "#EC NOTEXT
-lo_nav_property = lo_entity_type->create_navigation_property( iv_property_name  = 'SLAMptHistory' "#EC NOTEXT
-                                                              iv_abap_fieldname = 'SLAMPTHISTORY' "#EC NOTEXT
-                                                              iv_association_name = 'ProblemToSLAMptHistory' ). "#EC NOTEXT
 lo_nav_property = lo_entity_type->create_navigation_property( iv_property_name  = 'ProblemHistoryHierarchy' "#EC NOTEXT
                                                               iv_abap_fieldname = 'PROBLEMHISTORYHIERARCHY' "#EC NOTEXT
                                                               iv_association_name = 'ProblemToProblemHistoryHierarchy' ). "#EC NOTEXT
+lo_nav_property = lo_entity_type->create_navigation_property( iv_property_name  = 'SLAMptHistory' "#EC NOTEXT
+                                                              iv_abap_fieldname = 'SLAMPTHISTORY' "#EC NOTEXT
+                                                              iv_association_name = 'ProblemToSLAMptHistory' ). "#EC NOTEXT
+lo_nav_property = lo_entity_type->create_navigation_property( iv_property_name  = 'SLAIrtHistory' "#EC NOTEXT
+                                                              iv_abap_fieldname = 'SLAIRTHISTORY' "#EC NOTEXT
+                                                              iv_association_name = 'ProblemToSLAIrtHistory' ). "#EC NOTEXT
+lo_nav_property = lo_entity_type->create_navigation_property( iv_property_name  = 'AvailableStatuses' "#EC NOTEXT
+                                                              iv_abap_fieldname = 'STAT' "#EC NOTEXT
+                                                              iv_association_name = 'ProblemToStatus' ). "#EC NOTEXT
+lo_nav_property = lo_entity_type->create_navigation_property( iv_property_name  = 'Attachment' "#EC NOTEXT
+                                                              iv_abap_fieldname = 'ATTACHMENT' "#EC NOTEXT
+                                                              iv_association_name = 'ProblemToAttachment' ). "#EC NOTEXT
+lo_nav_property = lo_entity_type->create_navigation_property( iv_property_name  = 'Text' "#EC NOTEXT
+                                                              iv_abap_fieldname = 'TEXT' "#EC NOTEXT
+                                                              iv_association_name = 'ProblemToText' ). "#EC NOTEXT
 * Navigation Properties for entity - Product
 lo_entity_type = model->get_entity_type( iv_entity_name = 'Product' ). "#EC NOTEXT
 lo_nav_property = lo_entity_type->create_navigation_property( iv_property_name  = 'Priority' "#EC NOTEXT
@@ -882,6 +882,17 @@ lo_property->set_creatable( abap_false ).
 lo_property->set_updatable( abap_false ).
 lo_property->set_sortable( abap_false ).
 lo_property->set_nullable( abap_false ).
+lo_property->set_filterable( abap_false ).
+lo_property->/iwbep/if_mgw_odata_annotatabl~create_annotation( 'sap' )->add(
+      EXPORTING
+        iv_key      = 'unicode'
+        iv_value    = 'false' ).
+lo_property = lo_entity_type->create_property( iv_property_name = 'InputTimestamp' iv_abap_fieldname = 'INPUTTIMESTAMP' ). "#EC NOTEXT
+lo_property->set_type_edm_datetime( ).
+lo_property->set_creatable( abap_false ).
+lo_property->set_updatable( abap_false ).
+lo_property->set_sortable( abap_false ).
+lo_property->set_nullable( abap_true ).
 lo_property->set_filterable( abap_false ).
 lo_property->/iwbep/if_mgw_odata_annotatabl~create_annotation( 'sap' )->add(
       EXPORTING
@@ -2328,6 +2339,29 @@ lo_property->/iwbep/if_mgw_odata_annotatabl~create_annotation( 'sap' )->add(
       EXPORTING
         iv_key      = 'unicode'
         iv_value    = 'false' ).
+lo_property = lo_entity_type->create_property( iv_property_name = 'ManualChange' iv_abap_fieldname = 'MANUALCHANGE' ). "#EC NOTEXT
+lo_property->set_type_edm_boolean( ).
+lo_property->set_creatable( abap_false ).
+lo_property->set_updatable( abap_false ).
+lo_property->set_sortable( abap_false ).
+lo_property->set_nullable( abap_false ).
+lo_property->set_filterable( abap_false ).
+lo_property->/iwbep/if_mgw_odata_annotatabl~create_annotation( 'sap' )->add(
+      EXPORTING
+        iv_key      = 'unicode'
+        iv_value    = 'false' ).
+lo_property = lo_entity_type->create_property( iv_property_name = 'UserName' iv_abap_fieldname = 'USERNAME' ). "#EC NOTEXT
+lo_property->set_type_edm_string( ).
+lo_property->set_maxlength( iv_max_length = 12 ). "#EC NOTEXT
+lo_property->set_creatable( abap_false ).
+lo_property->set_updatable( abap_false ).
+lo_property->set_sortable( abap_false ).
+lo_property->set_nullable( abap_false ).
+lo_property->set_filterable( abap_false ).
+lo_property->/iwbep/if_mgw_odata_annotatabl~create_annotation( 'sap' )->add(
+      EXPORTING
+        iv_key      = 'unicode'
+        iv_value    = 'false' ).
 lo_property = lo_entity_type->create_property( iv_property_name = 'StatusOutText' iv_abap_fieldname = 'STATUSOUTTEXT' ). "#EC NOTEXT
 lo_property->set_label_from_text_element( iv_text_element_symbol = '025' iv_text_element_container = gc_incl_name ).  "#EC NOTEXT
 lo_property->set_type_edm_string( ).
@@ -3244,7 +3278,7 @@ lo_entity_set->set_filter_required( abap_false ).
 *&---------------------------------------------------------------------*
 
 
-  CONSTANTS: lc_gen_date_time TYPE timestamp VALUE '20230525093849'.                  "#EC NOTEXT
+  CONSTANTS: lc_gen_date_time TYPE timestamp VALUE '20230601095204'.                  "#EC NOTEXT
   rv_last_modified = super->get_last_modified( ).
   IF rv_last_modified LT lc_gen_date_time.
     rv_last_modified = lc_gen_date_time.

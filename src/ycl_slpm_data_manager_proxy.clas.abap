@@ -28,18 +28,32 @@ class ycl_slpm_data_manager_proxy definition
       mo_log                       type ref to ycl_logger_to_app_log,
       mv_app_log_object            type balobj_d,
       mv_app_log_subobject         type balsubobj,
-      mt_text_vulnerabilities_list type table of ty_text_vulnerabilities_list.
+      mt_text_vulnerabilities_list type table of ty_text_vulnerabilities_list,
+      mt_problem_observers         type standard table of ref to yif_slpm_problem_observer.
 
     methods:
 
-
-      notify_on_problem_change
+      get_srv_rfirst_appt_guid
         importing
-          is_problem_new_state type ycrm_order_ts_sl_problem
-          is_problem_old_state type ycrm_order_ts_sl_problem
+          ip_guid             type crmt_object_guid
+        returning
+          value(rp_appt_guid) type sc_aptguid
         raising
-          ycx_assistant_utilities_exc
-          ycx_slpm_configuration_exc,
+          ycx_slpm_configuration_exc
+          ycx_crm_order_api_exc
+          ycx_system_user_exc,
+
+      attach_observer
+        importing
+          io_observer type ref to yif_slpm_problem_observer,
+
+      notify_observers_on_create
+        importing
+          is_problem type ycrm_order_ts_sl_problem,
+
+      notify_observers_on_update
+        importing
+          is_problem type ycrm_order_ts_sl_problem,
 
       set_app_logger
         raising
@@ -49,17 +63,21 @@ class ycl_slpm_data_manager_proxy definition
         importing
           is_problem_old_state type ycrm_order_ts_sl_problem
           is_problem_new_state type ycrm_order_ts_sl_problem
+          is_payload           type ycrm_order_ts_sl_problem optional
         raising
-          ycx_slpm_configuration_exc,
+          ycx_slpm_configuration_exc
+          ycx_crm_order_api_exc
+          ycx_system_user_exc,
 
       store_irt_sla
         importing
-          ip_guid        type crmt_object_guid
-          ip_irt_perc    type int4
-          ip_statusin    type char5
-          ip_statusout   type char5
-          ip_priorityin  type crmt_priority
-          ip_priorityout type crmt_priority
+          ip_guid         type crmt_object_guid
+          ip_irt_perc     type int4
+          ip_statusin     type char5
+          ip_statusout    type char5
+          ip_priorityin   type crmt_priority
+          ip_priorityout  type crmt_priority
+          ip_manualchange type abap_bool optional
         raising
           ycx_slpm_configuration_exc
           ycx_crm_order_api_exc
@@ -167,21 +185,6 @@ class ycl_slpm_data_manager_proxy implementation.
 
   endmethod.
 
-
-  method notify_on_problem_change.
-
-    data lo_slpm_prob_change_notifier type ref to yif_crm_order_change_notifier.
-
-    lo_slpm_prob_change_notifier = new ycl_slpm_prob_change_notifier(
-            io_active_configuration = mo_active_configuration
-            is_problem_new_state = is_problem_new_state
-            is_problem_old_state = is_problem_old_state ).
-
-    lo_slpm_prob_change_notifier->notify(  ).
-
-  endmethod.
-
-
   method yif_slpm_data_manager~create_problem.
 
 
@@ -249,10 +252,10 @@ class ycl_slpm_data_manager_proxy implementation.
 
           rs_result = mo_slpm_data_provider->create_problem( exporting is_problem = is_problem ).
 
-          me->notify_on_problem_change(
-              exporting
-              is_problem_new_state = rs_result
-              is_problem_old_state = is_problem ).
+*          me->notify_on_problem_change(
+*              exporting
+*              is_problem_new_state = rs_result
+*              is_problem_old_state = is_problem ).
 
         catch  ycx_crm_order_api_exc ycx_assistant_utilities_exc into data(lcx_process_exception).
 
@@ -263,11 +266,20 @@ class ycl_slpm_data_manager_proxy implementation.
 
       endtry.
 
-      " History record creation
+      " Adding a change notifier observer for created problem
 
-      lo_slpm_problem_history_store = new ycl_slpm_problem_history_store( rs_result-guid ).
+      me->attach_observer( new ycl_slpm_prob_change_notifier(
+           io_active_configuration = mo_active_configuration
+           is_problem_new_state = rs_result
+           is_problem_old_state = is_problem ) ).
 
-      lo_slpm_problem_history_store->add_creation_event_record( rs_result ).
+      " Adding an observer for created problem
+
+      me->attach_observer( new ycl_slpm_problem_history_store( rs_result-guid ) ).
+
+      " Executing notification on create
+
+      notify_observers_on_create( rs_result ).
 
     endif.
 
@@ -309,7 +321,7 @@ class ycl_slpm_data_manager_proxy implementation.
 
           if ( mo_slpm_user->is_auth_to_update_company( ls_problem_old_state-companybusinesspartner ) eq abap_false ).
 
-            message e009(zslpm_data_manager) with sy-uname ls_problem_old_state-companybusinesspartner into lv_log_record_text.
+            message e009(yslpm_data_manager) with sy-uname ls_problem_old_state-companybusinesspartner into lv_log_record_text.
 
             mo_log->yif_logger~err( lv_log_record_text ).
 
@@ -327,7 +339,7 @@ class ycl_slpm_data_manager_proxy implementation.
 
           if ( mo_slpm_user->is_auth_to_update_product( lv_product_id ) eq abap_false ).
 
-            message e010(zslpm_data_manager) with sy-uname lv_product_id into lv_log_record_text.
+            message e010(yslpm_data_manager) with sy-uname lv_product_id into lv_log_record_text.
 
             mo_log->yif_logger~err( lv_log_record_text ).
 
@@ -347,20 +359,28 @@ class ycl_slpm_data_manager_proxy implementation.
           me->post_update_external_actions(
                exporting
                is_problem_new_state = rs_result
-               is_problem_old_state = ls_problem_old_state ).
+               is_problem_old_state = ls_problem_old_state
+               is_payload = is_problem  ).
 
+*          me->notify_on_problem_change(
+*                     exporting
+*                     is_problem_new_state = rs_result
+*                     is_problem_old_state = ls_problem_old_state ).
 
-          me->notify_on_problem_change(
-                     exporting
+          " Adding a change notifier observer for updated problem
+
+          me->attach_observer( new ycl_slpm_prob_change_notifier(
+                     io_active_configuration = mo_active_configuration
                      is_problem_new_state = rs_result
-                     is_problem_old_state = ls_problem_old_state ).
+                     is_problem_old_state = ls_problem_old_state ) ).
 
-          " History record creation
+          " Adding an observer for created problem
 
-          lo_slpm_problem_history_store = new ycl_slpm_problem_history_store( rs_result-guid ).
+          me->attach_observer( new ycl_slpm_problem_history_store( rs_result-guid ) ).
 
-          lo_slpm_problem_history_store->add_update_event_record( is_problem ).
+          " Executing notification on update
 
+          notify_observers_on_update( is_problem ).
 
         catch ycx_crm_order_api_exc into data(lcx_process_exception).
 
@@ -652,33 +672,21 @@ lv_new_irt_timestamp time zone lv_system_timezone.
 
 
     data:
-      lo_slmp_problem_api       type ref to ycl_slpm_problem_api,
-      lt_appointments           type crmt_appointment_wrkt,
-      ls_srv_rfirst_appointment type crmt_appointment_wrk,
-      ls_yslpm_irt_hist         type yslpm_irt_hist.
+      lv_appt_guid      type sc_aptguid,
+      ls_yslpm_irt_hist type yslpm_irt_hist.
 
-    lo_slmp_problem_api       = new ycl_slpm_problem_api( mo_active_configuration ).
-
-    lt_appointments = lo_slmp_problem_api->yif_custom_crm_order_read~get_all_appointments_by_guid( ip_guid ).
-
-    try.
-
-        ls_srv_rfirst_appointment = lt_appointments[ appt_type = 'SRV_RFIRST' ].
-
-      catch cx_sy_itab_line_not_found.
-
-    endtry.
+    lv_appt_guid = me->get_srv_rfirst_appt_guid( ip_guid ).
 
     " Storing old IRT SLA
 
     select single tst_from zone_from into ( ls_yslpm_irt_hist-irttimestamp, ls_yslpm_irt_hist-irttimezone )
      from scapptseg
-     where appt_guid = ls_srv_rfirst_appointment-appt_guid.
+     where appt_guid = lv_appt_guid.
 
     if sy-subrc eq 0.
 
       ls_yslpm_irt_hist-guid = ycl_assistant_utilities=>generate_x16_guid(  ).
-      ls_yslpm_irt_hist-apptguid = ls_srv_rfirst_appointment-appt_guid.
+      ls_yslpm_irt_hist-apptguid = lv_appt_guid.
       ls_yslpm_irt_hist-problemguid = ip_guid.
       get time stamp field ls_yslpm_irt_hist-update_timestamp.
       ls_yslpm_irt_hist-irtperc = ip_irt_perc.
@@ -687,6 +695,8 @@ lv_new_irt_timestamp time zone lv_system_timezone.
       ls_yslpm_irt_hist-statusout = ip_statusout.
       ls_yslpm_irt_hist-priorityin = ip_priorityin.
       ls_yslpm_irt_hist-priorityout = ip_priorityout.
+      ls_yslpm_irt_hist-manualchange = ip_manualchange.
+      ls_yslpm_irt_hist-username = sy-uname.
 
       insert yslpm_irt_hist from ls_yslpm_irt_hist.
 
@@ -800,7 +810,8 @@ mo_active_configuration ).
           lo_slpm_product    type ref to yif_crm_service_product,
           lv_avail_profile   type srv_serwi,
           lt_methods_list    type table of  ty_methods_list,
-          ls_method          type  ty_methods_list.
+          ls_method          type  ty_methods_list,
+          lv_appt_guid       type sc_aptguid.
 
 
     lt_common_params = value #(
@@ -956,6 +967,47 @@ mo_active_configuration ).
 
     endif.
 
+    " Direct manual SLA update from frontend ( initial time goes in UTC)
+
+    if ( is_payload-inputtimestamp is not initial ).
+
+      " SLA IRT manual change
+
+      if is_payload-irt_status eq 'MANCH'.
+
+        " Storing old SLA
+
+        lv_method_name = |STORE_IRT_SLA|.
+
+        ls_method-method_name = lv_method_name.
+
+        clear lt_method_params.
+        lt_method_params = corresponding #( lt_common_params ).
+        lt_specific_params = value #(
+
+              ( name = 'IP_IRT_PERC' value = ref #( is_problem_new_state-irt_perc ) kind = cl_abap_objectdescr=>exporting )
+              ( name = 'IP_MANUALCHANGE' value = ref #( 'X' ) kind = cl_abap_objectdescr=>exporting )
+          ).
+
+        insert lines of lt_specific_params into table lt_method_params.
+
+        ls_method-parameters = lt_method_params.
+
+        append ls_method to lt_methods_list.
+
+      endif.
+
+      lv_appt_guid = me->get_srv_rfirst_appt_guid( is_problem_new_state-guid ).
+
+      update scapptseg set
+        tst_from =  is_payload-inputtimestamp
+        tst_to = is_payload-inputtimestamp
+        where
+            appt_guid = lv_appt_guid.
+
+
+    endif.
+
     loop at lt_methods_list assigning field-symbol(<ls_method>).
 
       try.
@@ -1029,6 +1081,54 @@ mo_active_configuration ).
 
   endmethod.
 
+  method notify_observers_on_create.
 
+    loop at mt_problem_observers assigning field-symbol(<ms_observer>).
+
+      <ms_observer>->problem_created( is_problem ).
+
+    endloop.
+
+  endmethod.
+
+  method notify_observers_on_update.
+
+    loop at mt_problem_observers assigning field-symbol(<ms_observer>).
+
+      <ms_observer>->problem_updated( is_problem ).
+
+    endloop.
+
+  endmethod.
+
+  method attach_observer.
+
+    append io_observer to mt_problem_observers.
+
+  endmethod.
+
+  method get_srv_rfirst_appt_guid.
+
+    data:
+      lo_slmp_problem_api       type ref to ycl_slpm_problem_api,
+      lt_appointments           type crmt_appointment_wrkt,
+      ls_srv_rfirst_appointment type crmt_appointment_wrk.
+
+    lo_slmp_problem_api       = new ycl_slpm_problem_api( mo_active_configuration ).
+
+    lt_appointments = lo_slmp_problem_api->yif_custom_crm_order_read~get_all_appointments_by_guid( ip_guid ).
+
+    try.
+
+        ls_srv_rfirst_appointment = lt_appointments[ appt_type = 'SRV_RFIRST' ].
+
+        rp_appt_guid = ls_srv_rfirst_appointment-appt_guid.
+
+      catch cx_sy_itab_line_not_found.
+
+    endtry.
+
+
+  endmethod.
 
 endclass.

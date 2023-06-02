@@ -1,11 +1,15 @@
-class YCL_SLPM_PROBLEM_HISTORY_STORE definition
+class ycl_slpm_problem_history_store definition
   public
   final
   create public .
 
   public section.
 
-    interfaces yif_slpm_problem_history_store.
+    interfaces:
+
+      yif_slpm_problem_history_store,
+
+      yif_slpm_problem_observer.
 
     methods:
       constructor
@@ -22,6 +26,14 @@ class YCL_SLPM_PROBLEM_HISTORY_STORE definition
       mv_change_guid      type sysuuid_x16.
 
     methods:
+
+      add_creation_event_record
+        importing
+          is_problem type ycrm_order_ts_sl_problem,
+
+      add_update_event_record
+        importing
+          is_problem type ycrm_order_ts_sl_problem,
 
       add_event_record
         importing
@@ -40,7 +52,7 @@ class YCL_SLPM_PROBLEM_HISTORY_STORE definition
 endclass.
 
 
-class YCL_SLPM_PROBLEM_HISTORY_STORE implementation.
+class ycl_slpm_problem_history_store implementation.
 
   method constructor.
 
@@ -49,7 +61,7 @@ class YCL_SLPM_PROBLEM_HISTORY_STORE implementation.
   endmethod.
 
 
-  method yif_slpm_problem_history_store~add_creation_event_record.
+  method add_creation_event_record.
 
     mv_event = 'C'.
 
@@ -57,7 +69,7 @@ class YCL_SLPM_PROBLEM_HISTORY_STORE implementation.
 
   endmethod.
 
-  method yif_slpm_problem_history_store~add_update_event_record.
+  method add_update_event_record.
 
     mv_event = 'U'.
 
@@ -285,6 +297,21 @@ class YCL_SLPM_PROBLEM_HISTORY_STORE implementation.
 
     endloop.
 
+
+  endmethod.
+
+  method yif_slpm_problem_observer~problem_created.
+
+
+    add_creation_event_record( is_problem ).
+
+
+  endmethod.
+
+
+  method yif_slpm_problem_observer~problem_updated.
+
+    add_update_event_record( is_problem ).
 
   endmethod.
 
