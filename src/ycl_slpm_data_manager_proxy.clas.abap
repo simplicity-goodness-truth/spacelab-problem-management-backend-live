@@ -29,7 +29,9 @@ class ycl_slpm_data_manager_proxy definition
       mv_app_log_object            type balobj_d,
       mv_app_log_subobject         type balsubobj,
       mt_text_vulnerabilities_list type table of ty_text_vulnerabilities_list,
-      mt_problem_observers         type standard table of ref to yif_slpm_problem_observer.
+      mt_problem_observers         type standard table of ref to yif_slpm_problem_observer,
+      "mo_slpm_cache_controller     type ref to yif_cache
+      mo_slpm_cache_controller     type ref to yif_slpm_problem_cache.
 
     methods:
 
@@ -117,13 +119,69 @@ class ycl_slpm_data_manager_proxy definition
 
       clear_text_vulnerabilities
         changing
-          cp_text type string.
+          cp_text type string,
+
+      invalidate_problem_in_cache
+        importing
+          ip_guid type crmt_object_guid,
+
+      get_problem_from_cache
+        importing
+          ip_guid           type crmt_object_guid
+        returning
+          value(rs_problem) type ycrm_order_ts_sl_problem
+        raising
+          ycx_slpm_configuration_exc,
+
+      add_problem_to_cache
+        importing
+          is_problem type ycrm_order_ts_sl_problem
+        raising
+          ycx_slpm_configuration_exc,
+
+      set_slpm_cache_controller
+        raising
+          ycx_slpm_configuration_exc,
+
+      get_problem_through_cache
+        importing
+          ip_guid          type crmt_object_guid
+        returning
+          value(es_result) type ycrm_order_ts_sl_problem
+        raising
+          ycx_crm_order_api_exc
+          ycx_assistant_utilities_exc
+          ycx_slpm_configuration_exc
+          ycx_system_user_exc,
+
+      decode_problem
+        importing
+          ir_problem        type ref to data
+          ip_table_name     type strukname
+        returning
+          value(rs_problem) type ycrm_order_ts_sl_problem.
 
 
 
 endclass.
 
 class ycl_slpm_data_manager_proxy implementation.
+
+  method add_problem_to_cache.
+
+    " ------Use approach below if a general cache interface YIF_CACHE is used
+
+*    data lr_problem type ref to data.
+*
+*    get reference of is_problem into lr_problem.
+*
+*    mo_slpm_cache_controller->add_record( lr_problem ).
+
+    " ------Use approach below if a dedicated problem cache interface YIF_SLPM_PROBLEM_CACHE is used
+
+    mo_slpm_cache_controller->add_record( is_problem ).
+
+  endmethod.
 
   method set_app_logger.
 
@@ -135,6 +193,17 @@ class ycl_slpm_data_manager_proxy implementation.
           exporting
             ip_object    =   mv_app_log_object
             ip_subobject =   mv_app_log_subobject ).
+
+  endmethod.
+
+  method set_slpm_cache_controller.
+
+    if  mo_slpm_cache_controller is not bound.
+
+      mo_slpm_cache_controller = new ycl_slpm_problem_snlru_cache( mo_active_configuration ).
+
+    endif.
+
 
   endmethod.
 
@@ -166,6 +235,8 @@ class ycl_slpm_data_manager_proxy implementation.
     me->set_app_logger(  ).
 
     me->fill_vulnerabilities_list(  ).
+
+    me->set_slpm_cache_controller(  ).
 
   endmethod.
 
@@ -382,6 +453,15 @@ class ycl_slpm_data_manager_proxy implementation.
 
           notify_observers_on_update( is_problem ).
 
+          " Invalidating record in cache
+
+          if ( mo_active_configuration->get_parameter_value( 'USE_SNLRU_CACHE' ) eq 'X').
+
+            invalidate_problem_in_cache( rs_result-guid ).
+
+          endif.
+
+
         catch ycx_crm_order_api_exc into data(lcx_process_exception).
 
           raise exception type ycx_slpm_data_manager_exc
@@ -502,9 +582,18 @@ ip_guid ).
 
     if mo_slpm_data_provider is bound.
 
-      es_result = mo_slpm_data_provider->get_problem( ip_guid ).
+      if ( mo_active_configuration->get_parameter_value( 'USE_SNLRU_CACHE' ) eq 'X').
+
+        es_result = me->get_problem_through_cache( ip_guid ).
+
+      else.
+
+        es_result = mo_slpm_data_provider->get_problem( ip_guid ).
+
+      endif.
 
     endif.
+
 
   endmethod.
 
@@ -1070,6 +1159,31 @@ mo_active_configuration ).
 
   endmethod.
 
+  method decode_problem.
+
+    data:
+       lr_table_wa type ref to data.
+
+    field-symbols:
+      <fs_problem> type any.
+
+    create data lr_table_wa type (ip_table_name).
+
+    assign lr_table_wa->* to <fs_problem>.
+
+    if ( ir_problem is bound ).
+
+      assign ir_problem->* to <fs_problem>.
+
+      rs_problem =  <fs_problem>.
+
+
+    endif.
+
+
+  endmethod.
+
+
   method fill_vulnerabilities_list.
 
     mt_text_vulnerabilities_list = value #(
@@ -1107,6 +1221,45 @@ mo_active_configuration ).
 
   endmethod.
 
+  method get_problem_from_cache.
+
+    " ------Use approach below if a general cache interface YIF_CACHE is used
+
+*    data: lr_guid    type ref to data,
+*          lr_problem type ref to data.
+*
+*    get reference of ip_guid into lr_guid.
+*
+*    lr_problem = mo_slpm_cache_controller->get_record( lr_guid ).
+*
+*    rs_problem = decode_problem(
+*     exporting
+*          ip_table_name = 'YCRM_ORDER_TS_SL_PROBLEM'
+*          ir_problem = lr_problem ).
+
+    " ------Use approach below if a dedicated problem cache interface YIF_SLPM_PROBLEM_CACHE is used
+
+    rs_problem = mo_slpm_cache_controller->get_record( ip_guid ).
+
+  endmethod.
+
+
+  method get_problem_through_cache.
+
+
+    es_result = me->get_problem_from_cache( ip_guid ).
+
+    if es_result is initial.
+
+      es_result = mo_slpm_data_provider->get_problem( ip_guid ).
+
+      add_problem_to_cache( es_result ).
+
+    endif.
+
+
+  endmethod.
+
   method get_srv_rfirst_appt_guid.
 
     data:
@@ -1128,6 +1281,12 @@ mo_active_configuration ).
 
     endtry.
 
+
+  endmethod.
+
+  method invalidate_problem_in_cache.
+
+    mo_slpm_cache_controller->invalidate_record( ip_guid ).
 
   endmethod.
 
