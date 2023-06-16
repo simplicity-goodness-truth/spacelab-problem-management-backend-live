@@ -117,7 +117,11 @@ class ycl_slpm_data_manager definition
 
       set_slpm_cache_controller
         raising
-          ycx_slpm_configuration_exc.
+          ycx_slpm_configuration_exc,
+
+      get_prob_guids_through_cache
+        returning
+          value(rt_problems_guids) type ycrm_order_tt_guids.
 
 endclass.
 
@@ -307,10 +311,18 @@ class ycl_slpm_data_manager implementation.
       lv_product_id      type comt_product_id.
 
     field-symbols: <ls_sorted_table> type any table.
-*
-*    lo_slpm_problem_api = new ycl_slpm_problem_api(  ).
 
-    lt_crm_guids = mo_slpm_problem_api->yif_custom_crm_order_read~get_guids_list(  ).
+    if ( mo_active_configuration->get_parameter_value( 'USE_SNLRU_CACHE_FOR_PROBLEM_GUIDS_LIST' ) eq 'X').
+
+      lt_crm_guids = get_prob_guids_through_cache(  ).
+
+    else.
+
+      lt_crm_guids = mo_slpm_problem_api->yif_custom_crm_order_read~get_guids_list(  ).
+
+    endif.
+
+
 
     if lt_crm_guids is not initial.
 
@@ -321,6 +333,12 @@ class ycl_slpm_data_manager implementation.
         if ( mo_active_configuration->get_parameter_value( 'USE_SNLRU_CACHE' ) eq 'X').
 
           ls_result = me->get_problem_through_cache( <ls_crm_guid>-guid ).
+
+          me->yif_slpm_data_manager~fill_cached_prb_calc_flds(
+          exporting
+              ip_guid = <ls_crm_guid>-guid
+              changing
+              cs_problem = ls_result ).
 
         else.
 
@@ -1044,6 +1062,153 @@ update_timestamp update_timezone
 
     endif.
 
+
+  endmethod.
+
+  method yif_slpm_data_manager~fill_cached_prb_calc_flds.
+
+    data: ls_sla_status            type ais_sla_status,
+          lv_current_timestamp     type timestamp,
+          lv_system_timezone       type timezone,
+          lv_seconds_total_in_proc type integer.
+
+    " ===========  Total processing time  ===========
+
+    if ( cs_problem-closed eq abap_false ).
+
+      " For statuses except Withdrawn (E0010) and Confirmed (E0008)  it is a difference between now and creation timestamp
+
+      lv_system_timezone =  ycl_assistant_utilities=>get_system_timezone(  ).
+
+      convert date sy-datum time sy-uzeit into time stamp lv_current_timestamp time zone lv_system_timezone.
+
+      lv_seconds_total_in_proc = ycl_assistant_utilities=>calc_duration_btw_timestamps(
+        exporting
+            ip_timestamp_1 = cs_problem-created_at
+            ip_timestamp_2 = lv_current_timestamp ).
+
+    endif.
+
+    cs_problem-totalproctimeminutes = lv_seconds_total_in_proc div 60.
+
+    " ===========  SLA related fields  ===========
+
+    if ( mo_active_configuration->get_parameter_value( 'USE_NON_STANDARD_SLA_CALC_IN_SNLRU_CACHE' ) eq 'X').
+
+      me->yif_slpm_data_manager~calc_non_stand_sla_status(
+        exporting
+            ip_seconds_in_processing = lv_seconds_total_in_proc
+        changing
+            cs_problem = cs_problem ).
+
+    else.
+
+      ls_sla_status = mo_slpm_problem_api->yif_custom_crm_order_read~get_sla_status_by_guid( ip_guid ).
+
+      move-corresponding ls_sla_status to cs_problem.
+
+    endif.
+
+  endmethod.
+
+  method yif_slpm_data_manager~calc_non_stand_sla_status.
+
+    data:
+      lv_seconds_for_irt type integer,
+      lv_seconds_for_mpt type integer.
+
+    " ==================== IRT block ======================
+
+    " Live recalculation of cached IRT SLA is not required,
+    " when first reaction has been provided and IRT SLAs are
+    " stored already, and when irt sla is on hold - then cached data
+    " will be relevant until a next update
+
+    if ( cs_problem-firstreactiondate is initial ) and ( cs_problem-irtslaonhold is initial ).
+
+      " Calculating seconds for IRT
+
+      lv_seconds_for_irt = ycl_assistant_utilities=>calc_duration_btw_timestamps(
+          exporting
+              ip_timestamp_1 = cs_problem-created_at
+              ip_timestamp_2 = cs_problem-irt_timestamp ).
+
+
+      " Calculating percentage for IRT
+
+      cs_problem-irt_perc = ( ip_seconds_in_processing * 100 ) div lv_seconds_for_irt.
+
+      " Calculating status for IRT
+
+      cs_problem-irt_icon_bsp = cond #(
+          when cs_problem-irt_perc > 100 then 'OVERDUE'
+              else 'NOTDUE'
+        ).
+
+      " Additional 999 percentage according to standard
+
+      if cs_problem-irt_perc > 200.
+
+        cs_problem-irt_perc = 999.
+
+      endif.
+
+    endif.
+
+    " ==================== MPT block ======================
+
+    " Live recalculation of cached MPT SLA is not required,
+    " when problem has beenclosed, and when mpt sla is on hold - then cached data
+    " will be relevant until a next update
+
+    if ( ( cs_problem-status ne 'E0008' ) and ( cs_problem-status ne 'E0010' ) ) and
+    ( cs_problem-mptslaonhold is initial ) .
+
+      " Calculating seconds for MPT
+
+      lv_seconds_for_mpt = ycl_assistant_utilities=>calc_duration_btw_timestamps(
+          exporting
+              ip_timestamp_1 = cs_problem-created_at
+              ip_timestamp_2 = cs_problem-mpt_timestamp ).
+
+      " Calculating percentage for MPT
+
+      cs_problem-mpt_perc = ( ip_seconds_in_processing * 100 ) div lv_seconds_for_mpt.
+
+      " Calculating status for MPT
+
+      cs_problem-mpt_icon_bsp = cond #(
+          when cs_problem-mpt_perc > 100 then 'OVERDUE'
+              else 'NOTDUE'
+        ).
+
+      " Additional 999 percentage according to standard
+
+      if cs_problem-mpt_perc > 200.
+
+        cs_problem-mpt_perc = 999.
+
+      endif.
+
+    endif.
+
+  endmethod.
+
+  method get_prob_guids_through_cache.
+
+    if mo_slpm_cache_controller is bound.
+
+      rt_problems_guids = mo_slpm_cache_controller->get_all_problems_guids(  ).
+
+      if rt_problems_guids is initial.
+
+        rt_problems_guids = mo_slpm_problem_api->yif_custom_crm_order_read~get_guids_list(  ).
+
+        mo_slpm_cache_controller->set_all_problems_guids( rt_problems_guids ).
+
+      endif.
+
+    endif.
 
   endmethod.
 

@@ -1,4 +1,4 @@
-interface YIF_SLPM_DATA_MANAGER
+interface yif_slpm_data_manager
   public .
 
   methods: get_problems_list
@@ -15,10 +15,10 @@ interface YIF_SLPM_DATA_MANAGER
 
     get_problem
       importing
-        ip_guid             type crmt_object_guid
-       " io_slpm_problem_api type ref to ycl_slpm_problem_api optional
+        ip_guid          type crmt_object_guid
+        " io_slpm_problem_api type ref to ycl_slpm_problem_api optional
       returning
-        value(es_result)    type ycrm_order_ts_sl_problem
+        value(es_result) type ycrm_order_ts_sl_problem
       raising
         ycx_crm_order_api_exc
         ycx_assistant_utilities_exc
@@ -200,7 +200,24 @@ interface YIF_SLPM_DATA_MANAGER
         value(rt_sla_mpt_history) type yslpm_tt_mpt_hist
       raising
         ycx_crm_order_api_exc
-        ycx_system_user_exc.
+        ycx_system_user_exc,
+
+    fill_cached_prb_calc_flds
+      importing
+        ip_guid    type crmt_object_guid
+      changing
+        cs_problem type ycrm_order_ts_sl_problem
+      raising
+        ycx_crm_order_api_exc
+        ycx_slpm_configuration_exc,
+
+    calc_non_stand_sla_status
+      importing
+        ip_seconds_in_processing type integer
+      changing
+        cs_problem               type ycrm_order_ts_sl_problem.
+
+
 
 
 endinterface.

@@ -4,7 +4,9 @@ class ycl_custom_crm_order_api_proxy definition
 
   public section.
 
-    interfaces: yif_custom_crm_order_create,
+    interfaces:
+
+      yif_custom_crm_order_create,
       yif_custom_crm_order_init,
       yif_custom_crm_order_read,
       yif_custom_crm_order_update,
@@ -520,5 +522,15 @@ class ycl_custom_crm_order_api_proxy implementation.
 
   endmethod.
 
+
+  method yif_custom_crm_order_read~get_sla_status_by_guid.
+
+    if ( mo_custom_crm_order_read is bound ).
+
+      rs_sla_status = mo_custom_crm_order_read->get_sla_status_by_guid( ip_guid ).
+
+    endif.
+
+  endmethod.
 
 endclass.

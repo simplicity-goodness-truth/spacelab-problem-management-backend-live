@@ -4,7 +4,9 @@ class ycl_custom_crm_order_api definition
 
   public section.
 
-    interfaces: yif_custom_crm_order_read,
+    interfaces:
+
+      yif_custom_crm_order_read,
       yif_custom_crm_order_create,
       yif_custom_crm_order_update,
       yif_custom_crm_order_init,
@@ -2403,6 +2405,30 @@ ls_phio loio = ls_loio.
         ip_guid = ip_guid
         ip_tdid = ip_tdid
         ip_text = ip_text ).
+
+  endmethod.
+
+  method yif_custom_crm_order_read~get_sla_status_by_guid.
+
+
+    data:
+       lo_cl_ags_crm_1o_api     type ref to cl_ags_crm_1o_api.
+
+
+    call method cl_ags_crm_1o_api=>get_instance
+      exporting
+        iv_header_guid                = ip_guid
+        iv_process_mode               = 'C'
+        iv_process_type               = mv_process_type
+      importing
+        eo_instance                   = lo_cl_ags_crm_1o_api
+      exceptions
+        invalid_parameter_combination = 1
+        error_occurred                = 2
+        others                        = 3.
+
+    rs_sla_status = lo_cl_ags_crm_1o_api->get_sla_status(  ).
+
 
   endmethod.
 

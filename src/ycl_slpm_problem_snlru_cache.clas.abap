@@ -1,4 +1,4 @@
-class YCL_SLPM_PROBLEM_SNLRU_CACHE definition
+class ycl_slpm_problem_snlru_cache definition
   public
   final
   create public .
@@ -31,7 +31,7 @@ class YCL_SLPM_PROBLEM_SNLRU_CACHE definition
 
       set_shma_active_configuration
         raising
-         ycx_slpm_configuration_exc,
+          ycx_slpm_configuration_exc,
 
       rebuild_segments
         importing
@@ -48,7 +48,7 @@ endclass.
 
 
 
-class YCL_SLPM_PROBLEM_SNLRU_CACHE implementation.
+class ycl_slpm_problem_snlru_cache implementation.
 
   method constructor.
 
@@ -355,5 +355,156 @@ class YCL_SLPM_PROBLEM_SNLRU_CACHE implementation.
 
 
   endmethod.
+
+  method yif_slpm_problem_cache~get_all_problems_guids.
+
+    data:
+         lo_area        type ref to ycl_slpm_area.
+
+    try.
+
+        lo_area = ycl_slpm_area=>attach_for_read( ).
+
+      catch cx_shm_pending_lock_removed cx_shm_change_lock_active cx_shm_version_limit_exceeded
+     cx_shm_exclusive_lock_active cx_shm_no_active_version cx_shm_read_lock_active.
+
+        return.
+
+      catch cx_shm_inconsistent.
+        ycl_slpm_area=>free_area( ).
+
+    endtry.
+
+    try.
+
+        rt_all_problems_guids = lo_area->root->get_cached_prob_guids( ).
+
+        lo_area->detach( ).
+
+      catch cx_sy_ref_is_initial.
+
+    endtry.
+
+  endmethod.
+
+  method yif_slpm_problem_cache~set_all_problems_guids.
+
+    data:
+      lo_area type ref to ycl_slpm_area,
+      lo_root type ref to ycl_slpm_shma.
+
+    try.
+        lo_area = ycl_slpm_area=>attach_for_update( ).
+
+      catch cx_shm_pending_lock_removed cx_shm_change_lock_active cx_shm_version_limit_exceeded
+        cx_shm_exclusive_lock_active cx_shm_no_active_version cx_shm_build_failed .
+
+      catch cx_shm_inconsistent.
+        ycl_slpm_area=>free_area( ).
+
+        return.
+
+    endtry.
+
+    try.
+
+        lo_root ?= lo_area->get_root( ).
+
+        if lo_root is  initial.
+          create object lo_root area handle lo_area.
+        endif.
+
+        lo_root->set_cached_prob_guids( it_all_problem_guids ).
+
+        lo_area->set_root( lo_root ).
+
+        lo_area->detach_commit( ).
+
+      catch cx_sy_ref_is_initial.
+
+    endtry.
+
+  endmethod.
+
+  method yif_slpm_problem_cache~add_guid_to_cached_prob_guids.
+
+    data:
+      lo_area type ref to ycl_slpm_area,
+      lo_root type ref to ycl_slpm_shma.
+
+    try.
+        lo_area = ycl_slpm_area=>attach_for_update( ).
+
+      catch cx_shm_pending_lock_removed cx_shm_change_lock_active cx_shm_version_limit_exceeded
+        cx_shm_exclusive_lock_active cx_shm_no_active_version cx_shm_build_failed .
+
+      catch cx_shm_inconsistent.
+        ycl_slpm_area=>free_area( ).
+
+        return.
+
+    endtry.
+
+    try.
+
+        lo_root ?= lo_area->get_root( ).
+
+        if lo_root is  initial.
+          create object lo_root area handle lo_area.
+        endif.
+
+        lo_root->add_guid_to_cached_prob_guids( ip_guid ).
+
+        lo_area->set_root( lo_root ).
+
+        lo_area->detach_commit( ).
+
+      catch cx_sy_ref_is_initial.
+
+    endtry.
+
+  endmethod.
+
+  method yif_slpm_problem_cache~invalidate_cached_prob_guids.
+
+    data:
+      lo_area type ref to ycl_slpm_area,
+      lo_root type ref to ycl_slpm_shma.
+
+    try.
+        lo_area = ycl_slpm_area=>attach_for_update( ).
+
+      catch cx_shm_pending_lock_removed cx_shm_change_lock_active cx_shm_version_limit_exceeded
+        cx_shm_exclusive_lock_active cx_shm_no_active_version cx_shm_build_failed .
+
+      catch cx_shm_inconsistent.
+        ycl_slpm_area=>free_area( ).
+
+        return.
+
+    endtry.
+
+    try.
+
+        lo_root ?= lo_area->get_root( ).
+
+        if lo_root is  initial.
+          create object lo_root area handle lo_area.
+        endif.
+
+        lo_root->invalidate_cached_prob_guids(  ).
+
+        lo_area->set_root( lo_root ).
+
+        lo_area->detach_commit( ).
+
+      catch cx_sy_ref_is_initial.
+
+    endtry.
+
+
+  endmethod.
+
+
 
 endclass.

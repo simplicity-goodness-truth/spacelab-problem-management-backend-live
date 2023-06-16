@@ -1,4 +1,4 @@
-class YCL_SLPM_SHMA definition
+class ycl_slpm_shma definition
   public
   final
   create public
@@ -29,7 +29,24 @@ class YCL_SLPM_SHMA definition
       rebuild_segments
         importing
           is_problem     type ycrm_order_ts_sl_problem
-          ip_hit_segment type char1.
+          ip_hit_segment type char1,
+
+      set_cached_prob_guids
+        importing
+          it_problems_guids type ycrm_order_tt_guids,
+
+      get_cached_prob_guids
+        returning
+          value(rt_problems_guids) type ycrm_order_tt_guids,
+
+      add_guid_to_cached_prob_guids
+        importing
+          ip_guid type crmt_object_guid,
+
+      invalidate_cached_prob_guids,
+
+      invalidate_all_cached_problems.
+
 
     class-methods:
 
@@ -53,16 +70,10 @@ class YCL_SLPM_SHMA definition
 
     data:
 
-      "mt_cached_problems_hot     type sorted table of ycrm_order_ts_sl_problem with unique key guid,
+      mt_cached_problems_guids   type table of ycrm_order_ts_guid with key primary_key components guid,
 
       mt_cached_problems_hot     type table of ycrm_order_ts_sl_problem with key primary_key components guid,
-
-      "mt_cached_problems_warm    type sorted table of ycrm_order_ts_sl_problem with unique key guid,
-
       mt_cached_problems_warm    type table of ycrm_order_ts_sl_problem with key primary_key components guid,
-
-      "mt_cached_problems_cold    type sorted table of ycrm_order_ts_sl_problem with unique key guid,
-
       mt_cached_problems_cold    type table of ycrm_order_ts_sl_problem with key primary_key components guid,
 
       mv_problem_cache_size_hot  type integer,
@@ -78,12 +89,12 @@ class YCL_SLPM_SHMA definition
 
 endclass.
 
-class YCL_SLPM_SHMA implementation.
+class ycl_slpm_shma implementation.
 
   method if_shm_build_instance~build.
 
     data:lo_area  type ref to ycl_slpm_area,
-         lo_root  type ref to YCL_SLPM_SHMA,
+         lo_root  type ref to ycl_slpm_shma,
          lo_excep type ref to cx_root.
 
     try.
@@ -345,6 +356,43 @@ class YCL_SLPM_SHMA implementation.
 
     endif.
 
+
+  endmethod.
+
+  method set_cached_prob_guids.
+
+    mt_cached_problems_guids = it_problems_guids.
+
+  endmethod.
+
+  method add_guid_to_cached_prob_guids.
+
+    data wa_cached_problems_guids type ycrm_order_ts_guid.
+
+    wa_cached_problems_guids-guid = ip_guid.
+
+    append  wa_cached_problems_guids to mt_cached_problems_guids.
+
+  endmethod.
+
+  method invalidate_cached_prob_guids.
+
+    clear mt_cached_problems_guids.
+
+  endmethod.
+
+  method get_cached_prob_guids.
+
+    rt_problems_guids = mt_cached_problems_guids.
+
+  endmethod.
+
+  method invalidate_all_cached_problems.
+
+    clear:
+          mt_cached_problems_cold,
+          mt_cached_problems_warm,
+          mt_cached_problems_hot.
 
   endmethod.
 
