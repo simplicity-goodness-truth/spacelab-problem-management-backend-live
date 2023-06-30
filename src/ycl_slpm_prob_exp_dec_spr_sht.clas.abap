@@ -67,6 +67,8 @@ class ycl_slpm_prob_exp_dec_spr_sht definition
 
       save_problem_exp_sumary_to_fs,
 
+      save_problem_exp_fsumm_to_fs,
+
       set_all_fcat_columns_to_string
         changing
           ct_field_catalog type zexcel_t_fieldcatalog,
@@ -80,7 +82,12 @@ class ycl_slpm_prob_exp_dec_spr_sht definition
       set_all_fcat_col_wdth_and_name
         importing
           it_field_catalog type zexcel_t_fieldcatalog
-          io_worksheet     type ref to zcl_excel_worksheet.
+          io_worksheet     type ref to zcl_excel_worksheet,
+
+      hide_columns
+        importing
+          ip_columns_to_hide type string
+          io_worksheet       type ref to zcl_excel_worksheet.
 
 endclass.
 
@@ -164,6 +171,9 @@ class ycl_slpm_prob_exp_dec_spr_sht implementation.
 
     me->save_problem_exp_sumary_to_fs(  ).
 
+    " Saving a formatted summary
+
+    me->save_problem_exp_fsumm_to_fs(  ).
 
 
   endmethod.
@@ -177,11 +187,14 @@ class ycl_slpm_prob_exp_dec_spr_sht implementation.
           cl_writer               type ref to zif_excel_writer,
           lt_problem_data_export  type ycrm_order_tt_sl_problems,
           lt_problem_texts_export type yif_slpm_prob_exp=>ty_texts,
-          lt_field_catalog        type zexcel_t_fieldcatalog.
+          lt_field_catalog        type zexcel_t_fieldcatalog,
+          lt_problem_history      type yif_slpm_prob_exp=>ty_history.
 
     append is_problem-data to lt_problem_data_export.
 
     lt_problem_texts_export = is_problem-texts .
+
+    lt_problem_history = is_problem-history.
 
     try.
 
@@ -244,6 +257,34 @@ class ycl_slpm_prob_exp_dec_spr_sht implementation.
         " Setting header names from a field catalogue and column width
 
         me->set_all_fcat_col_wdth_and_name( io_worksheet = lo_worksheet it_field_catalog = lt_field_catalog ).
+
+        " History tab
+
+        lo_worksheet = lo_excel->add_new_worksheet( ).
+
+        lo_worksheet->set_title( ip_title = 'История' ).
+
+        lt_field_catalog = zcl_excel_common=>get_fieldcatalog( ip_table = lt_problem_history ).
+
+
+        " Converting all cells into STRING format
+
+        me->set_all_fcat_columns_to_string(
+            changing
+                ct_field_catalog = lt_field_catalog ).
+
+        lo_worksheet->bind_table( ip_table  = lt_problem_history
+                          is_table_settings = ls_table_settings
+                          it_field_catalog = lt_field_catalog
+                          ).
+
+        " Setting header names from a field catalogue and column width
+
+        me->set_all_fcat_col_wdth_and_name( io_worksheet = lo_worksheet it_field_catalog = lt_field_catalog ).
+
+        " Hiding useless history columns
+
+        me->hide_columns( ip_columns_to_hide = 'A,B,C,D,E,F' io_worksheet = lo_worksheet ).
 
         " Preparing binary file
 
@@ -453,6 +494,190 @@ class ycl_slpm_prob_exp_dec_spr_sht implementation.
 
     endtry.
 
+
+  endmethod.
+
+  method hide_columns.
+
+    data: lt_columns_to_hide type table of string,
+          lo_column          type ref to zcl_excel_column.
+
+    split ip_columns_to_hide at ',' into table lt_columns_to_hide.
+
+    loop at lt_columns_to_hide assigning field-symbol(<ls_column_to_hide>).
+
+      lo_column = io_worksheet->get_column( ip_column = <ls_column_to_hide> ).
+
+      lo_column->set_visible( ip_visible = abap_false ).
+
+    endloop.
+
+
+  endmethod.
+
+  method save_problem_exp_fsumm_to_fs.
+
+    if mt_problems_export_summary is not initial.
+
+      types: begin of ty_columns,
+               id   type string,
+               name type string,
+             end of ty_columns.
+
+      data: lt_columns type table of ty_columns.
+
+      types: begin of ty_prob_data,
+               id    type string,
+               value type string,
+             end of ty_prob_data.
+
+      data: lt_prob_data type table of ty_prob_data.
+
+      data: lo_excel              type ref to zcl_excel,
+            lo_worksheet          type ref to zcl_excel_worksheet,
+            ls_table_settings     type zexcel_s_table_settings,
+            cl_writer             type ref to zif_excel_writer,
+            lv_file_path_and_name type string,
+            lv_row_number         type i,
+            lo_column             type ref to zcl_excel_column,
+            lv_fieldname_length   type i.
+
+      try.
+
+          " Creates active sheet
+
+          create object lo_excel.
+
+          " Adding style
+
+          lo_excel->set_default_style( me->get_arial10_style_guid( lo_excel ) ).
+
+          " Table settings
+
+          ls_table_settings-table_style       = zcl_excel_table=>builtinstyle_medium2.
+          ls_table_settings-show_row_stripes  = abap_true.
+          ls_table_settings-nofilters         = abap_true.
+
+          " Problem properties tab
+
+          lo_worksheet = lo_excel->get_active_worksheet( ).
+          lo_worksheet->set_title( ip_title = 'Список проблем' ).
+
+          " Preparing data
+
+          lt_columns = value #(
+                       ( id = 'A' name = 'Номер' )
+                       ( id = 'B' name = 'Описание/тема' )
+                       ( id = 'C' name = 'Статус'  )
+                       ( id = 'D' name = 'Приоритет'  )
+                       ( id = 'E' name = 'Создал оператор или Заказчик'  )
+                       ( id = 'F' name = 'Вид сервиса'  )
+                       ( id = 'G' name = 'Приоритет виден Заказчику'  )
+                       ( id = 'H' name = 'Система'  )
+                       ( id = 'I' name = 'Дата проблемы'  )
+                       ( id = 'J' name = 'Дата и время создания'  )
+                       ( id = 'K' name = 'Полное время обработки' )
+                       ( id = 'L' name = 'Дата и время изменения'  )
+                       ( id = 'M' name = 'Номер делового партнера компании'   )
+                       ( id = 'N' name = 'Название компании'  )
+                       ( id = 'O' name = 'Номер делового партнера автора'  )
+                       ( id = 'P' name = 'Имя автора'  )
+                       ( id = 'Q' name = 'Взять в работу до (план)'  )
+                       ( id = 'R' name = 'Статус IRT'  )
+                       ( id = 'S' name = 'Срок исполнения'  )
+                       ( id = 'T' name = 'Статус MPT'  )
+                       ( id = 'U' name = 'Контактный адрес электронной почты'  )
+                       ( id = 'V' name = 'Использовать контактный адрес электронной почты для уведомлений при изменении статуса этой проблемы')
+                       ( id = 'W' name = 'Время взятия проблемы в работу (факт)' )
+            ).
+
+
+          " Creating cells headers
+
+          loop at lt_columns assigning field-symbol(<ls_column>).
+
+            lo_worksheet->set_cell( ip_column = <ls_column>-id ip_row = 1 ip_value = <ls_column>-name ).
+
+            lo_column = lo_worksheet->get_column( ip_column = <ls_column>-id ).
+
+            lv_fieldname_length = strlen( <ls_column>-name ) + 8.
+
+            lo_column->set_width( lv_fieldname_length ).
+
+          endloop.
+
+          " Creating data
+
+          loop at mt_problems_export_summary assigning field-symbol(<ls_problems_export_summary>).
+
+            lv_row_number = sy-tabix + 1 .
+
+            lt_prob_data = value #(
+
+             ( id = 'A' value = <ls_problems_export_summary>-objectid )
+             ( id = 'B' value =  <ls_problems_export_summary>-description )
+             ( id = 'C' value = <ls_problems_export_summary>-statustext )
+             ( id = 'D' value = <ls_problems_export_summary>-prioritytext )
+             ( id = 'E' value = switch #( <ls_problems_export_summary>-createdinternally
+                                   when abap_true then 'Оператор'
+                                   else 'Заказчик' ) )
+             ( id = 'F' value = |{ <ls_problems_export_summary>-productname } / { <ls_problems_export_summary>-producttext } | )
+
+             ( id = 'G' value = switch #( <ls_problems_export_summary>-showpriorities
+                                   when abap_true then 'Да'
+                                   else 'Нет' ) )
+             ( id = 'H' value = |{ <ls_problems_export_summary>-sapsystemname } { <ls_problems_export_summary>-sapsystemdescription } { <ls_problems_export_summary>-sapsystemrole }| )
+             ( id = 'I' value = zcl_assistant_utilities=>format_date( ip_format = 'DD.MM.YYYY' ip_date = <ls_problems_export_summary>-postingdate ) )
+             ( id = 'J' value = zcl_assistant_utilities=>format_timestamp( <ls_problems_export_summary>-created_at ) )
+             ( id = 'K' value = <ls_problems_export_summary>-totalproctimeminutes )
+             ( id = 'L' value =  zcl_assistant_utilities=>format_timestamp( <ls_problems_export_summary>-changedat ) )
+             ( id = 'M' value = <ls_problems_export_summary>-companybusinesspartner  )
+             ( id = 'N' value = <ls_problems_export_summary>-companyname )
+             ( id = 'O' value = <ls_problems_export_summary>-requestorbusinesspartner )
+             ( id = 'P' value = <ls_problems_export_summary>-requestorfullname )
+             ( id = 'Q' value = zcl_assistant_utilities=>format_timestamp( <ls_problems_export_summary>-irt_timestamp ) )
+             ( id = 'R' value = |{ <ls_problems_export_summary>-irt_perc }%| )
+             ( id = 'S' value = zcl_assistant_utilities=>format_timestamp( <ls_problems_export_summary>-mpt_timestamp ) )
+             ( id = 'T' value = |{ <ls_problems_export_summary>-mpt_perc }%| )
+             ( id = 'U' value = <ls_problems_export_summary>-contactemail )
+             ( id = 'V'
+                 value = switch #( <ls_problems_export_summary>-notifybycontactemail
+                                   when abap_true then 'Да'
+                                   else 'Нет' ) )
+             ( id = 'W' value =
+                 |{ zcl_assistant_utilities=>format_time( <ls_problems_export_summary>-firstreactiontime ) } { zcl_assistant_utilities=>format_date( ip_format = 'DD.MM.YYYY' ip_date = <ls_problems_export_summary>-firstreactiondate ) }| )
+
+             ).
+
+            loop at lt_prob_data assigning field-symbol(<ls_prob_data>).
+
+
+
+              lo_worksheet->set_cell( ip_column = <ls_prob_data>-id ip_row = lv_row_number ip_value = <ls_prob_data>-value ).
+
+            endloop.
+
+          endloop.
+
+          " Preparing binary file
+
+          cl_writer = new zcl_excel_writer_2007( ).
+
+          mv_problems_export_sum_binary = cl_writer->write_file( lo_excel ).
+
+          " Preparing a filename
+
+          lv_file_path_and_name = |{ mv_problems_export_folder }| && |\\| && |problemsFormattedSummary.xlsx|.
+
+          " Saving binary of a xls on a file system
+
+          me->save_problem_exp_sum_binary( lv_file_path_and_name ).
+
+        catch zcx_excel.
+
+      endtry.
+
+    endif.
 
   endmethod.
 

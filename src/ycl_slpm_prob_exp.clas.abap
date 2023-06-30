@@ -25,19 +25,20 @@ class ycl_slpm_prob_exp implementation.
 
   method yif_slpm_prob_exp~export_problems.
 
-    data: lo_slpm_data_provider type ref to yif_slpm_data_manager,
-          lv_exception_text     type bapi_msg,
-          lt_set_filters        type /iwbep/t_mgw_select_option,
-          lt_problems           type ycrm_order_tt_sl_problems,
-          wa_problem            like line of rt_problems,
-          lt_texts              type yif_slpm_prob_exp=>ty_texts,
-          lt_attachments        type yif_slpm_prob_exp=>ty_attachments,
-          ls_stream             type /iwbep/if_mgw_appl_types=>ty_s_media_resource,
-          ls_attachment         type aic_s_attachment_incdnt_odata,
-          lv_guid               type crmt_object_guid,
-          lv_loio               type string,
-          lv_phio               type string,
-          wa_attachment         type aic_s_attachment_incdnt_odata.
+    data: lo_slpm_data_provider         type ref to yif_slpm_data_manager,
+          lv_exception_text             type bapi_msg,
+          lt_set_filters                type /iwbep/t_mgw_select_option,
+          lt_problems                   type ycrm_order_tt_sl_problems,
+          wa_problem                    like line of rt_problems,
+          lt_texts                      type yif_slpm_prob_exp=>ty_texts,
+          lt_attachments                type yif_slpm_prob_exp=>ty_attachments,
+          ls_stream                     type /iwbep/if_mgw_appl_types=>ty_s_media_resource,
+          ls_attachment                 type aic_s_attachment_incdnt_odata,
+          lv_guid                       type crmt_object_guid,
+          lv_loio                       type string,
+          lv_phio                       type string,
+          wa_attachment                 type aic_s_attachment_incdnt_odata,
+          lo_slpm_problem_history_store type ref to yif_slpm_problem_history_store.
 
     try.
         lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
@@ -91,6 +92,12 @@ class ycl_slpm_prob_exp implementation.
             append wa_attachment to  wa_problem-attachments.
 
           endloop.
+
+          " Problem history
+
+          lo_slpm_problem_history_store = new ycl_slpm_problem_history_store( lv_guid ).
+
+          wa_problem-history = lo_slpm_problem_history_store->get_problem_history_hierarchy(  ).
 
           append wa_problem to rt_problems.
 
