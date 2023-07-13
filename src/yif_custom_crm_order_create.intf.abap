@@ -15,6 +15,9 @@ interface yif_custom_crm_order_create
         ip_file_name type string
         ip_mime_type type string
         ip_content   type xstring
+      exporting
+        es_loio      type skwf_io
+        es_phio      type skwf_io
       raising
         ycx_crm_order_api_exc,
 

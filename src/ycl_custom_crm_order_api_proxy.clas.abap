@@ -86,7 +86,10 @@ class ycl_custom_crm_order_api_proxy implementation.
             ip_content = ip_content
             ip_file_name = ip_file_name
             ip_guid = ip_guid
-            ip_mime_type = ip_mime_type ).
+            ip_mime_type = ip_mime_type
+       importing
+            es_loio = es_loio
+            es_phio = es_phio ).
 
     endif.
 

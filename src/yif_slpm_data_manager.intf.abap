@@ -70,10 +70,11 @@ interface yif_slpm_data_manager
 
     create_attachment
       importing
-        ip_guid      type crmt_object_guid
-        ip_file_name type string
-        ip_mime_type type string
-        ip_content   type xstring
+        ip_guid       type crmt_object_guid
+        ip_file_name  type string
+        ip_mime_type  type string
+        ip_content    type xstring
+        ip_visibility type char1 optional
       raising
         ycx_slpm_configuration_exc
         ycx_crm_order_api_exc

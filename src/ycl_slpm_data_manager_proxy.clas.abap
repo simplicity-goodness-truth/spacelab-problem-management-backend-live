@@ -250,7 +250,8 @@ class ycl_slpm_data_manager_proxy implementation.
           ip_content = ip_content
           ip_file_name = ip_file_name
           ip_guid = ip_guid
-          ip_mime_type = ip_mime_type ).
+          ip_mime_type = ip_mime_type
+          ip_visibility = ip_visibility ).
 
     endif.
 

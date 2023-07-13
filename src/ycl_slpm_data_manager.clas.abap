@@ -108,7 +108,7 @@ class ycl_slpm_data_manager definition
         importing
           ip_guid          type crmt_object_guid
         returning
-          value(es_result) type zcrm_order_ts_sl_problem
+          value(es_result) type ycrm_order_ts_sl_problem
         raising
           ycx_crm_order_api_exc
           ycx_assistant_utilities_exc
@@ -121,7 +121,31 @@ class ycl_slpm_data_manager definition
 
       get_prob_guids_through_cache
         returning
-          value(rt_problems_guids) type ycrm_order_tt_guids.
+          value(rt_problems_guids) type ycrm_order_tt_guids,
+
+      filter_out_attachments
+        importing
+          ip_guid             type crmt_object_guid
+          it_attachments_list type cl_ai_crm_gw_mymessage_mpc=>tt_attachment
+        exporting
+          et_attachments_list type cl_ai_crm_gw_mymessage_mpc=>tt_attachment
+        raising
+          ycx_system_user_exc,
+
+      record_attachment_visibility
+        importing
+          ip_guid       type crmt_object_guid
+          ip_loio       type sdok_docid
+          ip_phio       type sdok_docid
+          ip_visibility type char1,
+
+      get_attachment_extra_vsbl
+        importing
+          ip_guid              type crmt_object_guid
+          ip_loio              type sdok_docid
+          ip_phio              type sdok_docid
+        returning
+          value(rp_visibility) type char1.
 
 endclass.
 
@@ -142,12 +166,29 @@ class ycl_slpm_data_manager implementation.
 
   method yif_slpm_data_manager~create_attachment.
 
+
+    data: ls_loio type skwf_io,
+          ls_phio type skwf_io.
+
     mo_slpm_problem_api->yif_custom_crm_order_create~create_attachment(
       exporting
           ip_content = ip_content
           ip_file_name = ip_file_name
           ip_guid = ip_guid
-          ip_mime_type = ip_mime_type ).
+          ip_mime_type = ip_mime_type
+      importing
+          es_loio = ls_loio
+          es_phio = ls_phio ).
+
+    if ip_visibility is not initial.
+
+      me->record_attachment_visibility(
+         ip_guid = ip_guid
+         ip_loio = ls_loio-objid
+         ip_phio = ls_phio-objid
+         ip_visibility = ip_visibility ).
+
+    endif.
 
   endmethod.
 
@@ -211,12 +252,22 @@ class ycl_slpm_data_manager implementation.
 
   method yif_slpm_data_manager~get_attachments_list.
 
+
+    data lt_attachments_list type cl_ai_crm_gw_mymessage_mpc=>tt_attachment.
+
     mo_slpm_problem_api->yif_custom_crm_order_read~get_attachments_list_by_guid(
     exporting
      ip_guid = ip_guid
     importing
-     et_attachments_list = et_attachments_list
+     et_attachments_list = lt_attachments_list
      et_attachments_list_short = et_attachments_list_short ).
+
+    me->filter_out_attachments(
+        exporting
+            ip_guid = ip_guid
+            it_attachments_list = lt_attachments_list
+        importing
+           et_attachments_list = et_attachments_list ).
 
   endmethod.
 
@@ -1219,5 +1270,69 @@ update_timestamp update_timezone
     endif.
 
   endmethod.
+
+  method filter_out_attachments.
+
+    data: lv_visibility       type char1,
+          lo_slpm_user        type ref to yif_slpm_user,
+          wa_attachments_list like line of et_attachments_list.
+
+    lo_slpm_user = new ycl_slpm_user( sy-uname ).
+
+    loop at it_attachments_list assigning field-symbol(<ls_attachment>).
+
+      move-corresponding <ls_attachment> to wa_attachments_list.
+
+      lv_visibility = me->get_attachment_extra_vsbl(
+          exporting
+              ip_guid = ip_guid
+              ip_loio = <ls_attachment>-loio_id
+              ip_phio = <ls_attachment>-phio_id ).
+
+      if ( lv_visibility eq 'I' ).
+
+        if ( lo_slpm_user->is_auth_for_internal_att(  ) eq abap_true ).
+
+          " For internal visibility we will use field EnabledEdit, as we did not use it anyhow so far
+
+          wa_attachments_list-enable_edit = abap_true.
+
+          append wa_attachments_list to et_attachments_list.
+
+        endif.
+
+      else.
+
+        append wa_attachments_list to et_attachments_list.
+
+      endif.
+
+    endloop.
+
+  endmethod.
+
+  method record_attachment_visibility.
+
+    data wa_yslpm_att_vsbl type yslpm_att_vsbl.
+
+    wa_yslpm_att_vsbl-guid = ip_guid.
+    wa_yslpm_att_vsbl-loio_id = ip_loio.
+    wa_yslpm_att_vsbl-phio_id = ip_phio.
+    wa_yslpm_att_vsbl-visibility = ip_visibility.
+
+    insert yslpm_att_vsbl from wa_yslpm_att_vsbl.
+
+  endmethod.
+
+  method get_attachment_extra_vsbl.
+
+    select single visibility into rp_visibility
+      from yslpm_att_vsbl
+          where guid = ip_guid and
+          loio_id = ip_loio and
+          phio_id = ip_phio.
+
+  endmethod.
+
 
 endclass.

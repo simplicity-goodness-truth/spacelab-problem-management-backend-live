@@ -2003,11 +2003,10 @@ ls_phio loio = ls_loio.
       iv_file_name    = ip_file_name
       iv_content_type = ip_mime_type
     importing
-      es_loio         = data(ls_loio)
-      es_phio         = data(ls_phio)
+      es_loio         = es_loio
+      es_phio         = es_phio
       es_error        = data(ls_error)
   ).
-
 
   endmethod.
 
