@@ -87,7 +87,8 @@ interface yif_slpm_data_manager
         ip_phio type string
       raising
         ycx_crm_order_api_exc
-        ycx_system_user_exc,
+        ycx_system_user_exc
+        ycx_assistant_utilities_exc,
 
     create_text
       importing

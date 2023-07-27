@@ -159,7 +159,15 @@ class ycl_slpm_data_manager_proxy definition
           ir_problem        type ref to data
           ip_table_name     type strukname
         returning
-          value(rs_problem) type ycrm_order_ts_sl_problem.
+          value(rs_problem) type ycrm_order_ts_sl_problem,
+
+      notify_observers_on_att_upload
+        importing
+          ip_file_name type string,
+
+      notify_observers_on_att_remove
+        importing
+          ip_file_name type string.
 
 
 
@@ -252,6 +260,14 @@ class ycl_slpm_data_manager_proxy implementation.
           ip_guid = ip_guid
           ip_mime_type = ip_mime_type
           ip_visibility = ip_visibility ).
+
+      " Adding a history store observer
+
+      me->attach_observer( new ycl_slpm_problem_history_store( ip_guid ) ).
+
+      " Informing all observers on an attachment uploading
+
+      notify_observers_on_att_upload( ip_file_name ).
 
     endif.
 
@@ -507,11 +523,46 @@ class ycl_slpm_data_manager_proxy implementation.
 
   method yif_slpm_data_manager~delete_attachment.
 
-    mo_slpm_data_provider->delete_attachment(
-         exporting
-             ip_guid = ip_guid
-             ip_loio = ip_loio
-             ip_phio = ip_phio ).
+    data: lt_attachments_list type cl_ai_crm_gw_mymessage_mpc=>tt_attachment,
+          ls_attachment       type cl_ai_crm_gw_mymessage_mpc=>ts_attachment,
+          lv_file_name        type string.
+
+    if mo_slpm_data_provider is bound.
+
+      " Getting a file name from an attachments list to display file name in history
+      " We use list of attachments, as it does not take a document contents
+
+      me->yif_slpm_data_manager~get_attachments_list( exporting
+          ip_guid = ip_guid
+          importing
+          et_attachments_list = lt_attachments_list ).
+
+      try.
+
+          ls_attachment = lt_attachments_list[ guid = ip_guid loio_id = ip_loio phio_id = ip_phio ].
+
+          " Adding a history store observer
+
+          me->attach_observer( new ycl_slpm_problem_history_store( ip_guid ) ).
+
+          " Informing all observers on an attachment removal
+
+          lv_file_name = ls_attachment-name.
+
+          notify_observers_on_att_remove( lv_file_name ).
+
+        catch cx_sy_itab_line_not_found.
+
+      endtry.
+
+      mo_slpm_data_provider->delete_attachment(
+           exporting
+               ip_guid = ip_guid
+               ip_loio = ip_loio
+               ip_phio = ip_phio ).
+
+    endif.
+
 
   endmethod.
 
@@ -1335,6 +1386,28 @@ mo_active_configuration ).
             cs_problem = cs_problem ).
 
     endif.
+
+
+  endmethod.
+
+  method notify_observers_on_att_upload.
+
+    loop at mt_problem_observers assigning field-symbol(<ms_observer>).
+
+      <ms_observer>->attachment_uploaded( ip_file_name = ip_file_name ).
+
+    endloop.
+
+
+  endmethod.
+
+  method notify_observers_on_att_remove.
+
+    loop at mt_problem_observers assigning field-symbol(<ms_observer>).
+
+      <ms_observer>->attachment_removed( ip_file_name = ip_file_name ).
+
+    endloop.
 
 
   endmethod.

@@ -23,6 +23,7 @@ class ycl_slpm_problem_history_store definition
       mv_event            type char1,
       ms_yslpm_pr_his_hdr type yslpm_pr_his_hdr,
       ms_problem          type ycrm_order_ts_sl_problem,
+      mv_file_name        type string,
       mv_change_guid      type sysuuid_x16.
 
     methods:
@@ -47,7 +48,25 @@ class ycl_slpm_problem_history_store definition
 
       set_problem_record
         importing
-          is_problem type ycrm_order_ts_sl_problem.
+          is_problem type ycrm_order_ts_sl_problem,
+
+      add_att_upload_event_record
+        importing
+          ip_file_name type string,
+
+      add_att_remove_event_record
+        importing
+          ip_file_name type string,
+
+      add_att_event_record
+        importing
+          ip_file_name type string,
+
+      set_file_name
+        importing
+          ip_file_name type string,
+
+      add_hist_att_record_to_db.
 
 endclass.
 
@@ -65,7 +84,11 @@ class ycl_slpm_problem_history_store implementation.
 
     mv_event = 'C'.
 
-    me->add_event_record( is_problem ).
+    if is_problem is not initial.
+
+      me->add_event_record( is_problem ).
+
+    endif.
 
   endmethod.
 
@@ -73,7 +96,11 @@ class ycl_slpm_problem_history_store implementation.
 
     mv_event = 'U'.
 
-    me->add_event_record( is_problem ).
+    if is_problem is not initial.
+
+      me->add_event_record( is_problem ).
+
+    endif.
 
   endmethod.
 
@@ -312,6 +339,69 @@ class ycl_slpm_problem_history_store implementation.
   method yif_slpm_problem_observer~problem_updated.
 
     add_update_event_record( is_problem ).
+
+  endmethod.
+
+  method yif_slpm_problem_observer~attachment_uploaded.
+
+    add_att_upload_event_record( ip_file_name ).
+
+  endmethod.
+
+  method yif_slpm_problem_observer~attachment_removed.
+
+    add_att_remove_event_record( ip_file_name ).
+
+  endmethod.
+
+  method add_att_upload_event_record.
+
+    " Attachment upload event
+
+    mv_event = 'A'.
+
+    me->add_att_event_record( ip_file_name ).
+
+  endmethod.
+
+  method add_att_remove_event_record.
+
+    " Attachment removal event
+
+    mv_event = 'R'.
+
+    me->add_att_event_record( ip_file_name ).
+
+  endmethod.
+
+  method add_att_event_record.
+
+    me->set_file_name( ip_file_name ).
+
+    me->set_hist_header_record(  ).
+
+    me->add_hist_header_record_to_db(  ).
+
+    me->add_hist_att_record_to_db(  ).
+
+  endmethod.
+
+  method set_file_name.
+
+    mv_file_name = ip_file_name.
+
+  endmethod.
+
+  method add_hist_att_record_to_db.
+
+    data:
+      wa_yslpm_pr_his_rec type yslpm_pr_his_rec.
+
+    wa_yslpm_pr_his_rec-change_guid = mv_change_guid.
+    wa_yslpm_pr_his_rec-field = 'FILENAME'.
+    wa_yslpm_pr_his_rec-value = mv_file_name.
+
+    insert yslpm_pr_his_rec from wa_yslpm_pr_his_rec.
 
   endmethod.
 
