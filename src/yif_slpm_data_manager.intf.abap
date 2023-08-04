@@ -88,7 +88,8 @@ interface yif_slpm_data_manager
       raising
         ycx_crm_order_api_exc
         ycx_system_user_exc
-        ycx_assistant_utilities_exc,
+        ycx_assistant_utilities_exc
+        ycx_slpm_configuration_exc,
 
     create_text
       importing

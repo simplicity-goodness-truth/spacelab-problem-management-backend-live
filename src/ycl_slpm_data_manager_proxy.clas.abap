@@ -167,7 +167,14 @@ class ycl_slpm_data_manager_proxy definition
 
       notify_observers_on_att_remove
         importing
-          ip_file_name type string.
+          ip_file_name type string,
+
+      put_att_to_trash_bin
+        importing
+          ip_guid      type crmt_object_guid
+          ip_content   type xstring
+          ip_file_name type sdok_filnm
+          ip_mime_type type w3conttype.
 
 
 
@@ -529,31 +536,52 @@ class ycl_slpm_data_manager_proxy implementation.
 
     if mo_slpm_data_provider is bound.
 
-      " Getting a file name from an attachments list to display file name in history
-      " We use list of attachments, as it does not take a document contents
+      " Put a deleted attachment to a recycle bin for potential further restore
+      " if a parameter USE_TRASH_BIN_FOR_DELETED_ATTACHMENTS is set
 
-      me->yif_slpm_data_manager~get_attachments_list( exporting
-          ip_guid = ip_guid
-          importing
-          et_attachments_list = lt_attachments_list ).
+      if ( mo_active_configuration->get_parameter_value( 'USE_TRASH_BIN_FOR_DELETED_ATTACHMENTS' ) eq 'X').
 
-      try.
+        " Getting an attachment with it contents
 
-          ls_attachment = lt_attachments_list[ guid = ip_guid loio_id = ip_loio phio_id = ip_phio ].
+        ls_attachment = me->yif_slpm_data_manager~get_attachment( ip_guid = ip_guid ip_loio = ip_loio ip_phio = ip_phio ).
 
-          " Adding a history store observer
 
-          me->attach_observer( new ycl_slpm_problem_history_store( ip_guid ) ).
+        me->put_att_to_trash_bin(
+            ip_guid = ip_guid
+            ip_content = ls_attachment-document
+            ip_file_name = ls_attachment-name
+            ip_mime_type = ls_attachment-mimetype ).
 
-          " Informing all observers on an attachment removal
 
-          lv_file_name = ls_attachment-name.
+      else.
 
-          notify_observers_on_att_remove( lv_file_name ).
+        " Getting a file name from an attachments list to display file name in history
+        " We use list of attachments, as it does not take a document contents
 
-        catch cx_sy_itab_line_not_found.
+        me->yif_slpm_data_manager~get_attachments_list( exporting
+            ip_guid = ip_guid
+            importing
+            et_attachments_list = lt_attachments_list ).
 
-      endtry.
+        try.
+
+            ls_attachment = lt_attachments_list[ guid = ip_guid loio_id = ip_loio phio_id = ip_phio ].
+
+          catch cx_sy_itab_line_not_found.
+
+        endtry.
+
+      endif.
+
+      " Adding a history store observer
+
+      me->attach_observer( new ycl_slpm_problem_history_store( ip_guid ) ).
+
+      " Informing all observers on an attachment removal
+
+      lv_file_name = ls_attachment-name.
+
+      notify_observers_on_att_remove( lv_file_name ).
 
       mo_slpm_data_provider->delete_attachment(
            exporting
@@ -562,7 +590,6 @@ class ycl_slpm_data_manager_proxy implementation.
                ip_phio = ip_phio ).
 
     endif.
-
 
   endmethod.
 
@@ -1408,6 +1435,23 @@ mo_active_configuration ).
       <ms_observer>->attachment_removed( ip_file_name = ip_file_name ).
 
     endloop.
+
+
+  endmethod.
+
+  method put_att_to_trash_bin.
+
+    data lo_custom_crm_order_trash_bin type ref to yif_custom_crm_order_att_trash.
+
+    lo_custom_crm_order_trash_bin = new ycl_custom_crm_order_att_trash(
+        ip_guid = ip_guid
+        ip_process_type = 'YSLP'
+        ).
+
+    lo_custom_crm_order_trash_bin->put_att_to_trash_bin(
+        ip_content = ip_content
+        ip_file_name = ip_file_name
+        ip_mime_type = ip_mime_type ).
 
 
   endmethod.
