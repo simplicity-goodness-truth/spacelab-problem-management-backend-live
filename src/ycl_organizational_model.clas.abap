@@ -22,6 +22,7 @@ class ycl_organizational_model definition
     methods: get_org_unit_code_and_text
       importing
         ip_org_unit      type pd_objid_r
+        ip_otype         type otype
       exporting
         ep_org_unit_code type short_d
         ep_org_unit_text type stext,
@@ -115,7 +116,7 @@ class ycl_organizational_model implementation.
   method get_org_unit_code_and_text.
 
     select single short stext into (ep_org_unit_code, ep_org_unit_text)
-        from hrp1000 where objid = ip_org_unit.
+        from hrp1000 where objid = ip_org_unit and otype = ip_otype.
 
   endmethod.
 
@@ -161,6 +162,7 @@ class ycl_organizational_model implementation.
           me->get_org_unit_code_and_text(
                        exporting
                            ip_org_unit = ls_position-objid
+                           ip_otype = ls_position-otype
                        importing
                            ep_org_unit_code = ls_position-short
                            ep_org_unit_text = ls_position-stext ).

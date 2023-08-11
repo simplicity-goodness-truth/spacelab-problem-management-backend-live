@@ -93,7 +93,17 @@ class ycl_assistant_utilities definition
           ip_timestamp_1     type timestamp
           ip_timestamp_2     type timestamp
         returning
-          value(rp_duration) type integer .
+          value(rp_duration) type integer ,
+
+      remove_html_tags
+        changing
+          cs_string type string,
+
+      is_valid_email_address
+        importing
+          ip_email_address     type string
+        returning
+          value(ep_is_correct) type abap_bool.
 
   protected section.
   private section.
@@ -458,6 +468,34 @@ lv_time_formatted }|.
 
   endmethod.
 
+  method remove_html_tags.
 
+    replace all occurrences of regex '<[a-zA-Z\/][^>]*>' in cs_string with space.
+
+  endmethod.
+
+  method is_valid_email_address.
+
+    data: go_regex   type ref to cl_abap_regex,
+          go_matcher type ref to cl_abap_matcher,
+          go_match   type c length 1,
+          gv_msg     type string.
+
+    ep_is_correct = abap_false.
+
+    create object go_regex
+      exporting
+        pattern     = '\w+(\.\w+)*@(\w+\.)+(\w{2,4})'
+        ignore_case = abap_true.
+
+    go_matcher = go_regex->create_matcher( text = ip_email_address ).
+
+    if go_matcher->match( ) is not initial.
+
+      ep_is_correct = abap_true.
+
+    endif.
+
+  endmethod.
 
 endclass.

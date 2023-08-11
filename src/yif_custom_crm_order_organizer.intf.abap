@@ -5,7 +5,9 @@ interface yif_custom_crm_order_organizer
       !ir_entity               type ref to data
       !it_set_filters          type /iwbep/t_mgw_select_option
     changing
-      value(cp_include_record) type ac_bool .
+      value(cp_include_record) type ac_bool
+    raising
+      ycx_crm_order_api_exc .
 
   methods sort_orders
     importing

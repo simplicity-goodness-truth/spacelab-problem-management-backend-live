@@ -2206,22 +2206,24 @@ ls_phio loio = ls_loio.
 
   method yif_custom_crm_order_organizer~is_order_matching_to_filters.
 
-    data: lt_filter_sel_opt    type /iwbep/t_cod_select_options,
-          ls_filter_sel_opt    like line of lt_filter_sel_opt,
-          ls_bp_filter_sel_opt like line of lt_filter_sel_opt,
-          lo_structure_ref     type ref to data,
-          lo_descr_ref         type ref to cl_abap_typedescr,
-          lv_bp_number         type bu_partner,
-          lo_bp_master_data    type ref to yif_bp_master_data.
+    data: lt_filter_sel_opt      type /iwbep/t_cod_select_options,
+          ls_filter_sel_opt      like line of lt_filter_sel_opt,
+          ls_bp_filter_sel_opt   like line of lt_filter_sel_opt,
+          lo_structure_ref       type ref to data,
+          lo_descr_ref           type ref to cl_abap_typedescr,
+          lv_bp_number           type bu_partner,
+          lo_bp_master_data      type ref to yif_bp_master_data,
+          lv_free_text           type  string,
+          lt_texts               type cl_ai_crm_gw_mymessage_mpc=>tt_text,
+          lv_text_contain_string type abap_bool,
+          lv_text_to_analyze     type string.
 
     field-symbols: <fs_structure> type any,
                    <fs_value>     type any.
 
-    "~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~~^~^~^~^~^~^~^~^
+    " ~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~~^~^~^~^~^~^~^~^
     "   Decode incoming abstract entity
-    "~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~~^~^~^~^~^~^~^~^
-
-
+    " ~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~~^~^~^~^~^~^~^~^
 
 
     create data lo_structure_ref type standard table of (mv_structure_name).
@@ -2235,84 +2237,131 @@ ls_phio loio = ls_loio.
 
     loop at it_set_filters assigning field-symbol(<ls_set_filters>).
 
-      assign component <ls_set_filters>-property of structure <fs_structure> to <fs_value>.
+      if <ls_set_filters>-property ne 'NOTE'.
 
-      if ( sy-subrc eq 0 ).
+        assign component <ls_set_filters>-property of structure <fs_structure> to <fs_value>.
 
-        clear: lt_filter_sel_opt,
-        ls_filter_sel_opt.
+        if ( sy-subrc eq 0 ).
 
-        lo_descr_ref = cl_abap_typedescr=>describe_by_data( <fs_value> ).
+          clear: lt_filter_sel_opt,
+          ls_filter_sel_opt.
 
-        " Special cases for various types
+          lo_descr_ref = cl_abap_typedescr=>describe_by_data( <fs_value> ).
 
-        case lo_descr_ref->absolute_name.
+          " Special cases for various types
 
-          when '\TYPE=BU_PARTNER'.
+          case lo_descr_ref->absolute_name.
 
-            " If we have Business Partners for filtering, we need to add leading zeroes
-            " to LOW and HIGH values of filter
-            " In addition we have to add leading zeroes for structure value to keep filter and value
-            " in a same format of BU_PARTNER with leading zeroes
+            when '\TYPE=BU_PARTNER'.
 
-            clear: ls_filter_sel_opt, lv_bp_number, lo_bp_master_data, ls_bp_filter_sel_opt.
+              " If we have Business Partners for filtering, we need to add leading zeroes
+              " to LOW and HIGH values of filter
+              " In addition we have to add leading zeroes for structure value to keep filter and value
+              " in a same format of BU_PARTNER with leading zeroes
 
-            loop at <ls_set_filters>-select_options assigning field-symbol(<sel_option>).
+              clear: ls_filter_sel_opt, lv_bp_number, lo_bp_master_data, ls_bp_filter_sel_opt.
 
-              ls_filter_sel_opt =  <sel_option>.
+              loop at <ls_set_filters>-select_options assigning field-symbol(<sel_option>).
 
-              ls_bp_filter_sel_opt-option = ls_filter_sel_opt-option.
-              ls_bp_filter_sel_opt-sign = ls_filter_sel_opt-sign.
+                ls_filter_sel_opt =  <sel_option>.
 
-              if ls_filter_sel_opt-low is not initial.
-                lv_bp_number = ls_filter_sel_opt-low.
-                lo_bp_master_data  = new ycl_bp_master_data( lv_bp_number ).
-                ls_bp_filter_sel_opt-low = lo_bp_master_data->get_bp_number( ).
+                ls_bp_filter_sel_opt-option = ls_filter_sel_opt-option.
+                ls_bp_filter_sel_opt-sign = ls_filter_sel_opt-sign.
+
+                if ls_filter_sel_opt-low is not initial.
+                  lv_bp_number = ls_filter_sel_opt-low.
+                  lo_bp_master_data  = new ycl_bp_master_data( lv_bp_number ).
+                  ls_bp_filter_sel_opt-low = lo_bp_master_data->get_bp_number( ).
+
+                endif.
+
+                clear: lv_bp_number, lo_bp_master_data.
+
+                if ls_filter_sel_opt-high is not initial.
+
+                  lv_bp_number = ls_filter_sel_opt-high.
+                  lo_bp_master_data  = new ycl_bp_master_data( lv_bp_number ).
+                  ls_bp_filter_sel_opt-high = lo_bp_master_data->get_bp_number( ).
+
+                endif.
+
+                append ls_bp_filter_sel_opt to lt_filter_sel_opt.
+
+              endloop.
+
+              lv_bp_number = <fs_value>.
+              lo_bp_master_data  = new ycl_bp_master_data( lv_bp_number ).
+              lv_bp_number = lo_bp_master_data->get_bp_number( ).
+
+              if ( lt_filter_sel_opt is not initial ) and (  lv_bp_number not in lt_filter_sel_opt ).
+
+                cp_include_record = abap_false.
+                exit.
 
               endif.
 
-              clear: lv_bp_number, lo_bp_master_data.
+            when others.
 
-              if ls_filter_sel_opt-high is not initial.
+              lt_filter_sel_opt = <ls_set_filters>-select_options.
 
-                lv_bp_number = ls_filter_sel_opt-high.
-                lo_bp_master_data  = new ycl_bp_master_data( lv_bp_number ).
-                ls_bp_filter_sel_opt-high = lo_bp_master_data->get_bp_number( ).
+              if ( lt_filter_sel_opt is not initial ) and (  <fs_value> not in lt_filter_sel_opt ).
+
+                cp_include_record = abap_false.
+                exit.
 
               endif.
 
-              append ls_bp_filter_sel_opt to lt_filter_sel_opt.
+          endcase.
 
-            endloop.
+        endif. " if ( sy-subrc eq 0 ) and ( <fs_value> is not initial )
 
-            lv_bp_number = <fs_value>.
-            lo_bp_master_data  = new ycl_bp_master_data( lv_bp_number ).
-            lv_bp_number = lo_bp_master_data->get_bp_number( ).
+      else.
 
-            if ( lt_filter_sel_opt is not initial ) and (  lv_bp_number not in lt_filter_sel_opt ).
+        " Free text search
 
-              cp_include_record = abap_false.
-              exit.
+        lv_free_text = <ls_set_filters>-select_options[ 1 ]-low.
 
-            endif.
+        if <fs_value> is assigned.
+          unassign <fs_value>.
+        endif.
 
-          when others.
+        assign component 'GUID' of structure <fs_structure> to <fs_value>.
 
-            lt_filter_sel_opt = <ls_set_filters>-select_options.
+        me->get_texts(
+            exporting
+                ip_guid = <fs_value>
+            importing
+                et_texts = lt_texts ).
 
-            if ( lt_filter_sel_opt is not initial ) and ( <fs_value> not in lt_filter_sel_opt ).
+        loop at lt_texts assigning field-symbol(<ls_text>).
 
-              cp_include_record = abap_false.
-              exit.
+          lv_text_contain_string = abap_false.
 
-            endif.
+          lv_text_to_analyze = <ls_text>-text.
 
-        endcase.
+          " Removing HTML tags
 
+          ycl_assistant_utilities=>remove_html_tags(
+            changing
+                cs_string = lv_text_to_analyze ).
 
+          if lv_text_to_analyze cs lv_free_text.
 
+            lv_text_contain_string = abap_true.
+            exit.
 
-      endif. " if ( sy-subrc eq 0 ) and ( <fs_value> is not initial )
+          endif.
+
+        endloop.
+
+        if lv_text_contain_string eq abap_false.
+
+          cp_include_record = abap_false.
+          exit.
+
+        endif.
+
+      endif.
 
     endloop. " loop at it_set_filters ASSIGNING FIELD-SYMBOL(<ls_set_filters>)
 
