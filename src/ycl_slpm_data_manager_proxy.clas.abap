@@ -174,7 +174,14 @@ class ycl_slpm_data_manager_proxy definition
           ip_guid      type crmt_object_guid
           ip_content   type xstring
           ip_file_name type sdok_filnm
-          ip_mime_type type w3conttype.
+          ip_mime_type type w3conttype,
+
+      adjust_product_in_new_problem
+        importing
+          is_problem_creation_payload type ycrm_order_ts_sl_problem
+          is_problem_resulting_data   type ycrm_order_ts_sl_problem
+        returning
+          value(rs_problem)           type ycrm_order_ts_sl_problem.
 
 
 
@@ -360,6 +367,15 @@ class ycl_slpm_data_manager_proxy implementation.
               ip_error_message = lcx_process_exception->get_text( ).
 
       endtry.
+
+      " Adjusting product in a new problem
+
+      rs_result =  me->adjust_product_in_new_problem(
+         exporting
+         is_problem_creation_payload = is_problem
+         is_problem_resulting_data = rs_result
+         ).
+
 
       " Adding a change notifier observer for created problem
 
@@ -759,7 +775,7 @@ ip_guid ).
          lv_new_irt_timezone           type timezone,
          lv_appt_guid                  type sc_aptguid,
          lo_serv_profile_date_calc     type ref to
-yif_serv_profile_date_calc,
+yif_serv_profile,
          lv_avail_profile_name         type char258,
          lv_time                       type sy-uzeit,
          lv_date                       type sy-datum,
@@ -794,7 +810,7 @@ yif_serv_profile_date_calc,
 
       lv_avail_profile_name = ip_avail_profile_name.
 
-      lo_serv_profile_date_calc = new ycl_serv_profile_date_calc( lv_avail_profile_name  ).
+      lo_serv_profile_date_calc = new ycl_serv_profile( lv_avail_profile_name  ).
 
       ycl_assistant_utilities=>get_date_time_from_timestamp(
         exporting
@@ -1453,6 +1469,31 @@ mo_active_configuration ).
         ip_file_name = ip_file_name
         ip_mime_type = ip_mime_type ).
 
+
+  endmethod.
+
+  method adjust_product_in_new_problem.
+
+    " For some reason sometimes when a new problem is created
+    " CL_AGS_CRM_1O_API method GET_SERVICE_PRODUCTS returns a default
+    " product data instead of a custom one. That is why we need to force
+    " an adjustment
+
+
+    data lo_crm_product type ref to yif_crm_product.
+
+    if ( is_problem_creation_payload-productguid ne is_problem_resulting_data-productguid ).
+
+      move-corresponding is_problem_resulting_data to rs_problem.
+
+      rs_problem-productguid = is_problem_creation_payload-productguid.
+      rs_problem-productname = is_problem_creation_payload-productname.
+
+      lo_crm_product = new ycl_crm_product( is_problem_creation_payload-productguid ).
+
+      rs_problem-producttext = lo_crm_product->get_name(  ).
+
+    endif.
 
   endmethod.
 

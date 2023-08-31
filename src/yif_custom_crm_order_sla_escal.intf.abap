@@ -6,6 +6,8 @@ interface yif_custom_crm_order_sla_escal
     process_escalations
       raising
         ycx_crm_order_api_exc
-        ycx_assistant_utilities_exc.
+        ycx_assistant_utilities_exc,
+
+    clear_escal_log.
 
 endinterface.

@@ -3,7 +3,7 @@
  <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
   <asx:values>
    <VSEOINTERF>
-    <CLSNAME>YIF_SERV_PROFILE_DATE_CALC</CLSNAME>
+    <CLSNAME>YIF_SERV_PROFILE</CLSNAME>
     <LANGU>E</LANGU>
     <DESCRIPT>CRM Service Profile date calculator</DESCRIPT>
     <EXPOSURE>2</EXPOSURE>

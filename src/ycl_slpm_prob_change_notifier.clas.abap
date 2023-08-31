@@ -33,7 +33,8 @@ class ycl_slpm_prob_change_notifier definition
       ms_problem_old_state        type ycrm_order_ts_sl_problem,
       ms_problem_new_state        type ycrm_order_ts_sl_problem,
       mt_variables_values         type yst_text_tt_variables_values,
-      mo_active_configuration     type ref to yif_slpm_configuration.
+      mo_active_configuration     type ref to yif_slpm_configuration,
+      mo_slpm_product             type ref to yif_slpm_product.
 
     class-data: mv_sender_email_address type ymessenger_address,
                 mo_log                  type ref to ycl_logger_to_app_log,
@@ -79,11 +80,11 @@ class ycl_slpm_prob_change_notifier definition
         raising
           ycx_assistant_utilities_exc,
 
-      get_email_address
+      get_email_addresses
         importing
-          ip_process_role         type char64
+          ip_process_role           type char64
         returning
-          value(rp_email_address) type ymessenger_address,
+          value(rt_email_addresses) type ymessenger_tt_addresses,
 
       fill_problem_details_html
         importing
@@ -103,7 +104,21 @@ class ycl_slpm_prob_change_notifier definition
 
       set_app_logger
         raising
-          ycx_slpm_configuration_exc.
+          ycx_slpm_configuration_exc,
+
+      get_support_team_addresses
+        returning value(rt_addresses) type ymessenger_tt_addresses,
+
+      get_prod_org_unit_for_updates
+        returning value(rp_org_unit) type pd_objid_r,
+
+      get_signature_for_product
+        returning
+          value(rp_signature) type lxechar1024,
+
+      set_slpm_product
+        importing
+          ip_product_guid type crmt_product_guid_db.
 
     class-methods set_sender_email_address
       importing
@@ -139,6 +154,7 @@ class ycl_slpm_prob_change_notifier implementation.
 
     me->set_sender_email_address( get_config_parameter_value( 'email_sender_address' ) ).
 
+    me->set_slpm_product( ms_problem_new_state-productguid ).
 
   endmethod.
 
@@ -196,15 +212,15 @@ class ycl_slpm_prob_change_notifier implementation.
            end of ty_process_roles.
 
 
-    data: lo_structure_ref          type ref to data,
-          lr_entity                 type ref to data,
-          lt_process_roles          type table of ty_process_roles,
-          lv_field_name             type string,
-          lv_method_name            type string,
-          lv_email_rule             type char64,
-          ptab                      type abap_parmbind_tab,
-          lv_receiver_email_address type ymessenger_address,
-          lv_log_record_text        type string.
+    data: lo_structure_ref            type ref to data,
+          lr_entity                   type ref to data,
+          lt_process_roles            type table of ty_process_roles,
+          lv_field_name               type string,
+          lv_method_name              type string,
+          lv_email_rule               type char64,
+          ptab                        type abap_parmbind_tab,
+          lt_receiver_email_addresses type ymessenger_tt_addresses,
+          lv_log_record_text          type string.
 
     field-symbols: <fs_structure> type any,
                    <fs_value>     type any.
@@ -218,7 +234,7 @@ class ycl_slpm_prob_change_notifier implementation.
 
     lt_process_roles = value #(
         ( acronym = 'REQ' name = 'REQUESTER' )
-        ( acronym = 'SUP' name = 'SUPPORT_TEAM' )
+        ( acronym = 'SUP' name = 'SUPPORTTEAM' )
         ( acronym = 'PRO' name = 'PROCESSOR' )
         ( acronym = 'OBS' name = 'OBSERVER' ) ).
 
@@ -245,26 +261,30 @@ class ycl_slpm_prob_change_notifier implementation.
 
         lv_email_rule = <fs_value>.
 
-        lv_receiver_email_address = me->get_email_address( <ls_process_role>-name ).
+        lt_receiver_email_addresses = me->get_email_addresses( <ls_process_role>-name ).
 
-        ptab = value #(
-            ( name = 'IP_EMAIL_RULE' value = ref #( lv_email_rule ) kind = cl_abap_objectdescr=>exporting )
-            ( name = 'IP_RECEIVER_EMAIL_ADDRESS' value = ref #( lv_receiver_email_address ) kind = cl_abap_objectdescr=>exporting )
-        ).
+        loop at lt_receiver_email_addresses assigning field-symbol(<ls_receiver_email_address>).
 
-        try.
+          ptab = value #(
+              ( name = 'IP_EMAIL_RULE' value = ref #( lv_email_rule ) kind = cl_abap_objectdescr=>exporting )
+              ( name = 'IP_RECEIVER_EMAIL_ADDRESS' value = ref #( <ls_receiver_email_address> ) kind = cl_abap_objectdescr=>exporting )
+          ).
 
-            call method me->(lv_method_name)
-              parameter-table
-              ptab.
+          try.
 
-          catch cx_sy_dyn_call_error into data(lcx_process_exception).
+              call method me->(lv_method_name)
+                parameter-table
+                ptab.
 
-            lv_log_record_text = lcx_process_exception->get_text(  ) .
-            mo_log->yif_logger~err( lv_log_record_text  ).
+            catch cx_sy_dyn_call_error into data(lcx_process_exception).
 
-            return.
-        endtry.
+              lv_log_record_text = lcx_process_exception->get_text(  ) .
+              mo_log->yif_logger~err( lv_log_record_text  ).
+
+              return.
+          endtry.
+
+        endloop.
 
       endif.
 
@@ -281,6 +301,7 @@ class ycl_slpm_prob_change_notifier implementation.
       ( variable = '&STATUSOLD' value = ms_problem_old_state-statustext opentag = '<STRONG>' closetag = '</STRONG>' )
       ( variable = '&STATUSNEW' value = ms_problem_new_state-statustext opentag = '<STRONG>' closetag = '</STRONG>' )
       ( variable = '&FIELDS' value = me->fill_problem_details_html( ip_email_internal_flag  ) )
+      ( variable = '&SIGNATURE' value = me->get_signature_for_product( ) )
     ).
 
   endmethod.
@@ -367,32 +388,65 @@ class ycl_slpm_prob_change_notifier implementation.
 
   endmethod.
 
-  method get_email_address.
+  method get_email_addresses.
 
-    data lo_bp_address_book type ref to yif_contacts_book.
+    data:
+      lo_bp_address_book type ref to yif_contacts_book,
+      lv_email_address   type ymessenger_address.
 
-    " All participants except Observer have Business Partners
-    " For requester, processor, support team we use emails from BP
-    " For observer we use raw email from problem entity
+    case ip_process_role.
 
-    if not ip_process_role eq 'OBSERVER'.
+      when 'REQUESTER'.
 
-      lo_bp_address_book = new ycl_bp_master_data( switch #(
-ip_process_role
+        lo_bp_address_book = new ycl_bp_master_data( ms_problem_new_state-requestorbusinesspartner ).
+        lv_email_address = lo_bp_address_book->get_email_address(  ).
 
-          when 'REQUESTER'    then ms_problem_new_state-requestorbusinesspartner
-          when 'PROCESSOR'    then ms_problem_new_state-processorbusinesspartner
-          when 'SUPPORTTEAM'  then ms_problem_new_state-supportteambusinesspartner ) ).
+        append lv_email_address to rt_email_addresses.
 
-      rp_email_address = lo_bp_address_book->get_email_address(  ).
+      when 'PROCESSOR'.
 
-    else.
+        lo_bp_address_book = new ycl_bp_master_data( ms_problem_new_state-processorbusinesspartner ).
+        lv_email_address = lo_bp_address_book->get_email_address(  ).
 
-      if ( ms_problem_new_state-notifybycontactemail eq abap_true ).
-        rp_email_address = ms_problem_new_state-contactemail.
-      endif.
+        append lv_email_address to rt_email_addresses.
 
-    endif.
+      when 'OBSERVER'.
+
+        if ( ms_problem_new_state-notifybycontactemail eq abap_true ).
+
+          lv_email_address = ms_problem_new_state-contactemail.
+          append lv_email_address to rt_email_addresses.
+
+        endif.
+
+      when 'SUPPORTTEAM'.
+
+        rt_email_addresses = me->get_support_team_addresses( ).
+
+    endcase.
+
+*    " All participants except Observer have Business Partners
+*    " For requester, processor, support team we use emails from BP
+*    " For observer we use raw email from problem entity
+*
+*    if not ip_process_role eq 'OBSERVER'.
+*
+*      lo_bp_address_book = new zcl_bp_master_data( switch #( ip_process_role
+*
+*          when 'REQUESTER'    then ms_problem_new_state-requestorbusinesspartner
+*          when 'PROCESSOR'    then ms_problem_new_state-processorbusinesspartner
+*          when 'SUPPORTTEAM'  then ms_problem_new_state-supportteambusinesspartner ) ).
+*
+*      rp_email_address = lo_bp_address_book->get_email_address(  ).
+*
+*    else.
+*
+*      if ( ms_problem_new_state-notifybycontactemail eq abap_true ).
+*        rp_email_address = ms_problem_new_state-contactemail.
+*      endif.
+*
+*    endif.
+
 
   endmethod.
 
@@ -508,6 +562,72 @@ ip_process_role
   method yif_slpm_problem_observer~problem_updated.
 
     me->yif_crm_order_change_notifier~notify(  ).
+
+  endmethod.
+
+  method get_support_team_addresses.
+
+    data: lv_team_to_inform         type pd_objid_r,
+          lo_organizational_model   type ref to yif_organizational_model,
+          lt_proc_pool_assigned_pos type yorg_model_tt_positions,
+          wa_address                type ymessenger_address,
+          lo_bp_address_book        type ref to yif_contacts_book.
+
+    lv_team_to_inform = me->get_prod_org_unit_for_updates( ).
+
+    if lv_team_to_inform is not initial.
+
+      lo_organizational_model = new ycl_organizational_model( lv_team_to_inform ).
+
+      lt_proc_pool_assigned_pos = lo_organizational_model->get_assigned_pos_of_org_unit(  ).
+
+      loop at lt_proc_pool_assigned_pos assigning field-symbol(<ls_proc_pool_assigned_pos>).
+
+        lo_bp_address_book = new ycl_bp_master_data( <ls_proc_pool_assigned_pos>-businesspartner ).
+
+        wa_address = lo_bp_address_book->get_email_address(  ).
+
+        append wa_address to rt_addresses.
+
+      endloop.
+
+      sort rt_addresses.
+      delete adjacent duplicates from rt_addresses.
+
+    endif.
+
+  endmethod.
+
+
+  method get_prod_org_unit_for_updates.
+
+*    data lo_slpm_product type ref to yif_slpm_product.
+*
+*    lo_slpm_product = new ycl_slpm_product( ms_problem_new_state-productguid ).
+*
+*    rp_org_unit = lo_slpm_product->get_org_unit_for_updates( ).
+
+    if mo_slpm_product is not initial.
+
+      rp_org_unit = mo_slpm_product->get_org_unit_for_updates( ).
+
+    endif.
+
+  endmethod.
+
+  method get_signature_for_product.
+
+    if mo_slpm_product is not initial.
+
+      rp_signature = mo_slpm_product->get_signature_for_updates(  ).
+
+    endif.
+
+  endmethod.
+
+  method set_slpm_product.
+
+    mo_slpm_product = new ycl_slpm_product( ip_product_guid ).
 
   endmethod.
 

@@ -13,6 +13,18 @@ interface yif_slpm_problem_history_store
 
     get_problem_history_hierarchy
       returning
-        value(rt_yslpm_pr_his_hry) type yslpm_tt_pr_his_hry.
+        value(rt_yslpm_pr_his_hry) type yslpm_tt_pr_his_hry,
+
+    arch_orphaned_history_records
+      raising
+        ycx_slpm_data_manager_exc
+        ycx_crm_order_api_exc
+        ycx_assistant_utilities_exc
+        ycx_slpm_configuration_exc
+        ycx_system_user_exc,
+
+    delete_arch_history_records
+      importing
+        ip_password type string.
 
 endinterface.

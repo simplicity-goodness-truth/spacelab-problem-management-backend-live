@@ -727,15 +727,22 @@ class ycl_slpm_data_manager implementation.
 
     " Processor take over: when is enabled
 
-    cs_problem-processortakeoverenabled = cond bu_partner( when ( cs_problem-processorbusinesspartner  is initial )
-        or ( cs_problem-processorbusinesspartner eq '0' )
-        then switch char5( cs_problem-status
+*    cs_problem-processortakeoverenabled = cond bu_partner( when ( cs_problem-processorbusinesspartner  is initial )
+*        or ( cs_problem-processorbusinesspartner eq '0' )
+*        then switch char5( cs_problem-status
+*
+*              when 'E0001'    then abap_true
+*              when 'E0002'    then abap_true
+*              when 'E0015'    then abap_true
+*                  else abap_false )
+*
+*        else abap_false ).
 
-              when 'E0001'    then abap_true
-              when 'E0002'    then abap_true
-              when 'E0015'    then abap_true
-                  else abap_false )
+    " ViaRight Requirement: take over should be possible in all statuses
 
+    cs_problem-processortakeoverenabled = cond bu_partner(
+    when cs_problem-processorbusinesspartner ne mo_system_user->get_businesspartner( ) then
+       abap_true
         else abap_false ).
 
     " Processor priority change: when is enabled
