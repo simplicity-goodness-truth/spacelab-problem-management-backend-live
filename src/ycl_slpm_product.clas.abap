@@ -75,4 +75,10 @@ class ycl_slpm_product implementation.
 
   endmethod.
 
+  method yif_slpm_product~get_processing_org_unit.
+
+    rp_org_unit = ms_product_attrs-processingorgunit.
+
+  endmethod.
+
 endclass.

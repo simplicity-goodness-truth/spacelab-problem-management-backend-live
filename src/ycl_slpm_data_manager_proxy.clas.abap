@@ -1497,4 +1497,14 @@ mo_active_configuration ).
 
   endmethod.
 
+  method yif_slpm_data_manager~get_list_of_support_teams.
+
+    if mo_slpm_data_provider is bound.
+
+      rt_support_teams = mo_slpm_data_provider->get_list_of_support_teams(  ).
+
+    endif.
+
+  endmethod.
+
 endclass.

@@ -43,16 +43,27 @@ class ycl_bp_master_data implementation.
 
   method yif_contacts_book~get_full_name.
 
+
     if ms_but000 is initial.
 
       me->set_but000(  ).
 
     endif.
 
+*    rp_full_name = cond #(
+*          when ms_but000-name1_text is not initial then ms_but000-name1_text
+*          else |{ ms_but000-name_first }| && | | && |{ ms_but000-name_last }|
+*        ).
+
+
     rp_full_name = cond #(
-          when ms_but000-name1_text is not initial then ms_but000-name1_text
-          else |{ ms_but000-name_first }| && | | && |{ ms_but000-name_last }|
-        ).
+        when ms_but000-type eq '1' then cond #(
+            when ms_but000-name1_text is not initial then ms_but000-name1_text
+            else |{ ms_but000-name_first }| && | | && |{ ms_but000-name_last }|
+        )
+        when ms_but000-type eq '2' then ms_but000-name_org2
+    ).
+
 
   endmethod.
 

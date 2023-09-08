@@ -60,9 +60,9 @@ class YCL_SLPM_PROBLEM_API implementation.
 
     " Sold-to-party
 
-    lv_sold_to_party = io_active_configuration->get_parameter_value( 'DEFAULT_SOLD_TO_PARTY' ).
-
-    yif_custom_crm_order_init~set_sold_to_party( lv_sold_to_party ).
+*    lv_sold_to_party = io_active_configuration->get_parameter_value( 'DEFAULT_SOLD_TO_PARTY' ).
+*
+*    yif_custom_crm_order_init~set_sold_to_party( lv_sold_to_party ).
 
   endmethod.
 

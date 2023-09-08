@@ -218,6 +218,10 @@ yif_crm_categorization_schema,
 
             es_result-supportteambusinesspartner = lv_bp_num.
 
+            " Get Support Team name
+
+            es_result-supportteamname = new ycl_bp_master_data( lv_bp_num )->yif_contacts_book~get_full_name(  ).
+
         endcase. " case ls_partner-ref_partner_fct
 
       endloop. " loop at et_partner into ls_partner

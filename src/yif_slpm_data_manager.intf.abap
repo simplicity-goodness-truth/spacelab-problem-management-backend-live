@@ -219,9 +219,12 @@ interface yif_slpm_data_manager
         ip_seconds_in_processing type integer
         ip_created_at_user_tzone type comt_created_at_usr
       changing
-        cs_problem               type ycrm_order_ts_sl_problem.
+        cs_problem               type ycrm_order_ts_sl_problem,
 
-
-
+    get_list_of_support_teams
+      returning
+        value(rt_support_teams) type yslpm_tt_support_teams
+      raising
+        ycx_slpm_configuration_exc.
 
 endinterface.
