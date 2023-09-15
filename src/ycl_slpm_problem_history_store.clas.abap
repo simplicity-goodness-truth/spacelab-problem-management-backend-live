@@ -19,33 +19,43 @@ class ycl_slpm_problem_history_store definition
   protected section.
   private section.
     data:
-      mv_guid             type crmt_object_guid,
-      mv_event            type char1,
-      ms_yslpm_pr_his_hdr type yslpm_pr_his_hdr,
-      ms_problem          type ycrm_order_ts_sl_problem,
-      mv_file_name        type string,
-      mv_change_guid      type sysuuid_x16,
-      mo_password         type string value 'veYlJeW&C6'.
+      mv_guid              type crmt_object_guid,
+      mv_event             type char1,
+      ms_yslpm_pr_his_hdr  type yslpm_pr_his_hdr,
+      ms_problem           type ycrm_order_ts_sl_problem,
+      mv_file_name         type string,
+      mv_change_guid       type sysuuid_x16,
+      mo_password          type string value 'veYlJeW&C6',
+      mt_fields_to_skip    type table of abap_compname,
+      mt_translation_table type table of yslpm_pr_fld_trs.
 
     methods:
 
       add_creation_event_record
         importing
-          is_problem type ycrm_order_ts_sl_problem,
+          is_problem type ycrm_order_ts_sl_problem
+        raising
+          ycx_assistant_utilities_exc,
 
       add_update_event_record
         importing
-          is_problem type ycrm_order_ts_sl_problem,
+          is_problem type ycrm_order_ts_sl_problem
+        raising
+          ycx_assistant_utilities_exc,
 
       add_event_record
         importing
-          is_problem type ycrm_order_ts_sl_problem,
+          is_problem type ycrm_order_ts_sl_problem
+        raising
+          ycx_assistant_utilities_exc,
 
       add_hist_header_record_to_db,
 
       set_hist_header_record,
 
-      add_hist_detail_record_to_db,
+      add_hist_detail_record_to_db
+        raising
+          ycx_assistant_utilities_exc,
 
       set_problem_record
         importing
@@ -67,7 +77,17 @@ class ycl_slpm_problem_history_store definition
         importing
           ip_file_name type string,
 
-      add_hist_att_record_to_db.
+      add_hist_att_record_to_db,
+
+      fill_fields_to_skip,
+
+      translate_field_name
+        importing
+          ip_field_name         type char50
+        returning
+          value(rp_translation) type char50,
+
+      set_translation_table.
 
 endclass.
 
@@ -77,6 +97,8 @@ class ycl_slpm_problem_history_store implementation.
   method constructor.
 
     mv_guid = ip_guid.
+
+    me->fill_fields_to_skip( ).
 
   endmethod.
 
@@ -148,12 +170,14 @@ class ycl_slpm_problem_history_store implementation.
   method add_hist_detail_record_to_db.
 
     data:
-      wa_yslpm_pr_his_rec type yslpm_pr_his_rec,
-      lt_problem          type table of ycrm_order_ts_sl_problem,
-      lo_descr            type ref to cl_abap_tabledescr,
-      lo_type             type ref to cl_abap_datadescr,
-      lo_struct           type ref to cl_abap_structdescr,
-      lt_components       type  abap_compdescr_tab.
+      wa_yslpm_pr_his_rec    type yslpm_pr_his_rec,
+      lt_problem             type table of ycrm_order_ts_sl_problem,
+      lo_descr               type ref to cl_abap_tabledescr,
+      lo_type                type ref to cl_abap_datadescr,
+      lo_struct              type ref to cl_abap_structdescr,
+      lt_components          type  abap_compdescr_tab,
+      lo_descr_ref           type ref to cl_abap_typedescr,
+      lv_adapted_field_value type string.
 
     field-symbols : <lv_value> type any.
 
@@ -170,11 +194,19 @@ class ycl_slpm_problem_history_store implementation.
 
     loop at lt_components assigning field-symbol(<ls_component>).
 
+      clear lv_adapted_field_value.
+
       if <lv_value> is assigned.
         unassign <lv_value>.
       endif.
 
       if <ls_component>-name is not initial.
+
+        if line_exists(  mt_fields_to_skip[ table_line = <ls_component>-name ] ).
+
+          continue.
+
+        endif.
 
         assign component <ls_component>-name of structure ms_problem to <lv_value>.
 
@@ -182,11 +214,24 @@ class ycl_slpm_problem_history_store implementation.
 
           if ( <lv_value> is assigned ) and ( <lv_value> is not initial ).
 
+            lo_descr_ref = cl_abap_typedescr=>describe_by_data( <lv_value> ).
+
+            if ( lo_descr_ref->absolute_name eq '\TYPE=COMT_CREATED_AT_USR' ) or
+                ( lo_descr_ref->absolute_name eq '\TYPE=CRMT_DATE_TIMESTAMP_FROM' ) .
+
+              lv_adapted_field_value = ycl_assistant_utilities=>format_timestamp( <lv_value> ).
+
+            else.
+
+              lv_adapted_field_value = <lv_value>.
+
+            endif.
+
             clear wa_yslpm_pr_his_rec.
 
             wa_yslpm_pr_his_rec-change_guid = mv_change_guid.
             wa_yslpm_pr_his_rec-field = <ls_component>-name.
-            wa_yslpm_pr_his_rec-value = <lv_value>.
+            wa_yslpm_pr_his_rec-value = lv_adapted_field_value.
 
             insert yslpm_pr_his_rec from wa_yslpm_pr_his_rec.
 
@@ -259,6 +304,12 @@ class ycl_slpm_problem_history_store implementation.
           lv_nodeid_counter   type int4 value 1,
           lv_parent_nodeid    type int4.
 
+    if mt_translation_table is initial.
+
+      me->set_translation_table( ).
+
+    endif.
+
     select
        change_guid
        guid
@@ -314,8 +365,12 @@ class ycl_slpm_problem_history_store implementation.
         ls_yslpm_pr_his_hry-drillstate = 'leaf'.
 
 
-        ls_yslpm_pr_his_hry-field = <ls_yslpm_pr_his_rec>-field.
+        "ls_yslpm_pr_his_hry-field = <ls_yslpm_pr_his_rec>-field.
+
+        ls_yslpm_pr_his_hry-field = translate_field_name( <ls_yslpm_pr_his_rec>-field ).
+
         ls_yslpm_pr_his_hry-value = <ls_yslpm_pr_his_rec>-value.
+
 
         append ls_yslpm_pr_his_hry to rt_yslpm_pr_his_hry.
 
@@ -486,5 +541,50 @@ class ycl_slpm_problem_history_store implementation.
     endif.
 
   endmethod.
+
+  method fill_fields_to_skip.
+
+    mt_fields_to_skip = value #(
+
+      ( 'IRT_TIMESTAMP_UTC' )
+      ( 'MPT_TIMESTAMP_UTC' )
+      ( 'TOT_DURA_UNIT' )
+      ( 'WORK_DURA_UNIT' )
+      ( 'REQUESTERUPDATEENABLED' )
+      ( 'REQUESTERWITHDRAWENABLED' )
+      ( 'PROCESSORTAKEOVERENABLED' )
+      ( 'IRT_ICON_BSP' )
+      ( 'ITEM_GUID' )
+      ( 'MPT_ICON_BSP' )
+
+  ).
+
+
+  endmethod.
+
+  method translate_field_name.
+
+    try.
+
+        rp_translation = mt_translation_table[ field_name = ip_field_name ]-translation.
+
+      catch cx_sy_itab_line_not_found.
+
+        rp_translation = ip_field_name.
+
+    endtry.
+
+
+  endmethod.
+
+  method set_translation_table.
+
+    select mandt field_name spras translation into table mt_translation_table
+        from yslpm_pr_fld_trs
+        where spras = sy-langu.
+
+  endmethod.
+
+
 
 endclass.

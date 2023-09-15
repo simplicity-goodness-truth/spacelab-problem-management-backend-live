@@ -584,53 +584,59 @@ cl_abap_format=>e_url ).
 
         lt_filter_customer_bp[ 1 ]-low = lo_bp_master_data->get_bp_number( ).
 
-
-        " Get products, available for user
-
-        try.
-
-            lo_slpm_user = new ycl_slpm_user( sy-uname ).
-
-            lt_products = lo_slpm_user->get_slpm_products_of_user(  ).
-
-            loop at lt_products assigning field-symbol(<ls_product>) where companybusinesspartner in lt_filter_customer_bp.
-
-              ls_entity-guid = <ls_product>-guid.
-              ls_entity-id = <ls_product>-id.
-              ls_entity-name = <ls_product>-name.
-              ls_entity-companybusinesspartner = <ls_product>-companybusinesspartner.
-
-
-              lo_slpm_product = new ycl_slpm_product( <ls_product>-guid ).
-
-              ls_entity-showpriorities = lo_slpm_product->is_show_priority_set(  ).
-
-              lo_crm_service_product ?= lo_slpm_product.
-
-              "lo_crm_service_product = new zcl_crm_service_product( <ls_product>-guid ).
-
-
-              ls_entity-prioritiescount = lo_crm_service_product->get_resp_profile_prio_count(  ).
-
-              " We skip all products, which don't have proper priorities assigned
-              " through a response profile
-
-              if ls_entity-prioritiescount > 0.
-
-                append  ls_entity to et_entityset.
-
-              endif.
-
-              clear ls_entity.
-            endloop.
-
-          catch ycx_system_user_exc ycx_slpm_configuration_exc into data(lcx_process_exception).
-            raise_exception( lcx_process_exception->get_text(  ) ).
-
-        endtry.
-
-
       catch cx_sy_itab_line_not_found.
+
+    endtry.
+
+    " Get products, available for user
+
+    try.
+
+        lo_slpm_user = new ycl_slpm_user( sy-uname ).
+
+        lt_products = lo_slpm_user->get_slpm_products_of_user(  ).
+
+        loop at lt_products assigning field-symbol(<ls_product>) where companybusinesspartner in lt_filter_customer_bp.
+
+          ls_entity-guid = <ls_product>-guid.
+          ls_entity-id = <ls_product>-id.
+          ls_entity-name = <ls_product>-name.
+          ls_entity-companybusinesspartner = cond #(
+            when lt_filter_customer_bp is not initial then <ls_product>-companybusinesspartner
+            else '' ).
+
+          lo_slpm_product = new ycl_slpm_product( <ls_product>-guid ).
+
+          ls_entity-showpriorities = lo_slpm_product->is_show_priority_set(  ).
+
+          lo_crm_service_product ?= lo_slpm_product.
+
+          ls_entity-prioritiescount = lo_crm_service_product->get_resp_profile_prio_count(  ).
+
+          " We skip all products, which don't have proper priorities assigned
+          " through a response profile
+
+          if ls_entity-prioritiescount > 0.
+
+            append  ls_entity to et_entityset.
+
+          endif.
+
+          clear ls_entity.
+        endloop.
+
+        " For empty company filter we just display all products of user without duplicates
+
+        if lt_filter_customer_bp is initial.
+
+          sort et_entityset.
+
+          delete adjacent duplicates from et_entityset comparing id.
+
+        endif.
+
+      catch ycx_system_user_exc ycx_slpm_configuration_exc into data(lcx_process_exception).
+        raise_exception( lcx_process_exception->get_text(  ) ).
 
     endtry.
 
