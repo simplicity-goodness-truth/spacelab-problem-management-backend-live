@@ -204,6 +204,24 @@
      <ENTRY>VALUE</ENTRY>
      <LENGTH>132</LENGTH>
     </item>
+    <item>
+     <ID>I</ID>
+     <KEY>033</KEY>
+     <ENTRY>Alert configuration: string</ENTRY>
+     <LENGTH>132</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>034</KEY>
+     <ENTRY>Alert configuration: string</ENTRY>
+     <LENGTH>132</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>035</KEY>
+     <ENTRY>Alert configuration: string</ENTRY>
+     <LENGTH>132</LENGTH>
+    </item>
    </TPOOL>
    <DESCRIPTIONS>
     <SEOCOMPOTX>
@@ -225,6 +243,11 @@
      <CMPNAME>DEFINE_FRONTENDCONFIGURATION</CMPNAME>
      <LANGU>E</LANGU>
      <DESCRIPT>DEFINE_FRONTENDCONFIGURATION</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CMPNAME>DEFINE_FRONTENDCONSTANTS</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>DEFINE_FRONTENDCONSTANTS</DESCRIPT>
     </SEOCOMPOTX>
     <SEOCOMPOTX>
      <CMPNAME>DEFINE_PRIORITY</CMPNAME>

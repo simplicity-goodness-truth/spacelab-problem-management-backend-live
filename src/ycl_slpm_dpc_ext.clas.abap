@@ -8,6 +8,7 @@ class ycl_slpm_dpc_ext definition
     methods /iwbep/if_mgw_appl_srv_runtime~create_stream redefinition.
     methods /iwbep/if_mgw_appl_srv_runtime~delete_stream redefinition.
   protected section.
+    methods frontendconstant_get_entityset redefinition.
     methods supportteamset_get_entityset redefinition.
     methods problemhistoryhi_get_entityset redefinition.
     methods slampthistoryset_get_entityset redefinition.
@@ -1068,6 +1069,25 @@ cl_abap_format=>e_url ).
         lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
 
         et_entityset = lo_slpm_data_provider->get_list_of_support_teams( ).
+
+      catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
+            ycx_assistant_utilities_exc ycx_slpm_configuration_exc
+            ycx_system_user_exc into data(lcx_process_exception).
+        raise_exception( lcx_process_exception->get_text(  ) ).
+
+    endtry.
+
+  endmethod.
+
+  method frontendconstant_get_entityset.
+
+    data lo_slpm_data_provider type ref to yif_slpm_data_manager.
+
+    try.
+
+        lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
+
+        et_entityset = lo_slpm_data_provider->get_frontend_constants(  ).
 
       catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
             ycx_assistant_utilities_exc ycx_slpm_configuration_exc

@@ -225,6 +225,10 @@ interface yif_slpm_data_manager
       returning
         value(rt_support_teams) type yslpm_tt_support_teams
       raising
-        ycx_slpm_configuration_exc.
+        ycx_slpm_configuration_exc,
+
+    get_frontend_constants
+      returning
+        value(rt_constants) type yslpm_tt_frontend_const.
 
 endinterface.

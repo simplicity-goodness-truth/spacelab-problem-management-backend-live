@@ -23,6 +23,46 @@ protected section.
 
   data mo_injection type ref to /IWBEP/IF_SB_GEN_DPC_INJECTION .
 
+  methods PRODUCTSET_CREATE_ENTITY
+    importing
+      !IV_ENTITY_NAME type STRING
+      !IV_ENTITY_SET_NAME type STRING
+      !IV_SOURCE_NAME type STRING
+      !IT_KEY_TAB type /IWBEP/T_MGW_NAME_VALUE_PAIR
+      !IO_TECH_REQUEST_CONTEXT type ref to /IWBEP/IF_MGW_REQ_ENTITY_C optional
+      !IT_NAVIGATION_PATH type /IWBEP/T_MGW_NAVIGATION_PATH
+      !IO_DATA_PROVIDER type ref to /IWBEP/IF_MGW_ENTRY_PROVIDER optional
+    exporting
+      !ER_ENTITY type YCL_SLPM_MPC=>TS_PRODUCT
+    raising
+      /IWBEP/CX_MGW_BUSI_EXCEPTION
+      /IWBEP/CX_MGW_TECH_EXCEPTION .
+  methods PRODUCTSET_DELETE_ENTITY
+    importing
+      !IV_ENTITY_NAME type STRING
+      !IV_ENTITY_SET_NAME type STRING
+      !IV_SOURCE_NAME type STRING
+      !IT_KEY_TAB type /IWBEP/T_MGW_NAME_VALUE_PAIR
+      !IO_TECH_REQUEST_CONTEXT type ref to /IWBEP/IF_MGW_REQ_ENTITY_D optional
+      !IT_NAVIGATION_PATH type /IWBEP/T_MGW_NAVIGATION_PATH
+    raising
+      /IWBEP/CX_MGW_BUSI_EXCEPTION
+      /IWBEP/CX_MGW_TECH_EXCEPTION .
+  methods PRODUCTSET_GET_ENTITY
+    importing
+      !IV_ENTITY_NAME type STRING
+      !IV_ENTITY_SET_NAME type STRING
+      !IV_SOURCE_NAME type STRING
+      !IT_KEY_TAB type /IWBEP/T_MGW_NAME_VALUE_PAIR
+      !IO_REQUEST_OBJECT type ref to /IWBEP/IF_MGW_REQ_ENTITY optional
+      !IO_TECH_REQUEST_CONTEXT type ref to /IWBEP/IF_MGW_REQ_ENTITY optional
+      !IT_NAVIGATION_PATH type /IWBEP/T_MGW_NAVIGATION_PATH
+    exporting
+      !ER_ENTITY type YCL_SLPM_MPC=>TS_PRODUCT
+      !ES_RESPONSE_CONTEXT type /IWBEP/IF_MGW_APPL_SRV_RUNTIME=>TY_S_MGW_RESPONSE_ENTITY_CNTXT
+    raising
+      /IWBEP/CX_MGW_BUSI_EXCEPTION
+      /IWBEP/CX_MGW_TECH_EXCEPTION .
   methods PRODUCTSET_GET_ENTITYSET
     importing
       !IV_ENTITY_NAME type STRING
@@ -567,21 +607,6 @@ protected section.
     raising
       /IWBEP/CX_MGW_BUSI_EXCEPTION
       /IWBEP/CX_MGW_TECH_EXCEPTION .
-  methods PRODUCTSET_GET_ENTITY
-    importing
-      !IV_ENTITY_NAME type STRING
-      !IV_ENTITY_SET_NAME type STRING
-      !IV_SOURCE_NAME type STRING
-      !IT_KEY_TAB type /IWBEP/T_MGW_NAME_VALUE_PAIR
-      !IO_REQUEST_OBJECT type ref to /IWBEP/IF_MGW_REQ_ENTITY optional
-      !IO_TECH_REQUEST_CONTEXT type ref to /IWBEP/IF_MGW_REQ_ENTITY optional
-      !IT_NAVIGATION_PATH type /IWBEP/T_MGW_NAVIGATION_PATH
-    exporting
-      !ER_ENTITY type YCL_SLPM_MPC=>TS_PRODUCT
-      !ES_RESPONSE_CONTEXT type /IWBEP/IF_MGW_APPL_SRV_RUNTIME=>TY_S_MGW_RESPONSE_ENTITY_CNTXT
-    raising
-      /IWBEP/CX_MGW_BUSI_EXCEPTION
-      /IWBEP/CX_MGW_TECH_EXCEPTION .
   methods ATTACHMENTSET_CREATE_ENTITY
     importing
       !IV_ENTITY_NAME type STRING
@@ -798,6 +823,79 @@ protected section.
       !IO_DATA_PROVIDER type ref to /IWBEP/IF_MGW_ENTRY_PROVIDER optional
     exporting
       !ER_ENTITY type YCL_SLPM_MPC=>TS_FRONTENDCONFIGURATION
+    raising
+      /IWBEP/CX_MGW_BUSI_EXCEPTION
+      /IWBEP/CX_MGW_TECH_EXCEPTION .
+  methods FRONTENDCONSTANT_CREATE_ENTITY
+    importing
+      !IV_ENTITY_NAME type STRING
+      !IV_ENTITY_SET_NAME type STRING
+      !IV_SOURCE_NAME type STRING
+      !IT_KEY_TAB type /IWBEP/T_MGW_NAME_VALUE_PAIR
+      !IO_TECH_REQUEST_CONTEXT type ref to /IWBEP/IF_MGW_REQ_ENTITY_C optional
+      !IT_NAVIGATION_PATH type /IWBEP/T_MGW_NAVIGATION_PATH
+      !IO_DATA_PROVIDER type ref to /IWBEP/IF_MGW_ENTRY_PROVIDER optional
+    exporting
+      !ER_ENTITY type YCL_SLPM_MPC=>TS_FRONTENDCONSTANTS
+    raising
+      /IWBEP/CX_MGW_BUSI_EXCEPTION
+      /IWBEP/CX_MGW_TECH_EXCEPTION .
+  methods FRONTENDCONSTANT_DELETE_ENTITY
+    importing
+      !IV_ENTITY_NAME type STRING
+      !IV_ENTITY_SET_NAME type STRING
+      !IV_SOURCE_NAME type STRING
+      !IT_KEY_TAB type /IWBEP/T_MGW_NAME_VALUE_PAIR
+      !IO_TECH_REQUEST_CONTEXT type ref to /IWBEP/IF_MGW_REQ_ENTITY_D optional
+      !IT_NAVIGATION_PATH type /IWBEP/T_MGW_NAVIGATION_PATH
+    raising
+      /IWBEP/CX_MGW_BUSI_EXCEPTION
+      /IWBEP/CX_MGW_TECH_EXCEPTION .
+  methods FRONTENDCONSTANT_GET_ENTITY
+    importing
+      !IV_ENTITY_NAME type STRING
+      !IV_ENTITY_SET_NAME type STRING
+      !IV_SOURCE_NAME type STRING
+      !IT_KEY_TAB type /IWBEP/T_MGW_NAME_VALUE_PAIR
+      !IO_REQUEST_OBJECT type ref to /IWBEP/IF_MGW_REQ_ENTITY optional
+      !IO_TECH_REQUEST_CONTEXT type ref to /IWBEP/IF_MGW_REQ_ENTITY optional
+      !IT_NAVIGATION_PATH type /IWBEP/T_MGW_NAVIGATION_PATH
+    exporting
+      !ER_ENTITY type YCL_SLPM_MPC=>TS_FRONTENDCONSTANTS
+      !ES_RESPONSE_CONTEXT type /IWBEP/IF_MGW_APPL_SRV_RUNTIME=>TY_S_MGW_RESPONSE_ENTITY_CNTXT
+    raising
+      /IWBEP/CX_MGW_BUSI_EXCEPTION
+      /IWBEP/CX_MGW_TECH_EXCEPTION .
+  methods FRONTENDCONSTANT_GET_ENTITYSET
+    importing
+      !IV_ENTITY_NAME type STRING
+      !IV_ENTITY_SET_NAME type STRING
+      !IV_SOURCE_NAME type STRING
+      !IT_FILTER_SELECT_OPTIONS type /IWBEP/T_MGW_SELECT_OPTION
+      !IS_PAGING type /IWBEP/S_MGW_PAGING
+      !IT_KEY_TAB type /IWBEP/T_MGW_NAME_VALUE_PAIR
+      !IT_NAVIGATION_PATH type /IWBEP/T_MGW_NAVIGATION_PATH
+      !IT_ORDER type /IWBEP/T_MGW_SORTING_ORDER
+      !IV_FILTER_STRING type STRING
+      !IV_SEARCH_STRING type STRING
+      !IO_TECH_REQUEST_CONTEXT type ref to /IWBEP/IF_MGW_REQ_ENTITYSET optional
+    exporting
+      !ET_ENTITYSET type YCL_SLPM_MPC=>TT_FRONTENDCONSTANTS
+      !ES_RESPONSE_CONTEXT type /IWBEP/IF_MGW_APPL_SRV_RUNTIME=>TY_S_MGW_RESPONSE_CONTEXT
+    raising
+      /IWBEP/CX_MGW_BUSI_EXCEPTION
+      /IWBEP/CX_MGW_TECH_EXCEPTION .
+  methods FRONTENDCONSTANT_UPDATE_ENTITY
+    importing
+      !IV_ENTITY_NAME type STRING
+      !IV_ENTITY_SET_NAME type STRING
+      !IV_SOURCE_NAME type STRING
+      !IT_KEY_TAB type /IWBEP/T_MGW_NAME_VALUE_PAIR
+      !IO_TECH_REQUEST_CONTEXT type ref to /IWBEP/IF_MGW_REQ_ENTITY_U optional
+      !IT_NAVIGATION_PATH type /IWBEP/T_MGW_NAVIGATION_PATH
+      !IO_DATA_PROVIDER type ref to /IWBEP/IF_MGW_ENTRY_PROVIDER optional
+    exporting
+      !ER_ENTITY type YCL_SLPM_MPC=>TS_FRONTENDCONSTANTS
     raising
       /IWBEP/CX_MGW_BUSI_EXCEPTION
       /IWBEP/CX_MGW_TECH_EXCEPTION .
@@ -1093,31 +1191,6 @@ protected section.
     raising
       /IWBEP/CX_MGW_BUSI_EXCEPTION
       /IWBEP/CX_MGW_TECH_EXCEPTION .
-  methods PRODUCTSET_CREATE_ENTITY
-    importing
-      !IV_ENTITY_NAME type STRING
-      !IV_ENTITY_SET_NAME type STRING
-      !IV_SOURCE_NAME type STRING
-      !IT_KEY_TAB type /IWBEP/T_MGW_NAME_VALUE_PAIR
-      !IO_TECH_REQUEST_CONTEXT type ref to /IWBEP/IF_MGW_REQ_ENTITY_C optional
-      !IT_NAVIGATION_PATH type /IWBEP/T_MGW_NAVIGATION_PATH
-      !IO_DATA_PROVIDER type ref to /IWBEP/IF_MGW_ENTRY_PROVIDER optional
-    exporting
-      !ER_ENTITY type YCL_SLPM_MPC=>TS_PRODUCT
-    raising
-      /IWBEP/CX_MGW_BUSI_EXCEPTION
-      /IWBEP/CX_MGW_TECH_EXCEPTION .
-  methods PRODUCTSET_DELETE_ENTITY
-    importing
-      !IV_ENTITY_NAME type STRING
-      !IV_ENTITY_SET_NAME type STRING
-      !IV_SOURCE_NAME type STRING
-      !IT_KEY_TAB type /IWBEP/T_MGW_NAME_VALUE_PAIR
-      !IO_TECH_REQUEST_CONTEXT type ref to /IWBEP/IF_MGW_REQ_ENTITY_D optional
-      !IT_NAVIGATION_PATH type /IWBEP/T_MGW_NAVIGATION_PATH
-    raising
-      /IWBEP/CX_MGW_BUSI_EXCEPTION
-      /IWBEP/CX_MGW_TECH_EXCEPTION .
 
   methods CHECK_SUBSCRIPTION_AUTHORITY
     redefinition .
@@ -1132,39 +1205,40 @@ CLASS YCL_SLPM_DPC IMPLEMENTATION.
   method /IWBEP/IF_MGW_APPL_SRV_RUNTIME~CREATE_ENTITY.
 *&----------------------------------------------------------------------------------------------*
 *&  Include           /IWBEP/DPC_TEMP_CRT_ENTITY_BASE
-*&* This class has been generated on 08.09.2023 11:46:46 in client 200
+*&* This class has been generated on 20.09.2023 12:17:45 in client 200
 *&*
 *&*       WARNING--> NEVER MODIFY THIS CLASS <--WARNING
 *&*   If you want to change the DPC implementation, use the
 *&*   generated methods inside the DPC provider subclass - YCL_SLPM_DPC_EXT
 *&-----------------------------------------------------------------------------------------------*
 
- DATA processorset_create_entity TYPE ycl_slpm_mpc=>ts_processor.
- DATA systemuserset_create_entity TYPE ycl_slpm_mpc=>ts_systemuser.
- DATA problemset_create_entity TYPE ycl_slpm_mpc=>ts_problem.
- DATA problemhistoryhi_create_entity TYPE ycl_slpm_mpc=>ts_problemhistoryhierarchy.
- DATA slairthistoryset_create_entity TYPE ycl_slpm_mpc=>ts_slairthistory.
- DATA slampthistoryset_create_entity TYPE ycl_slpm_mpc=>ts_slampthistory.
- DATA supportteamset_create_entity TYPE ycl_slpm_mpc=>ts_supportteam.
- DATA textset_create_entity TYPE ycl_slpm_mpc=>ts_text.
  DATA statusset_create_entity TYPE ycl_slpm_mpc=>ts_status.
- DATA systemset_create_entity TYPE ycl_slpm_mpc=>ts_system.
- DATA attachmentset_create_entity TYPE ycl_slpm_mpc=>ts_attachment.
+ DATA systemuserset_create_entity TYPE ycl_slpm_mpc=>ts_systemuser.
+ DATA priorityset_create_entity TYPE ycl_slpm_mpc=>ts_priority.
+ DATA processorset_create_entity TYPE ycl_slpm_mpc=>ts_processor.
  DATA companyset_create_entity TYPE ycl_slpm_mpc=>ts_company.
  DATA productset_create_entity TYPE ycl_slpm_mpc=>ts_product.
- DATA priorityset_create_entity TYPE ycl_slpm_mpc=>ts_priority.
  DATA frontendconfigur_create_entity TYPE ycl_slpm_mpc=>ts_frontendconfiguration.
+ DATA systemset_create_entity TYPE ycl_slpm_mpc=>ts_system.
+ DATA attachmentset_create_entity TYPE ycl_slpm_mpc=>ts_attachment.
+ DATA slairthistoryset_create_entity TYPE ycl_slpm_mpc=>ts_slairthistory.
+ DATA slampthistoryset_create_entity TYPE ycl_slpm_mpc=>ts_slampthistory.
+ DATA textset_create_entity TYPE ycl_slpm_mpc=>ts_text.
+ DATA problemhistoryhi_create_entity TYPE ycl_slpm_mpc=>ts_problemhistoryhierarchy.
+ DATA supportteamset_create_entity TYPE ycl_slpm_mpc=>ts_supportteam.
+ DATA problemset_create_entity TYPE ycl_slpm_mpc=>ts_problem.
+ DATA frontendconstant_create_entity TYPE ycl_slpm_mpc=>ts_frontendconstants.
  DATA lv_entityset_name TYPE string.
 
 lv_entityset_name = io_tech_request_context->get_entity_set_name( ).
 
 CASE lv_entityset_name.
 *-------------------------------------------------------------------------*
-*             EntitySet -  ProcessorSet
+*             EntitySet -  StatusSet
 *-------------------------------------------------------------------------*
-     WHEN 'ProcessorSet'.
+     WHEN 'StatusSet'.
 *     Call the entity set generated method
-    processorset_create_entity(
+    statusset_create_entity(
          EXPORTING iv_entity_name     = iv_entity_name
                    iv_entity_set_name = iv_entity_set_name
                    iv_source_name     = iv_source_name
@@ -1172,12 +1246,12 @@ CASE lv_entityset_name.
                    it_key_tab         = it_key_tab
                    it_navigation_path = it_navigation_path
                    io_tech_request_context = io_tech_request_context
-       	 IMPORTING er_entity          = processorset_create_entity
+       	 IMPORTING er_entity          = statusset_create_entity
     ).
 *     Send specific entity data to the caller interfaces
     copy_data_to_ref(
       EXPORTING
-        is_data = processorset_create_entity
+        is_data = statusset_create_entity
       CHANGING
         cr_data = er_entity
    ).
@@ -1206,11 +1280,11 @@ CASE lv_entityset_name.
    ).
 
 *-------------------------------------------------------------------------*
-*             EntitySet -  ProblemSet
+*             EntitySet -  PrioritySet
 *-------------------------------------------------------------------------*
-     WHEN 'ProblemSet'.
+     WHEN 'PrioritySet'.
 *     Call the entity set generated method
-    problemset_create_entity(
+    priorityset_create_entity(
          EXPORTING iv_entity_name     = iv_entity_name
                    iv_entity_set_name = iv_entity_set_name
                    iv_source_name     = iv_source_name
@@ -1218,22 +1292,22 @@ CASE lv_entityset_name.
                    it_key_tab         = it_key_tab
                    it_navigation_path = it_navigation_path
                    io_tech_request_context = io_tech_request_context
-       	 IMPORTING er_entity          = problemset_create_entity
+       	 IMPORTING er_entity          = priorityset_create_entity
     ).
 *     Send specific entity data to the caller interfaces
     copy_data_to_ref(
       EXPORTING
-        is_data = problemset_create_entity
+        is_data = priorityset_create_entity
       CHANGING
         cr_data = er_entity
    ).
 
 *-------------------------------------------------------------------------*
-*             EntitySet -  ProblemHistoryHierarchySet
+*             EntitySet -  ProcessorSet
 *-------------------------------------------------------------------------*
-     WHEN 'ProblemHistoryHierarchySet'.
+     WHEN 'ProcessorSet'.
 *     Call the entity set generated method
-    problemhistoryhi_create_entity(
+    processorset_create_entity(
          EXPORTING iv_entity_name     = iv_entity_name
                    iv_entity_set_name = iv_entity_set_name
                    iv_source_name     = iv_source_name
@@ -1241,173 +1315,12 @@ CASE lv_entityset_name.
                    it_key_tab         = it_key_tab
                    it_navigation_path = it_navigation_path
                    io_tech_request_context = io_tech_request_context
-       	 IMPORTING er_entity          = problemhistoryhi_create_entity
+       	 IMPORTING er_entity          = processorset_create_entity
     ).
 *     Send specific entity data to the caller interfaces
     copy_data_to_ref(
       EXPORTING
-        is_data = problemhistoryhi_create_entity
-      CHANGING
-        cr_data = er_entity
-   ).
-
-*-------------------------------------------------------------------------*
-*             EntitySet -  SLAIrtHistorySet
-*-------------------------------------------------------------------------*
-     WHEN 'SLAIrtHistorySet'.
-*     Call the entity set generated method
-    slairthistoryset_create_entity(
-         EXPORTING iv_entity_name     = iv_entity_name
-                   iv_entity_set_name = iv_entity_set_name
-                   iv_source_name     = iv_source_name
-                   io_data_provider   = io_data_provider
-                   it_key_tab         = it_key_tab
-                   it_navigation_path = it_navigation_path
-                   io_tech_request_context = io_tech_request_context
-       	 IMPORTING er_entity          = slairthistoryset_create_entity
-    ).
-*     Send specific entity data to the caller interfaces
-    copy_data_to_ref(
-      EXPORTING
-        is_data = slairthistoryset_create_entity
-      CHANGING
-        cr_data = er_entity
-   ).
-
-*-------------------------------------------------------------------------*
-*             EntitySet -  SLAMptHistorySet
-*-------------------------------------------------------------------------*
-     WHEN 'SLAMptHistorySet'.
-*     Call the entity set generated method
-    slampthistoryset_create_entity(
-         EXPORTING iv_entity_name     = iv_entity_name
-                   iv_entity_set_name = iv_entity_set_name
-                   iv_source_name     = iv_source_name
-                   io_data_provider   = io_data_provider
-                   it_key_tab         = it_key_tab
-                   it_navigation_path = it_navigation_path
-                   io_tech_request_context = io_tech_request_context
-       	 IMPORTING er_entity          = slampthistoryset_create_entity
-    ).
-*     Send specific entity data to the caller interfaces
-    copy_data_to_ref(
-      EXPORTING
-        is_data = slampthistoryset_create_entity
-      CHANGING
-        cr_data = er_entity
-   ).
-
-*-------------------------------------------------------------------------*
-*             EntitySet -  SupportTeamSet
-*-------------------------------------------------------------------------*
-     WHEN 'SupportTeamSet'.
-*     Call the entity set generated method
-    supportteamset_create_entity(
-         EXPORTING iv_entity_name     = iv_entity_name
-                   iv_entity_set_name = iv_entity_set_name
-                   iv_source_name     = iv_source_name
-                   io_data_provider   = io_data_provider
-                   it_key_tab         = it_key_tab
-                   it_navigation_path = it_navigation_path
-                   io_tech_request_context = io_tech_request_context
-       	 IMPORTING er_entity          = supportteamset_create_entity
-    ).
-*     Send specific entity data to the caller interfaces
-    copy_data_to_ref(
-      EXPORTING
-        is_data = supportteamset_create_entity
-      CHANGING
-        cr_data = er_entity
-   ).
-
-*-------------------------------------------------------------------------*
-*             EntitySet -  TextSet
-*-------------------------------------------------------------------------*
-     WHEN 'TextSet'.
-*     Call the entity set generated method
-    textset_create_entity(
-         EXPORTING iv_entity_name     = iv_entity_name
-                   iv_entity_set_name = iv_entity_set_name
-                   iv_source_name     = iv_source_name
-                   io_data_provider   = io_data_provider
-                   it_key_tab         = it_key_tab
-                   it_navigation_path = it_navigation_path
-                   io_tech_request_context = io_tech_request_context
-       	 IMPORTING er_entity          = textset_create_entity
-    ).
-*     Send specific entity data to the caller interfaces
-    copy_data_to_ref(
-      EXPORTING
-        is_data = textset_create_entity
-      CHANGING
-        cr_data = er_entity
-   ).
-
-*-------------------------------------------------------------------------*
-*             EntitySet -  StatusSet
-*-------------------------------------------------------------------------*
-     WHEN 'StatusSet'.
-*     Call the entity set generated method
-    statusset_create_entity(
-         EXPORTING iv_entity_name     = iv_entity_name
-                   iv_entity_set_name = iv_entity_set_name
-                   iv_source_name     = iv_source_name
-                   io_data_provider   = io_data_provider
-                   it_key_tab         = it_key_tab
-                   it_navigation_path = it_navigation_path
-                   io_tech_request_context = io_tech_request_context
-       	 IMPORTING er_entity          = statusset_create_entity
-    ).
-*     Send specific entity data to the caller interfaces
-    copy_data_to_ref(
-      EXPORTING
-        is_data = statusset_create_entity
-      CHANGING
-        cr_data = er_entity
-   ).
-
-*-------------------------------------------------------------------------*
-*             EntitySet -  SystemSet
-*-------------------------------------------------------------------------*
-     WHEN 'SystemSet'.
-*     Call the entity set generated method
-    systemset_create_entity(
-         EXPORTING iv_entity_name     = iv_entity_name
-                   iv_entity_set_name = iv_entity_set_name
-                   iv_source_name     = iv_source_name
-                   io_data_provider   = io_data_provider
-                   it_key_tab         = it_key_tab
-                   it_navigation_path = it_navigation_path
-                   io_tech_request_context = io_tech_request_context
-       	 IMPORTING er_entity          = systemset_create_entity
-    ).
-*     Send specific entity data to the caller interfaces
-    copy_data_to_ref(
-      EXPORTING
-        is_data = systemset_create_entity
-      CHANGING
-        cr_data = er_entity
-   ).
-
-*-------------------------------------------------------------------------*
-*             EntitySet -  AttachmentSet
-*-------------------------------------------------------------------------*
-     WHEN 'AttachmentSet'.
-*     Call the entity set generated method
-    attachmentset_create_entity(
-         EXPORTING iv_entity_name     = iv_entity_name
-                   iv_entity_set_name = iv_entity_set_name
-                   iv_source_name     = iv_source_name
-                   io_data_provider   = io_data_provider
-                   it_key_tab         = it_key_tab
-                   it_navigation_path = it_navigation_path
-                   io_tech_request_context = io_tech_request_context
-       	 IMPORTING er_entity          = attachmentset_create_entity
-    ).
-*     Send specific entity data to the caller interfaces
-    copy_data_to_ref(
-      EXPORTING
-        is_data = attachmentset_create_entity
+        is_data = processorset_create_entity
       CHANGING
         cr_data = er_entity
    ).
@@ -1459,29 +1372,6 @@ CASE lv_entityset_name.
    ).
 
 *-------------------------------------------------------------------------*
-*             EntitySet -  PrioritySet
-*-------------------------------------------------------------------------*
-     WHEN 'PrioritySet'.
-*     Call the entity set generated method
-    priorityset_create_entity(
-         EXPORTING iv_entity_name     = iv_entity_name
-                   iv_entity_set_name = iv_entity_set_name
-                   iv_source_name     = iv_source_name
-                   io_data_provider   = io_data_provider
-                   it_key_tab         = it_key_tab
-                   it_navigation_path = it_navigation_path
-                   io_tech_request_context = io_tech_request_context
-       	 IMPORTING er_entity          = priorityset_create_entity
-    ).
-*     Send specific entity data to the caller interfaces
-    copy_data_to_ref(
-      EXPORTING
-        is_data = priorityset_create_entity
-      CHANGING
-        cr_data = er_entity
-   ).
-
-*-------------------------------------------------------------------------*
 *             EntitySet -  FrontendConfigurationSet
 *-------------------------------------------------------------------------*
      WHEN 'FrontendConfigurationSet'.
@@ -1500,6 +1390,213 @@ CASE lv_entityset_name.
     copy_data_to_ref(
       EXPORTING
         is_data = frontendconfigur_create_entity
+      CHANGING
+        cr_data = er_entity
+   ).
+
+*-------------------------------------------------------------------------*
+*             EntitySet -  SystemSet
+*-------------------------------------------------------------------------*
+     WHEN 'SystemSet'.
+*     Call the entity set generated method
+    systemset_create_entity(
+         EXPORTING iv_entity_name     = iv_entity_name
+                   iv_entity_set_name = iv_entity_set_name
+                   iv_source_name     = iv_source_name
+                   io_data_provider   = io_data_provider
+                   it_key_tab         = it_key_tab
+                   it_navigation_path = it_navigation_path
+                   io_tech_request_context = io_tech_request_context
+       	 IMPORTING er_entity          = systemset_create_entity
+    ).
+*     Send specific entity data to the caller interfaces
+    copy_data_to_ref(
+      EXPORTING
+        is_data = systemset_create_entity
+      CHANGING
+        cr_data = er_entity
+   ).
+
+*-------------------------------------------------------------------------*
+*             EntitySet -  AttachmentSet
+*-------------------------------------------------------------------------*
+     WHEN 'AttachmentSet'.
+*     Call the entity set generated method
+    attachmentset_create_entity(
+         EXPORTING iv_entity_name     = iv_entity_name
+                   iv_entity_set_name = iv_entity_set_name
+                   iv_source_name     = iv_source_name
+                   io_data_provider   = io_data_provider
+                   it_key_tab         = it_key_tab
+                   it_navigation_path = it_navigation_path
+                   io_tech_request_context = io_tech_request_context
+       	 IMPORTING er_entity          = attachmentset_create_entity
+    ).
+*     Send specific entity data to the caller interfaces
+    copy_data_to_ref(
+      EXPORTING
+        is_data = attachmentset_create_entity
+      CHANGING
+        cr_data = er_entity
+   ).
+
+*-------------------------------------------------------------------------*
+*             EntitySet -  SLAIrtHistorySet
+*-------------------------------------------------------------------------*
+     WHEN 'SLAIrtHistorySet'.
+*     Call the entity set generated method
+    slairthistoryset_create_entity(
+         EXPORTING iv_entity_name     = iv_entity_name
+                   iv_entity_set_name = iv_entity_set_name
+                   iv_source_name     = iv_source_name
+                   io_data_provider   = io_data_provider
+                   it_key_tab         = it_key_tab
+                   it_navigation_path = it_navigation_path
+                   io_tech_request_context = io_tech_request_context
+       	 IMPORTING er_entity          = slairthistoryset_create_entity
+    ).
+*     Send specific entity data to the caller interfaces
+    copy_data_to_ref(
+      EXPORTING
+        is_data = slairthistoryset_create_entity
+      CHANGING
+        cr_data = er_entity
+   ).
+
+*-------------------------------------------------------------------------*
+*             EntitySet -  SLAMptHistorySet
+*-------------------------------------------------------------------------*
+     WHEN 'SLAMptHistorySet'.
+*     Call the entity set generated method
+    slampthistoryset_create_entity(
+         EXPORTING iv_entity_name     = iv_entity_name
+                   iv_entity_set_name = iv_entity_set_name
+                   iv_source_name     = iv_source_name
+                   io_data_provider   = io_data_provider
+                   it_key_tab         = it_key_tab
+                   it_navigation_path = it_navigation_path
+                   io_tech_request_context = io_tech_request_context
+       	 IMPORTING er_entity          = slampthistoryset_create_entity
+    ).
+*     Send specific entity data to the caller interfaces
+    copy_data_to_ref(
+      EXPORTING
+        is_data = slampthistoryset_create_entity
+      CHANGING
+        cr_data = er_entity
+   ).
+
+*-------------------------------------------------------------------------*
+*             EntitySet -  TextSet
+*-------------------------------------------------------------------------*
+     WHEN 'TextSet'.
+*     Call the entity set generated method
+    textset_create_entity(
+         EXPORTING iv_entity_name     = iv_entity_name
+                   iv_entity_set_name = iv_entity_set_name
+                   iv_source_name     = iv_source_name
+                   io_data_provider   = io_data_provider
+                   it_key_tab         = it_key_tab
+                   it_navigation_path = it_navigation_path
+                   io_tech_request_context = io_tech_request_context
+       	 IMPORTING er_entity          = textset_create_entity
+    ).
+*     Send specific entity data to the caller interfaces
+    copy_data_to_ref(
+      EXPORTING
+        is_data = textset_create_entity
+      CHANGING
+        cr_data = er_entity
+   ).
+
+*-------------------------------------------------------------------------*
+*             EntitySet -  ProblemHistoryHierarchySet
+*-------------------------------------------------------------------------*
+     WHEN 'ProblemHistoryHierarchySet'.
+*     Call the entity set generated method
+    problemhistoryhi_create_entity(
+         EXPORTING iv_entity_name     = iv_entity_name
+                   iv_entity_set_name = iv_entity_set_name
+                   iv_source_name     = iv_source_name
+                   io_data_provider   = io_data_provider
+                   it_key_tab         = it_key_tab
+                   it_navigation_path = it_navigation_path
+                   io_tech_request_context = io_tech_request_context
+       	 IMPORTING er_entity          = problemhistoryhi_create_entity
+    ).
+*     Send specific entity data to the caller interfaces
+    copy_data_to_ref(
+      EXPORTING
+        is_data = problemhistoryhi_create_entity
+      CHANGING
+        cr_data = er_entity
+   ).
+
+*-------------------------------------------------------------------------*
+*             EntitySet -  SupportTeamSet
+*-------------------------------------------------------------------------*
+     WHEN 'SupportTeamSet'.
+*     Call the entity set generated method
+    supportteamset_create_entity(
+         EXPORTING iv_entity_name     = iv_entity_name
+                   iv_entity_set_name = iv_entity_set_name
+                   iv_source_name     = iv_source_name
+                   io_data_provider   = io_data_provider
+                   it_key_tab         = it_key_tab
+                   it_navigation_path = it_navigation_path
+                   io_tech_request_context = io_tech_request_context
+       	 IMPORTING er_entity          = supportteamset_create_entity
+    ).
+*     Send specific entity data to the caller interfaces
+    copy_data_to_ref(
+      EXPORTING
+        is_data = supportteamset_create_entity
+      CHANGING
+        cr_data = er_entity
+   ).
+
+*-------------------------------------------------------------------------*
+*             EntitySet -  ProblemSet
+*-------------------------------------------------------------------------*
+     WHEN 'ProblemSet'.
+*     Call the entity set generated method
+    problemset_create_entity(
+         EXPORTING iv_entity_name     = iv_entity_name
+                   iv_entity_set_name = iv_entity_set_name
+                   iv_source_name     = iv_source_name
+                   io_data_provider   = io_data_provider
+                   it_key_tab         = it_key_tab
+                   it_navigation_path = it_navigation_path
+                   io_tech_request_context = io_tech_request_context
+       	 IMPORTING er_entity          = problemset_create_entity
+    ).
+*     Send specific entity data to the caller interfaces
+    copy_data_to_ref(
+      EXPORTING
+        is_data = problemset_create_entity
+      CHANGING
+        cr_data = er_entity
+   ).
+
+*-------------------------------------------------------------------------*
+*             EntitySet -  FrontendConstantsSet
+*-------------------------------------------------------------------------*
+     WHEN 'FrontendConstantsSet'.
+*     Call the entity set generated method
+    frontendconstant_create_entity(
+         EXPORTING iv_entity_name     = iv_entity_name
+                   iv_entity_set_name = iv_entity_set_name
+                   iv_source_name     = iv_source_name
+                   io_data_provider   = io_data_provider
+                   it_key_tab         = it_key_tab
+                   it_navigation_path = it_navigation_path
+                   io_tech_request_context = io_tech_request_context
+       	 IMPORTING er_entity          = frontendconstant_create_entity
+    ).
+*     Send specific entity data to the caller interfaces
+    copy_data_to_ref(
+      EXPORTING
+        is_data = frontendconstant_create_entity
       CHANGING
         cr_data = er_entity
    ).
@@ -1523,7 +1620,7 @@ ENDCASE.
   method /IWBEP/IF_MGW_APPL_SRV_RUNTIME~DELETE_ENTITY.
 *&----------------------------------------------------------------------------------------------*
 *&  Include           /IWBEP/DPC_TEMP_DEL_ENTITY_BASE
-*&* This class has been generated on 08.09.2023 11:46:46 in client 200
+*&* This class has been generated on 20.09.2023 12:17:45 in client 200
 *&*
 *&*       WARNING--> NEVER MODIFY THIS CLASS <--WARNING
 *&*   If you want to change the DPC implementation, use the
@@ -1536,137 +1633,11 @@ lv_entityset_name = io_tech_request_context->get_entity_set_name( ).
 
 CASE lv_entityset_name.
 *-------------------------------------------------------------------------*
-*             EntitySet -  SystemUserSet
+*             EntitySet -  SLAIrtHistorySet
 *-------------------------------------------------------------------------*
-      when 'SystemUserSet'.
+      when 'SLAIrtHistorySet'.
 *     Call the entity set generated method
-     systemuserset_delete_entity(
-          EXPORTING iv_entity_name     = iv_entity_name
-                    iv_entity_set_name = iv_entity_set_name
-                    iv_source_name     = iv_source_name
-                    it_key_tab         = it_key_tab
-                    it_navigation_path = it_navigation_path
-                    io_tech_request_context = io_tech_request_context
-     ).
-
-*-------------------------------------------------------------------------*
-*             EntitySet -  ProcessorSet
-*-------------------------------------------------------------------------*
-      when 'ProcessorSet'.
-*     Call the entity set generated method
-     processorset_delete_entity(
-          EXPORTING iv_entity_name     = iv_entity_name
-                    iv_entity_set_name = iv_entity_set_name
-                    iv_source_name     = iv_source_name
-                    it_key_tab         = it_key_tab
-                    it_navigation_path = it_navigation_path
-                    io_tech_request_context = io_tech_request_context
-     ).
-
-*-------------------------------------------------------------------------*
-*             EntitySet -  StatusSet
-*-------------------------------------------------------------------------*
-      when 'StatusSet'.
-*     Call the entity set generated method
-     statusset_delete_entity(
-          EXPORTING iv_entity_name     = iv_entity_name
-                    iv_entity_set_name = iv_entity_set_name
-                    iv_source_name     = iv_source_name
-                    it_key_tab         = it_key_tab
-                    it_navigation_path = it_navigation_path
-                    io_tech_request_context = io_tech_request_context
-     ).
-
-*-------------------------------------------------------------------------*
-*             EntitySet -  ProblemHistoryHierarchySet
-*-------------------------------------------------------------------------*
-      when 'ProblemHistoryHierarchySet'.
-*     Call the entity set generated method
-     problemhistoryhi_delete_entity(
-          EXPORTING iv_entity_name     = iv_entity_name
-                    iv_entity_set_name = iv_entity_set_name
-                    iv_source_name     = iv_source_name
-                    it_key_tab         = it_key_tab
-                    it_navigation_path = it_navigation_path
-                    io_tech_request_context = io_tech_request_context
-     ).
-
-*-------------------------------------------------------------------------*
-*             EntitySet -  CompanySet
-*-------------------------------------------------------------------------*
-      when 'CompanySet'.
-*     Call the entity set generated method
-     companyset_delete_entity(
-          EXPORTING iv_entity_name     = iv_entity_name
-                    iv_entity_set_name = iv_entity_set_name
-                    iv_source_name     = iv_source_name
-                    it_key_tab         = it_key_tab
-                    it_navigation_path = it_navigation_path
-                    io_tech_request_context = io_tech_request_context
-     ).
-
-*-------------------------------------------------------------------------*
-*             EntitySet -  PrioritySet
-*-------------------------------------------------------------------------*
-      when 'PrioritySet'.
-*     Call the entity set generated method
-     priorityset_delete_entity(
-          EXPORTING iv_entity_name     = iv_entity_name
-                    iv_entity_set_name = iv_entity_set_name
-                    iv_source_name     = iv_source_name
-                    it_key_tab         = it_key_tab
-                    it_navigation_path = it_navigation_path
-                    io_tech_request_context = io_tech_request_context
-     ).
-
-*-------------------------------------------------------------------------*
-*             EntitySet -  ProductSet
-*-------------------------------------------------------------------------*
-      when 'ProductSet'.
-*     Call the entity set generated method
-     productset_delete_entity(
-          EXPORTING iv_entity_name     = iv_entity_name
-                    iv_entity_set_name = iv_entity_set_name
-                    iv_source_name     = iv_source_name
-                    it_key_tab         = it_key_tab
-                    it_navigation_path = it_navigation_path
-                    io_tech_request_context = io_tech_request_context
-     ).
-
-*-------------------------------------------------------------------------*
-*             EntitySet -  FrontendConfigurationSet
-*-------------------------------------------------------------------------*
-      when 'FrontendConfigurationSet'.
-*     Call the entity set generated method
-     frontendconfigur_delete_entity(
-          EXPORTING iv_entity_name     = iv_entity_name
-                    iv_entity_set_name = iv_entity_set_name
-                    iv_source_name     = iv_source_name
-                    it_key_tab         = it_key_tab
-                    it_navigation_path = it_navigation_path
-                    io_tech_request_context = io_tech_request_context
-     ).
-
-*-------------------------------------------------------------------------*
-*             EntitySet -  SLAMptHistorySet
-*-------------------------------------------------------------------------*
-      when 'SLAMptHistorySet'.
-*     Call the entity set generated method
-     slampthistoryset_delete_entity(
-          EXPORTING iv_entity_name     = iv_entity_name
-                    iv_entity_set_name = iv_entity_set_name
-                    iv_source_name     = iv_source_name
-                    it_key_tab         = it_key_tab
-                    it_navigation_path = it_navigation_path
-                    io_tech_request_context = io_tech_request_context
-     ).
-
-*-------------------------------------------------------------------------*
-*             EntitySet -  AttachmentSet
-*-------------------------------------------------------------------------*
-      when 'AttachmentSet'.
-*     Call the entity set generated method
-     attachmentset_delete_entity(
+     slairthistoryset_delete_entity(
           EXPORTING iv_entity_name     = iv_entity_name
                     iv_entity_set_name = iv_entity_set_name
                     iv_source_name     = iv_source_name
@@ -1690,11 +1661,11 @@ CASE lv_entityset_name.
      ).
 
 *-------------------------------------------------------------------------*
-*             EntitySet -  TextSet
+*             EntitySet -  SLAMptHistorySet
 *-------------------------------------------------------------------------*
-      when 'TextSet'.
+      when 'SLAMptHistorySet'.
 *     Call the entity set generated method
-     textset_delete_entity(
+     slampthistoryset_delete_entity(
           EXPORTING iv_entity_name     = iv_entity_name
                     iv_entity_set_name = iv_entity_set_name
                     iv_source_name     = iv_source_name
@@ -1704,11 +1675,67 @@ CASE lv_entityset_name.
      ).
 
 *-------------------------------------------------------------------------*
-*             EntitySet -  ProblemSet
+*             EntitySet -  FrontendConfigurationSet
 *-------------------------------------------------------------------------*
-      when 'ProblemSet'.
+      when 'FrontendConfigurationSet'.
 *     Call the entity set generated method
-     problemset_delete_entity(
+     frontendconfigur_delete_entity(
+          EXPORTING iv_entity_name     = iv_entity_name
+                    iv_entity_set_name = iv_entity_set_name
+                    iv_source_name     = iv_source_name
+                    it_key_tab         = it_key_tab
+                    it_navigation_path = it_navigation_path
+                    io_tech_request_context = io_tech_request_context
+     ).
+
+*-------------------------------------------------------------------------*
+*             EntitySet -  CompanySet
+*-------------------------------------------------------------------------*
+      when 'CompanySet'.
+*     Call the entity set generated method
+     companyset_delete_entity(
+          EXPORTING iv_entity_name     = iv_entity_name
+                    iv_entity_set_name = iv_entity_set_name
+                    iv_source_name     = iv_source_name
+                    it_key_tab         = it_key_tab
+                    it_navigation_path = it_navigation_path
+                    io_tech_request_context = io_tech_request_context
+     ).
+
+*-------------------------------------------------------------------------*
+*             EntitySet -  ProblemHistoryHierarchySet
+*-------------------------------------------------------------------------*
+      when 'ProblemHistoryHierarchySet'.
+*     Call the entity set generated method
+     problemhistoryhi_delete_entity(
+          EXPORTING iv_entity_name     = iv_entity_name
+                    iv_entity_set_name = iv_entity_set_name
+                    iv_source_name     = iv_source_name
+                    it_key_tab         = it_key_tab
+                    it_navigation_path = it_navigation_path
+                    io_tech_request_context = io_tech_request_context
+     ).
+
+*-------------------------------------------------------------------------*
+*             EntitySet -  ProcessorSet
+*-------------------------------------------------------------------------*
+      when 'ProcessorSet'.
+*     Call the entity set generated method
+     processorset_delete_entity(
+          EXPORTING iv_entity_name     = iv_entity_name
+                    iv_entity_set_name = iv_entity_set_name
+                    iv_source_name     = iv_source_name
+                    it_key_tab         = it_key_tab
+                    it_navigation_path = it_navigation_path
+                    io_tech_request_context = io_tech_request_context
+     ).
+
+*-------------------------------------------------------------------------*
+*             EntitySet -  SystemUserSet
+*-------------------------------------------------------------------------*
+      when 'SystemUserSet'.
+*     Call the entity set generated method
+     systemuserset_delete_entity(
           EXPORTING iv_entity_name     = iv_entity_name
                     iv_entity_set_name = iv_entity_set_name
                     iv_source_name     = iv_source_name
@@ -1732,11 +1759,95 @@ CASE lv_entityset_name.
      ).
 
 *-------------------------------------------------------------------------*
-*             EntitySet -  SLAIrtHistorySet
+*             EntitySet -  StatusSet
 *-------------------------------------------------------------------------*
-      when 'SLAIrtHistorySet'.
+      when 'StatusSet'.
 *     Call the entity set generated method
-     slairthistoryset_delete_entity(
+     statusset_delete_entity(
+          EXPORTING iv_entity_name     = iv_entity_name
+                    iv_entity_set_name = iv_entity_set_name
+                    iv_source_name     = iv_source_name
+                    it_key_tab         = it_key_tab
+                    it_navigation_path = it_navigation_path
+                    io_tech_request_context = io_tech_request_context
+     ).
+
+*-------------------------------------------------------------------------*
+*             EntitySet -  FrontendConstantsSet
+*-------------------------------------------------------------------------*
+      when 'FrontendConstantsSet'.
+*     Call the entity set generated method
+     frontendconstant_delete_entity(
+          EXPORTING iv_entity_name     = iv_entity_name
+                    iv_entity_set_name = iv_entity_set_name
+                    iv_source_name     = iv_source_name
+                    it_key_tab         = it_key_tab
+                    it_navigation_path = it_navigation_path
+                    io_tech_request_context = io_tech_request_context
+     ).
+
+*-------------------------------------------------------------------------*
+*             EntitySet -  ProblemSet
+*-------------------------------------------------------------------------*
+      when 'ProblemSet'.
+*     Call the entity set generated method
+     problemset_delete_entity(
+          EXPORTING iv_entity_name     = iv_entity_name
+                    iv_entity_set_name = iv_entity_set_name
+                    iv_source_name     = iv_source_name
+                    it_key_tab         = it_key_tab
+                    it_navigation_path = it_navigation_path
+                    io_tech_request_context = io_tech_request_context
+     ).
+
+*-------------------------------------------------------------------------*
+*             EntitySet -  TextSet
+*-------------------------------------------------------------------------*
+      when 'TextSet'.
+*     Call the entity set generated method
+     textset_delete_entity(
+          EXPORTING iv_entity_name     = iv_entity_name
+                    iv_entity_set_name = iv_entity_set_name
+                    iv_source_name     = iv_source_name
+                    it_key_tab         = it_key_tab
+                    it_navigation_path = it_navigation_path
+                    io_tech_request_context = io_tech_request_context
+     ).
+
+*-------------------------------------------------------------------------*
+*             EntitySet -  AttachmentSet
+*-------------------------------------------------------------------------*
+      when 'AttachmentSet'.
+*     Call the entity set generated method
+     attachmentset_delete_entity(
+          EXPORTING iv_entity_name     = iv_entity_name
+                    iv_entity_set_name = iv_entity_set_name
+                    iv_source_name     = iv_source_name
+                    it_key_tab         = it_key_tab
+                    it_navigation_path = it_navigation_path
+                    io_tech_request_context = io_tech_request_context
+     ).
+
+*-------------------------------------------------------------------------*
+*             EntitySet -  ProductSet
+*-------------------------------------------------------------------------*
+      when 'ProductSet'.
+*     Call the entity set generated method
+     productset_delete_entity(
+          EXPORTING iv_entity_name     = iv_entity_name
+                    iv_entity_set_name = iv_entity_set_name
+                    iv_source_name     = iv_source_name
+                    it_key_tab         = it_key_tab
+                    it_navigation_path = it_navigation_path
+                    io_tech_request_context = io_tech_request_context
+     ).
+
+*-------------------------------------------------------------------------*
+*             EntitySet -  PrioritySet
+*-------------------------------------------------------------------------*
+      when 'PrioritySet'.
+*     Call the entity set generated method
+     priorityset_delete_entity(
           EXPORTING iv_entity_name     = iv_entity_name
                     iv_entity_set_name = iv_entity_set_name
                     iv_source_name     = iv_source_name
@@ -1761,28 +1872,29 @@ CASE lv_entityset_name.
   method /IWBEP/IF_MGW_APPL_SRV_RUNTIME~GET_ENTITY.
 *&-----------------------------------------------------------------------------------------------*
 *&  Include           /IWBEP/DPC_TEMP_GETENTITY_BASE
-*&* This class has been generated  on 08.09.2023 11:46:46 in client 200
+*&* This class has been generated  on 20.09.2023 12:17:45 in client 200
 *&*
 *&*       WARNING--> NEVER MODIFY THIS CLASS <--WARNING
 *&*   If you want to change the DPC implementation, use the
 *&*   generated methods inside the DPC provider subclass - YCL_SLPM_DPC_EXT
 *&-----------------------------------------------------------------------------------------------*
 
- DATA statusset_get_entity TYPE ycl_slpm_mpc=>ts_status.
- DATA problemhistoryhi_get_entity TYPE ycl_slpm_mpc=>ts_problemhistoryhierarchy.
- DATA companyset_get_entity TYPE ycl_slpm_mpc=>ts_company.
- DATA frontendconfigur_get_entity TYPE ycl_slpm_mpc=>ts_frontendconfiguration.
- DATA priorityset_get_entity TYPE ycl_slpm_mpc=>ts_priority.
- DATA supportteamset_get_entity TYPE ycl_slpm_mpc=>ts_supportteam.
- DATA productset_get_entity TYPE ycl_slpm_mpc=>ts_product.
- DATA systemset_get_entity TYPE ycl_slpm_mpc=>ts_system.
+ DATA problemset_get_entity TYPE ycl_slpm_mpc=>ts_problem.
+ DATA frontendconstant_get_entity TYPE ycl_slpm_mpc=>ts_frontendconstants.
  DATA systemuserset_get_entity TYPE ycl_slpm_mpc=>ts_systemuser.
+ DATA supportteamset_get_entity TYPE ycl_slpm_mpc=>ts_supportteam.
+ DATA textset_get_entity TYPE ycl_slpm_mpc=>ts_text.
+ DATA problemhistoryhi_get_entity TYPE ycl_slpm_mpc=>ts_problemhistoryhierarchy.
+ DATA processorset_get_entity TYPE ycl_slpm_mpc=>ts_processor.
+ DATA statusset_get_entity TYPE ycl_slpm_mpc=>ts_status.
+ DATA slampthistoryset_get_entity TYPE ycl_slpm_mpc=>ts_slampthistory.
+ DATA priorityset_get_entity TYPE ycl_slpm_mpc=>ts_priority.
  DATA attachmentset_get_entity TYPE ycl_slpm_mpc=>ts_attachment.
  DATA slairthistoryset_get_entity TYPE ycl_slpm_mpc=>ts_slairthistory.
- DATA textset_get_entity TYPE ycl_slpm_mpc=>ts_text.
- DATA problemset_get_entity TYPE ycl_slpm_mpc=>ts_problem.
- DATA processorset_get_entity TYPE ycl_slpm_mpc=>ts_processor.
- DATA slampthistoryset_get_entity TYPE ycl_slpm_mpc=>ts_slampthistory.
+ DATA systemset_get_entity TYPE ycl_slpm_mpc=>ts_system.
+ DATA companyset_get_entity TYPE ycl_slpm_mpc=>ts_company.
+ DATA productset_get_entity TYPE ycl_slpm_mpc=>ts_product.
+ DATA frontendconfigur_get_entity TYPE ycl_slpm_mpc=>ts_frontendconfiguration.
  DATA lv_entityset_name TYPE string.
  DATA lr_entity TYPE REF TO data.       "#EC NEEDED
 
@@ -1790,26 +1902,26 @@ lv_entityset_name = io_tech_request_context->get_entity_set_name( ).
 
 CASE lv_entityset_name.
 *-------------------------------------------------------------------------*
-*             EntitySet -  StatusSet
+*             EntitySet -  ProblemSet
 *-------------------------------------------------------------------------*
-      WHEN 'StatusSet'.
+      WHEN 'ProblemSet'.
 *     Call the entity set generated method
-          statusset_get_entity(
+          problemset_get_entity(
                EXPORTING iv_entity_name     = iv_entity_name
                          iv_entity_set_name = iv_entity_set_name
                          iv_source_name     = iv_source_name
                          it_key_tab         = it_key_tab
                          it_navigation_path = it_navigation_path
                          io_tech_request_context = io_tech_request_context
-               IMPORTING er_entity          = statusset_get_entity
+               IMPORTING er_entity          = problemset_get_entity
                          es_response_context = es_response_context
           ).
 
-        IF statusset_get_entity IS NOT INITIAL.
+        IF problemset_get_entity IS NOT INITIAL.
 *     Send specific entity data to the caller interface
           copy_data_to_ref(
             EXPORTING
-              is_data = statusset_get_entity
+              is_data = problemset_get_entity
             CHANGING
               cr_data = er_entity
           ).
@@ -1818,26 +1930,26 @@ CASE lv_entityset_name.
           er_entity = lr_entity.
         ENDIF.
 *-------------------------------------------------------------------------*
-*             EntitySet -  ProblemHistoryHierarchySet
+*             EntitySet -  FrontendConstantsSet
 *-------------------------------------------------------------------------*
-      WHEN 'ProblemHistoryHierarchySet'.
+      WHEN 'FrontendConstantsSet'.
 *     Call the entity set generated method
-          problemhistoryhi_get_entity(
+          frontendconstant_get_entity(
                EXPORTING iv_entity_name     = iv_entity_name
                          iv_entity_set_name = iv_entity_set_name
                          iv_source_name     = iv_source_name
                          it_key_tab         = it_key_tab
                          it_navigation_path = it_navigation_path
                          io_tech_request_context = io_tech_request_context
-               IMPORTING er_entity          = problemhistoryhi_get_entity
+               IMPORTING er_entity          = frontendconstant_get_entity
                          es_response_context = es_response_context
           ).
 
-        IF problemhistoryhi_get_entity IS NOT INITIAL.
+        IF frontendconstant_get_entity IS NOT INITIAL.
 *     Send specific entity data to the caller interface
           copy_data_to_ref(
             EXPORTING
-              is_data = problemhistoryhi_get_entity
+              is_data = frontendconstant_get_entity
             CHANGING
               cr_data = er_entity
           ).
@@ -1846,82 +1958,26 @@ CASE lv_entityset_name.
           er_entity = lr_entity.
         ENDIF.
 *-------------------------------------------------------------------------*
-*             EntitySet -  CompanySet
+*             EntitySet -  SystemUserSet
 *-------------------------------------------------------------------------*
-      WHEN 'CompanySet'.
+      WHEN 'SystemUserSet'.
 *     Call the entity set generated method
-          companyset_get_entity(
+          systemuserset_get_entity(
                EXPORTING iv_entity_name     = iv_entity_name
                          iv_entity_set_name = iv_entity_set_name
                          iv_source_name     = iv_source_name
                          it_key_tab         = it_key_tab
                          it_navigation_path = it_navigation_path
                          io_tech_request_context = io_tech_request_context
-               IMPORTING er_entity          = companyset_get_entity
+               IMPORTING er_entity          = systemuserset_get_entity
                          es_response_context = es_response_context
           ).
 
-        IF companyset_get_entity IS NOT INITIAL.
+        IF systemuserset_get_entity IS NOT INITIAL.
 *     Send specific entity data to the caller interface
           copy_data_to_ref(
             EXPORTING
-              is_data = companyset_get_entity
-            CHANGING
-              cr_data = er_entity
-          ).
-        ELSE.
-*         In case of initial values - unbind the entity reference
-          er_entity = lr_entity.
-        ENDIF.
-*-------------------------------------------------------------------------*
-*             EntitySet -  FrontendConfigurationSet
-*-------------------------------------------------------------------------*
-      WHEN 'FrontendConfigurationSet'.
-*     Call the entity set generated method
-          frontendconfigur_get_entity(
-               EXPORTING iv_entity_name     = iv_entity_name
-                         iv_entity_set_name = iv_entity_set_name
-                         iv_source_name     = iv_source_name
-                         it_key_tab         = it_key_tab
-                         it_navigation_path = it_navigation_path
-                         io_tech_request_context = io_tech_request_context
-               IMPORTING er_entity          = frontendconfigur_get_entity
-                         es_response_context = es_response_context
-          ).
-
-        IF frontendconfigur_get_entity IS NOT INITIAL.
-*     Send specific entity data to the caller interface
-          copy_data_to_ref(
-            EXPORTING
-              is_data = frontendconfigur_get_entity
-            CHANGING
-              cr_data = er_entity
-          ).
-        ELSE.
-*         In case of initial values - unbind the entity reference
-          er_entity = lr_entity.
-        ENDIF.
-*-------------------------------------------------------------------------*
-*             EntitySet -  PrioritySet
-*-------------------------------------------------------------------------*
-      WHEN 'PrioritySet'.
-*     Call the entity set generated method
-          priorityset_get_entity(
-               EXPORTING iv_entity_name     = iv_entity_name
-                         iv_entity_set_name = iv_entity_set_name
-                         iv_source_name     = iv_source_name
-                         it_key_tab         = it_key_tab
-                         it_navigation_path = it_navigation_path
-                         io_tech_request_context = io_tech_request_context
-               IMPORTING er_entity          = priorityset_get_entity
-                         es_response_context = es_response_context
-          ).
-
-        IF priorityset_get_entity IS NOT INITIAL.
-*     Send specific entity data to the caller interface
-          copy_data_to_ref(
-            EXPORTING
-              is_data = priorityset_get_entity
+              is_data = systemuserset_get_entity
             CHANGING
               cr_data = er_entity
           ).
@@ -1958,26 +2014,26 @@ CASE lv_entityset_name.
           er_entity = lr_entity.
         ENDIF.
 *-------------------------------------------------------------------------*
-*             EntitySet -  ProductSet
+*             EntitySet -  TextSet
 *-------------------------------------------------------------------------*
-      WHEN 'ProductSet'.
+      WHEN 'TextSet'.
 *     Call the entity set generated method
-          productset_get_entity(
+          textset_get_entity(
                EXPORTING iv_entity_name     = iv_entity_name
                          iv_entity_set_name = iv_entity_set_name
                          iv_source_name     = iv_source_name
                          it_key_tab         = it_key_tab
                          it_navigation_path = it_navigation_path
                          io_tech_request_context = io_tech_request_context
-               IMPORTING er_entity          = productset_get_entity
+               IMPORTING er_entity          = textset_get_entity
                          es_response_context = es_response_context
           ).
 
-        IF productset_get_entity IS NOT INITIAL.
+        IF textset_get_entity IS NOT INITIAL.
 *     Send specific entity data to the caller interface
           copy_data_to_ref(
             EXPORTING
-              is_data = productset_get_entity
+              is_data = textset_get_entity
             CHANGING
               cr_data = er_entity
           ).
@@ -1986,26 +2042,26 @@ CASE lv_entityset_name.
           er_entity = lr_entity.
         ENDIF.
 *-------------------------------------------------------------------------*
-*             EntitySet -  SystemSet
+*             EntitySet -  ProblemHistoryHierarchySet
 *-------------------------------------------------------------------------*
-      WHEN 'SystemSet'.
+      WHEN 'ProblemHistoryHierarchySet'.
 *     Call the entity set generated method
-          systemset_get_entity(
+          problemhistoryhi_get_entity(
                EXPORTING iv_entity_name     = iv_entity_name
                          iv_entity_set_name = iv_entity_set_name
                          iv_source_name     = iv_source_name
                          it_key_tab         = it_key_tab
                          it_navigation_path = it_navigation_path
                          io_tech_request_context = io_tech_request_context
-               IMPORTING er_entity          = systemset_get_entity
+               IMPORTING er_entity          = problemhistoryhi_get_entity
                          es_response_context = es_response_context
           ).
 
-        IF systemset_get_entity IS NOT INITIAL.
+        IF problemhistoryhi_get_entity IS NOT INITIAL.
 *     Send specific entity data to the caller interface
           copy_data_to_ref(
             EXPORTING
-              is_data = systemset_get_entity
+              is_data = problemhistoryhi_get_entity
             CHANGING
               cr_data = er_entity
           ).
@@ -2014,26 +2070,110 @@ CASE lv_entityset_name.
           er_entity = lr_entity.
         ENDIF.
 *-------------------------------------------------------------------------*
-*             EntitySet -  SystemUserSet
+*             EntitySet -  ProcessorSet
 *-------------------------------------------------------------------------*
-      WHEN 'SystemUserSet'.
+      WHEN 'ProcessorSet'.
 *     Call the entity set generated method
-          systemuserset_get_entity(
+          processorset_get_entity(
                EXPORTING iv_entity_name     = iv_entity_name
                          iv_entity_set_name = iv_entity_set_name
                          iv_source_name     = iv_source_name
                          it_key_tab         = it_key_tab
                          it_navigation_path = it_navigation_path
                          io_tech_request_context = io_tech_request_context
-               IMPORTING er_entity          = systemuserset_get_entity
+               IMPORTING er_entity          = processorset_get_entity
                          es_response_context = es_response_context
           ).
 
-        IF systemuserset_get_entity IS NOT INITIAL.
+        IF processorset_get_entity IS NOT INITIAL.
 *     Send specific entity data to the caller interface
           copy_data_to_ref(
             EXPORTING
-              is_data = systemuserset_get_entity
+              is_data = processorset_get_entity
+            CHANGING
+              cr_data = er_entity
+          ).
+        ELSE.
+*         In case of initial values - unbind the entity reference
+          er_entity = lr_entity.
+        ENDIF.
+*-------------------------------------------------------------------------*
+*             EntitySet -  StatusSet
+*-------------------------------------------------------------------------*
+      WHEN 'StatusSet'.
+*     Call the entity set generated method
+          statusset_get_entity(
+               EXPORTING iv_entity_name     = iv_entity_name
+                         iv_entity_set_name = iv_entity_set_name
+                         iv_source_name     = iv_source_name
+                         it_key_tab         = it_key_tab
+                         it_navigation_path = it_navigation_path
+                         io_tech_request_context = io_tech_request_context
+               IMPORTING er_entity          = statusset_get_entity
+                         es_response_context = es_response_context
+          ).
+
+        IF statusset_get_entity IS NOT INITIAL.
+*     Send specific entity data to the caller interface
+          copy_data_to_ref(
+            EXPORTING
+              is_data = statusset_get_entity
+            CHANGING
+              cr_data = er_entity
+          ).
+        ELSE.
+*         In case of initial values - unbind the entity reference
+          er_entity = lr_entity.
+        ENDIF.
+*-------------------------------------------------------------------------*
+*             EntitySet -  SLAMptHistorySet
+*-------------------------------------------------------------------------*
+      WHEN 'SLAMptHistorySet'.
+*     Call the entity set generated method
+          slampthistoryset_get_entity(
+               EXPORTING iv_entity_name     = iv_entity_name
+                         iv_entity_set_name = iv_entity_set_name
+                         iv_source_name     = iv_source_name
+                         it_key_tab         = it_key_tab
+                         it_navigation_path = it_navigation_path
+                         io_tech_request_context = io_tech_request_context
+               IMPORTING er_entity          = slampthistoryset_get_entity
+                         es_response_context = es_response_context
+          ).
+
+        IF slampthistoryset_get_entity IS NOT INITIAL.
+*     Send specific entity data to the caller interface
+          copy_data_to_ref(
+            EXPORTING
+              is_data = slampthistoryset_get_entity
+            CHANGING
+              cr_data = er_entity
+          ).
+        ELSE.
+*         In case of initial values - unbind the entity reference
+          er_entity = lr_entity.
+        ENDIF.
+*-------------------------------------------------------------------------*
+*             EntitySet -  PrioritySet
+*-------------------------------------------------------------------------*
+      WHEN 'PrioritySet'.
+*     Call the entity set generated method
+          priorityset_get_entity(
+               EXPORTING iv_entity_name     = iv_entity_name
+                         iv_entity_set_name = iv_entity_set_name
+                         iv_source_name     = iv_source_name
+                         it_key_tab         = it_key_tab
+                         it_navigation_path = it_navigation_path
+                         io_tech_request_context = io_tech_request_context
+               IMPORTING er_entity          = priorityset_get_entity
+                         es_response_context = es_response_context
+          ).
+
+        IF priorityset_get_entity IS NOT INITIAL.
+*     Send specific entity data to the caller interface
+          copy_data_to_ref(
+            EXPORTING
+              is_data = priorityset_get_entity
             CHANGING
               cr_data = er_entity
           ).
@@ -2098,26 +2238,26 @@ CASE lv_entityset_name.
           er_entity = lr_entity.
         ENDIF.
 *-------------------------------------------------------------------------*
-*             EntitySet -  TextSet
+*             EntitySet -  SystemSet
 *-------------------------------------------------------------------------*
-      WHEN 'TextSet'.
+      WHEN 'SystemSet'.
 *     Call the entity set generated method
-          textset_get_entity(
+          systemset_get_entity(
                EXPORTING iv_entity_name     = iv_entity_name
                          iv_entity_set_name = iv_entity_set_name
                          iv_source_name     = iv_source_name
                          it_key_tab         = it_key_tab
                          it_navigation_path = it_navigation_path
                          io_tech_request_context = io_tech_request_context
-               IMPORTING er_entity          = textset_get_entity
+               IMPORTING er_entity          = systemset_get_entity
                          es_response_context = es_response_context
           ).
 
-        IF textset_get_entity IS NOT INITIAL.
+        IF systemset_get_entity IS NOT INITIAL.
 *     Send specific entity data to the caller interface
           copy_data_to_ref(
             EXPORTING
-              is_data = textset_get_entity
+              is_data = systemset_get_entity
             CHANGING
               cr_data = er_entity
           ).
@@ -2126,26 +2266,26 @@ CASE lv_entityset_name.
           er_entity = lr_entity.
         ENDIF.
 *-------------------------------------------------------------------------*
-*             EntitySet -  ProblemSet
+*             EntitySet -  CompanySet
 *-------------------------------------------------------------------------*
-      WHEN 'ProblemSet'.
+      WHEN 'CompanySet'.
 *     Call the entity set generated method
-          problemset_get_entity(
+          companyset_get_entity(
                EXPORTING iv_entity_name     = iv_entity_name
                          iv_entity_set_name = iv_entity_set_name
                          iv_source_name     = iv_source_name
                          it_key_tab         = it_key_tab
                          it_navigation_path = it_navigation_path
                          io_tech_request_context = io_tech_request_context
-               IMPORTING er_entity          = problemset_get_entity
+               IMPORTING er_entity          = companyset_get_entity
                          es_response_context = es_response_context
           ).
 
-        IF problemset_get_entity IS NOT INITIAL.
+        IF companyset_get_entity IS NOT INITIAL.
 *     Send specific entity data to the caller interface
           copy_data_to_ref(
             EXPORTING
-              is_data = problemset_get_entity
+              is_data = companyset_get_entity
             CHANGING
               cr_data = er_entity
           ).
@@ -2154,26 +2294,26 @@ CASE lv_entityset_name.
           er_entity = lr_entity.
         ENDIF.
 *-------------------------------------------------------------------------*
-*             EntitySet -  ProcessorSet
+*             EntitySet -  ProductSet
 *-------------------------------------------------------------------------*
-      WHEN 'ProcessorSet'.
+      WHEN 'ProductSet'.
 *     Call the entity set generated method
-          processorset_get_entity(
+          productset_get_entity(
                EXPORTING iv_entity_name     = iv_entity_name
                          iv_entity_set_name = iv_entity_set_name
                          iv_source_name     = iv_source_name
                          it_key_tab         = it_key_tab
                          it_navigation_path = it_navigation_path
                          io_tech_request_context = io_tech_request_context
-               IMPORTING er_entity          = processorset_get_entity
+               IMPORTING er_entity          = productset_get_entity
                          es_response_context = es_response_context
           ).
 
-        IF processorset_get_entity IS NOT INITIAL.
+        IF productset_get_entity IS NOT INITIAL.
 *     Send specific entity data to the caller interface
           copy_data_to_ref(
             EXPORTING
-              is_data = processorset_get_entity
+              is_data = productset_get_entity
             CHANGING
               cr_data = er_entity
           ).
@@ -2182,26 +2322,26 @@ CASE lv_entityset_name.
           er_entity = lr_entity.
         ENDIF.
 *-------------------------------------------------------------------------*
-*             EntitySet -  SLAMptHistorySet
+*             EntitySet -  FrontendConfigurationSet
 *-------------------------------------------------------------------------*
-      WHEN 'SLAMptHistorySet'.
+      WHEN 'FrontendConfigurationSet'.
 *     Call the entity set generated method
-          slampthistoryset_get_entity(
+          frontendconfigur_get_entity(
                EXPORTING iv_entity_name     = iv_entity_name
                          iv_entity_set_name = iv_entity_set_name
                          iv_source_name     = iv_source_name
                          it_key_tab         = it_key_tab
                          it_navigation_path = it_navigation_path
                          io_tech_request_context = io_tech_request_context
-               IMPORTING er_entity          = slampthistoryset_get_entity
+               IMPORTING er_entity          = frontendconfigur_get_entity
                          es_response_context = es_response_context
           ).
 
-        IF slampthistoryset_get_entity IS NOT INITIAL.
+        IF frontendconfigur_get_entity IS NOT INITIAL.
 *     Send specific entity data to the caller interface
           copy_data_to_ref(
             EXPORTING
-              is_data = slampthistoryset_get_entity
+              is_data = frontendconfigur_get_entity
             CHANGING
               cr_data = er_entity
           ).
@@ -2228,212 +2368,33 @@ CASE lv_entityset_name.
   method /IWBEP/IF_MGW_APPL_SRV_RUNTIME~GET_ENTITYSET.
 *&----------------------------------------------------------------------------------------------*
 *&  Include           /IWBEP/DPC_TMP_ENTITYSET_BASE
-*&* This class has been generated on 08.09.2023 11:46:46 in client 200
+*&* This class has been generated on 20.09.2023 12:17:45 in client 200
 *&*
 *&*       WARNING--> NEVER MODIFY THIS CLASS <--WARNING
 *&*   If you want to change the DPC implementation, use the
 *&*   generated methods inside the DPC provider subclass - YCL_SLPM_DPC_EXT
 *&-----------------------------------------------------------------------------------------------*
- DATA problemhistoryhi_get_entityset TYPE ycl_slpm_mpc=>tt_problemhistoryhierarchy.
- DATA frontendconfigur_get_entityset TYPE ycl_slpm_mpc=>tt_frontendconfiguration.
- DATA systemset_get_entityset TYPE ycl_slpm_mpc=>tt_system.
- DATA slairthistoryset_get_entityset TYPE ycl_slpm_mpc=>tt_slairthistory.
- DATA companyset_get_entityset TYPE ycl_slpm_mpc=>tt_company.
- DATA slampthistoryset_get_entityset TYPE ycl_slpm_mpc=>tt_slampthistory.
  DATA problemset_get_entityset TYPE ycl_slpm_mpc=>tt_problem.
- DATA textset_get_entityset TYPE ycl_slpm_mpc=>tt_text.
- DATA attachmentset_get_entityset TYPE ycl_slpm_mpc=>tt_attachment.
- DATA productset_get_entityset TYPE ycl_slpm_mpc=>tt_product.
- DATA priorityset_get_entityset TYPE ycl_slpm_mpc=>tt_priority.
+ DATA frontendconstant_get_entityset TYPE ycl_slpm_mpc=>tt_frontendconstants.
  DATA supportteamset_get_entityset TYPE ycl_slpm_mpc=>tt_supportteam.
+ DATA textset_get_entityset TYPE ycl_slpm_mpc=>tt_text.
+ DATA problemhistoryhi_get_entityset TYPE ycl_slpm_mpc=>tt_problemhistoryhierarchy.
+ DATA slampthistoryset_get_entityset TYPE ycl_slpm_mpc=>tt_slampthistory.
+ DATA attachmentset_get_entityset TYPE ycl_slpm_mpc=>tt_attachment.
+ DATA slairthistoryset_get_entityset TYPE ycl_slpm_mpc=>tt_slairthistory.
  DATA statusset_get_entityset TYPE ycl_slpm_mpc=>tt_status.
+ DATA systemset_get_entityset TYPE ycl_slpm_mpc=>tt_system.
+ DATA productset_get_entityset TYPE ycl_slpm_mpc=>tt_product.
+ DATA frontendconfigur_get_entityset TYPE ycl_slpm_mpc=>tt_frontendconfiguration.
  DATA systemuserset_get_entityset TYPE ycl_slpm_mpc=>tt_systemuser.
  DATA processorset_get_entityset TYPE ycl_slpm_mpc=>tt_processor.
+ DATA companyset_get_entityset TYPE ycl_slpm_mpc=>tt_company.
+ DATA priorityset_get_entityset TYPE ycl_slpm_mpc=>tt_priority.
  DATA lv_entityset_name TYPE string.
 
 lv_entityset_name = io_tech_request_context->get_entity_set_name( ).
 
 CASE lv_entityset_name.
-*-------------------------------------------------------------------------*
-*             EntitySet -  ProblemHistoryHierarchySet
-*-------------------------------------------------------------------------*
-   WHEN 'ProblemHistoryHierarchySet'.
-*     Call the entity set generated method
-      problemhistoryhi_get_entityset(
-        EXPORTING
-         iv_entity_name = iv_entity_name
-         iv_entity_set_name = iv_entity_set_name
-         iv_source_name = iv_source_name
-         it_filter_select_options = it_filter_select_options
-         it_order = it_order
-         is_paging = is_paging
-         it_navigation_path = it_navigation_path
-         it_key_tab = it_key_tab
-         iv_filter_string = iv_filter_string
-         iv_search_string = iv_search_string
-         io_tech_request_context = io_tech_request_context
-       IMPORTING
-         et_entityset = problemhistoryhi_get_entityset
-         es_response_context = es_response_context
-       ).
-*     Send specific entity data to the caller interface
-      copy_data_to_ref(
-        EXPORTING
-          is_data = problemhistoryhi_get_entityset
-        CHANGING
-          cr_data = er_entityset
-      ).
-
-*-------------------------------------------------------------------------*
-*             EntitySet -  FrontendConfigurationSet
-*-------------------------------------------------------------------------*
-   WHEN 'FrontendConfigurationSet'.
-*     Call the entity set generated method
-      frontendconfigur_get_entityset(
-        EXPORTING
-         iv_entity_name = iv_entity_name
-         iv_entity_set_name = iv_entity_set_name
-         iv_source_name = iv_source_name
-         it_filter_select_options = it_filter_select_options
-         it_order = it_order
-         is_paging = is_paging
-         it_navigation_path = it_navigation_path
-         it_key_tab = it_key_tab
-         iv_filter_string = iv_filter_string
-         iv_search_string = iv_search_string
-         io_tech_request_context = io_tech_request_context
-       IMPORTING
-         et_entityset = frontendconfigur_get_entityset
-         es_response_context = es_response_context
-       ).
-*     Send specific entity data to the caller interface
-      copy_data_to_ref(
-        EXPORTING
-          is_data = frontendconfigur_get_entityset
-        CHANGING
-          cr_data = er_entityset
-      ).
-
-*-------------------------------------------------------------------------*
-*             EntitySet -  SystemSet
-*-------------------------------------------------------------------------*
-   WHEN 'SystemSet'.
-*     Call the entity set generated method
-      systemset_get_entityset(
-        EXPORTING
-         iv_entity_name = iv_entity_name
-         iv_entity_set_name = iv_entity_set_name
-         iv_source_name = iv_source_name
-         it_filter_select_options = it_filter_select_options
-         it_order = it_order
-         is_paging = is_paging
-         it_navigation_path = it_navigation_path
-         it_key_tab = it_key_tab
-         iv_filter_string = iv_filter_string
-         iv_search_string = iv_search_string
-         io_tech_request_context = io_tech_request_context
-       IMPORTING
-         et_entityset = systemset_get_entityset
-         es_response_context = es_response_context
-       ).
-*     Send specific entity data to the caller interface
-      copy_data_to_ref(
-        EXPORTING
-          is_data = systemset_get_entityset
-        CHANGING
-          cr_data = er_entityset
-      ).
-
-*-------------------------------------------------------------------------*
-*             EntitySet -  SLAIrtHistorySet
-*-------------------------------------------------------------------------*
-   WHEN 'SLAIrtHistorySet'.
-*     Call the entity set generated method
-      slairthistoryset_get_entityset(
-        EXPORTING
-         iv_entity_name = iv_entity_name
-         iv_entity_set_name = iv_entity_set_name
-         iv_source_name = iv_source_name
-         it_filter_select_options = it_filter_select_options
-         it_order = it_order
-         is_paging = is_paging
-         it_navigation_path = it_navigation_path
-         it_key_tab = it_key_tab
-         iv_filter_string = iv_filter_string
-         iv_search_string = iv_search_string
-         io_tech_request_context = io_tech_request_context
-       IMPORTING
-         et_entityset = slairthistoryset_get_entityset
-         es_response_context = es_response_context
-       ).
-*     Send specific entity data to the caller interface
-      copy_data_to_ref(
-        EXPORTING
-          is_data = slairthistoryset_get_entityset
-        CHANGING
-          cr_data = er_entityset
-      ).
-
-*-------------------------------------------------------------------------*
-*             EntitySet -  CompanySet
-*-------------------------------------------------------------------------*
-   WHEN 'CompanySet'.
-*     Call the entity set generated method
-      companyset_get_entityset(
-        EXPORTING
-         iv_entity_name = iv_entity_name
-         iv_entity_set_name = iv_entity_set_name
-         iv_source_name = iv_source_name
-         it_filter_select_options = it_filter_select_options
-         it_order = it_order
-         is_paging = is_paging
-         it_navigation_path = it_navigation_path
-         it_key_tab = it_key_tab
-         iv_filter_string = iv_filter_string
-         iv_search_string = iv_search_string
-         io_tech_request_context = io_tech_request_context
-       IMPORTING
-         et_entityset = companyset_get_entityset
-         es_response_context = es_response_context
-       ).
-*     Send specific entity data to the caller interface
-      copy_data_to_ref(
-        EXPORTING
-          is_data = companyset_get_entityset
-        CHANGING
-          cr_data = er_entityset
-      ).
-
-*-------------------------------------------------------------------------*
-*             EntitySet -  SLAMptHistorySet
-*-------------------------------------------------------------------------*
-   WHEN 'SLAMptHistorySet'.
-*     Call the entity set generated method
-      slampthistoryset_get_entityset(
-        EXPORTING
-         iv_entity_name = iv_entity_name
-         iv_entity_set_name = iv_entity_set_name
-         iv_source_name = iv_source_name
-         it_filter_select_options = it_filter_select_options
-         it_order = it_order
-         is_paging = is_paging
-         it_navigation_path = it_navigation_path
-         it_key_tab = it_key_tab
-         iv_filter_string = iv_filter_string
-         iv_search_string = iv_search_string
-         io_tech_request_context = io_tech_request_context
-       IMPORTING
-         et_entityset = slampthistoryset_get_entityset
-         es_response_context = es_response_context
-       ).
-*     Send specific entity data to the caller interface
-      copy_data_to_ref(
-        EXPORTING
-          is_data = slampthistoryset_get_entityset
-        CHANGING
-          cr_data = er_entityset
-      ).
-
 *-------------------------------------------------------------------------*
 *             EntitySet -  ProblemSet
 *-------------------------------------------------------------------------*
@@ -2465,11 +2426,11 @@ CASE lv_entityset_name.
       ).
 
 *-------------------------------------------------------------------------*
-*             EntitySet -  TextSet
+*             EntitySet -  FrontendConstantsSet
 *-------------------------------------------------------------------------*
-   WHEN 'TextSet'.
+   WHEN 'FrontendConstantsSet'.
 *     Call the entity set generated method
-      textset_get_entityset(
+      frontendconstant_get_entityset(
         EXPORTING
          iv_entity_name = iv_entity_name
          iv_entity_set_name = iv_entity_set_name
@@ -2483,103 +2444,13 @@ CASE lv_entityset_name.
          iv_search_string = iv_search_string
          io_tech_request_context = io_tech_request_context
        IMPORTING
-         et_entityset = textset_get_entityset
+         et_entityset = frontendconstant_get_entityset
          es_response_context = es_response_context
        ).
 *     Send specific entity data to the caller interface
       copy_data_to_ref(
         EXPORTING
-          is_data = textset_get_entityset
-        CHANGING
-          cr_data = er_entityset
-      ).
-
-*-------------------------------------------------------------------------*
-*             EntitySet -  AttachmentSet
-*-------------------------------------------------------------------------*
-   WHEN 'AttachmentSet'.
-*     Call the entity set generated method
-      attachmentset_get_entityset(
-        EXPORTING
-         iv_entity_name = iv_entity_name
-         iv_entity_set_name = iv_entity_set_name
-         iv_source_name = iv_source_name
-         it_filter_select_options = it_filter_select_options
-         it_order = it_order
-         is_paging = is_paging
-         it_navigation_path = it_navigation_path
-         it_key_tab = it_key_tab
-         iv_filter_string = iv_filter_string
-         iv_search_string = iv_search_string
-         io_tech_request_context = io_tech_request_context
-       IMPORTING
-         et_entityset = attachmentset_get_entityset
-         es_response_context = es_response_context
-       ).
-*     Send specific entity data to the caller interface
-      copy_data_to_ref(
-        EXPORTING
-          is_data = attachmentset_get_entityset
-        CHANGING
-          cr_data = er_entityset
-      ).
-
-*-------------------------------------------------------------------------*
-*             EntitySet -  ProductSet
-*-------------------------------------------------------------------------*
-   WHEN 'ProductSet'.
-*     Call the entity set generated method
-      productset_get_entityset(
-        EXPORTING
-         iv_entity_name = iv_entity_name
-         iv_entity_set_name = iv_entity_set_name
-         iv_source_name = iv_source_name
-         it_filter_select_options = it_filter_select_options
-         it_order = it_order
-         is_paging = is_paging
-         it_navigation_path = it_navigation_path
-         it_key_tab = it_key_tab
-         iv_filter_string = iv_filter_string
-         iv_search_string = iv_search_string
-         io_tech_request_context = io_tech_request_context
-       IMPORTING
-         et_entityset = productset_get_entityset
-         es_response_context = es_response_context
-       ).
-*     Send specific entity data to the caller interface
-      copy_data_to_ref(
-        EXPORTING
-          is_data = productset_get_entityset
-        CHANGING
-          cr_data = er_entityset
-      ).
-
-*-------------------------------------------------------------------------*
-*             EntitySet -  PrioritySet
-*-------------------------------------------------------------------------*
-   WHEN 'PrioritySet'.
-*     Call the entity set generated method
-      priorityset_get_entityset(
-        EXPORTING
-         iv_entity_name = iv_entity_name
-         iv_entity_set_name = iv_entity_set_name
-         iv_source_name = iv_source_name
-         it_filter_select_options = it_filter_select_options
-         it_order = it_order
-         is_paging = is_paging
-         it_navigation_path = it_navigation_path
-         it_key_tab = it_key_tab
-         iv_filter_string = iv_filter_string
-         iv_search_string = iv_search_string
-         io_tech_request_context = io_tech_request_context
-       IMPORTING
-         et_entityset = priorityset_get_entityset
-         es_response_context = es_response_context
-       ).
-*     Send specific entity data to the caller interface
-      copy_data_to_ref(
-        EXPORTING
-          is_data = priorityset_get_entityset
+          is_data = frontendconstant_get_entityset
         CHANGING
           cr_data = er_entityset
       ).
@@ -2615,6 +2486,156 @@ CASE lv_entityset_name.
       ).
 
 *-------------------------------------------------------------------------*
+*             EntitySet -  TextSet
+*-------------------------------------------------------------------------*
+   WHEN 'TextSet'.
+*     Call the entity set generated method
+      textset_get_entityset(
+        EXPORTING
+         iv_entity_name = iv_entity_name
+         iv_entity_set_name = iv_entity_set_name
+         iv_source_name = iv_source_name
+         it_filter_select_options = it_filter_select_options
+         it_order = it_order
+         is_paging = is_paging
+         it_navigation_path = it_navigation_path
+         it_key_tab = it_key_tab
+         iv_filter_string = iv_filter_string
+         iv_search_string = iv_search_string
+         io_tech_request_context = io_tech_request_context
+       IMPORTING
+         et_entityset = textset_get_entityset
+         es_response_context = es_response_context
+       ).
+*     Send specific entity data to the caller interface
+      copy_data_to_ref(
+        EXPORTING
+          is_data = textset_get_entityset
+        CHANGING
+          cr_data = er_entityset
+      ).
+
+*-------------------------------------------------------------------------*
+*             EntitySet -  ProblemHistoryHierarchySet
+*-------------------------------------------------------------------------*
+   WHEN 'ProblemHistoryHierarchySet'.
+*     Call the entity set generated method
+      problemhistoryhi_get_entityset(
+        EXPORTING
+         iv_entity_name = iv_entity_name
+         iv_entity_set_name = iv_entity_set_name
+         iv_source_name = iv_source_name
+         it_filter_select_options = it_filter_select_options
+         it_order = it_order
+         is_paging = is_paging
+         it_navigation_path = it_navigation_path
+         it_key_tab = it_key_tab
+         iv_filter_string = iv_filter_string
+         iv_search_string = iv_search_string
+         io_tech_request_context = io_tech_request_context
+       IMPORTING
+         et_entityset = problemhistoryhi_get_entityset
+         es_response_context = es_response_context
+       ).
+*     Send specific entity data to the caller interface
+      copy_data_to_ref(
+        EXPORTING
+          is_data = problemhistoryhi_get_entityset
+        CHANGING
+          cr_data = er_entityset
+      ).
+
+*-------------------------------------------------------------------------*
+*             EntitySet -  SLAMptHistorySet
+*-------------------------------------------------------------------------*
+   WHEN 'SLAMptHistorySet'.
+*     Call the entity set generated method
+      slampthistoryset_get_entityset(
+        EXPORTING
+         iv_entity_name = iv_entity_name
+         iv_entity_set_name = iv_entity_set_name
+         iv_source_name = iv_source_name
+         it_filter_select_options = it_filter_select_options
+         it_order = it_order
+         is_paging = is_paging
+         it_navigation_path = it_navigation_path
+         it_key_tab = it_key_tab
+         iv_filter_string = iv_filter_string
+         iv_search_string = iv_search_string
+         io_tech_request_context = io_tech_request_context
+       IMPORTING
+         et_entityset = slampthistoryset_get_entityset
+         es_response_context = es_response_context
+       ).
+*     Send specific entity data to the caller interface
+      copy_data_to_ref(
+        EXPORTING
+          is_data = slampthistoryset_get_entityset
+        CHANGING
+          cr_data = er_entityset
+      ).
+
+*-------------------------------------------------------------------------*
+*             EntitySet -  AttachmentSet
+*-------------------------------------------------------------------------*
+   WHEN 'AttachmentSet'.
+*     Call the entity set generated method
+      attachmentset_get_entityset(
+        EXPORTING
+         iv_entity_name = iv_entity_name
+         iv_entity_set_name = iv_entity_set_name
+         iv_source_name = iv_source_name
+         it_filter_select_options = it_filter_select_options
+         it_order = it_order
+         is_paging = is_paging
+         it_navigation_path = it_navigation_path
+         it_key_tab = it_key_tab
+         iv_filter_string = iv_filter_string
+         iv_search_string = iv_search_string
+         io_tech_request_context = io_tech_request_context
+       IMPORTING
+         et_entityset = attachmentset_get_entityset
+         es_response_context = es_response_context
+       ).
+*     Send specific entity data to the caller interface
+      copy_data_to_ref(
+        EXPORTING
+          is_data = attachmentset_get_entityset
+        CHANGING
+          cr_data = er_entityset
+      ).
+
+*-------------------------------------------------------------------------*
+*             EntitySet -  SLAIrtHistorySet
+*-------------------------------------------------------------------------*
+   WHEN 'SLAIrtHistorySet'.
+*     Call the entity set generated method
+      slairthistoryset_get_entityset(
+        EXPORTING
+         iv_entity_name = iv_entity_name
+         iv_entity_set_name = iv_entity_set_name
+         iv_source_name = iv_source_name
+         it_filter_select_options = it_filter_select_options
+         it_order = it_order
+         is_paging = is_paging
+         it_navigation_path = it_navigation_path
+         it_key_tab = it_key_tab
+         iv_filter_string = iv_filter_string
+         iv_search_string = iv_search_string
+         io_tech_request_context = io_tech_request_context
+       IMPORTING
+         et_entityset = slairthistoryset_get_entityset
+         es_response_context = es_response_context
+       ).
+*     Send specific entity data to the caller interface
+      copy_data_to_ref(
+        EXPORTING
+          is_data = slairthistoryset_get_entityset
+        CHANGING
+          cr_data = er_entityset
+      ).
+
+*-------------------------------------------------------------------------*
 *             EntitySet -  StatusSet
 *-------------------------------------------------------------------------*
    WHEN 'StatusSet'.
@@ -2640,6 +2661,96 @@ CASE lv_entityset_name.
       copy_data_to_ref(
         EXPORTING
           is_data = statusset_get_entityset
+        CHANGING
+          cr_data = er_entityset
+      ).
+
+*-------------------------------------------------------------------------*
+*             EntitySet -  SystemSet
+*-------------------------------------------------------------------------*
+   WHEN 'SystemSet'.
+*     Call the entity set generated method
+      systemset_get_entityset(
+        EXPORTING
+         iv_entity_name = iv_entity_name
+         iv_entity_set_name = iv_entity_set_name
+         iv_source_name = iv_source_name
+         it_filter_select_options = it_filter_select_options
+         it_order = it_order
+         is_paging = is_paging
+         it_navigation_path = it_navigation_path
+         it_key_tab = it_key_tab
+         iv_filter_string = iv_filter_string
+         iv_search_string = iv_search_string
+         io_tech_request_context = io_tech_request_context
+       IMPORTING
+         et_entityset = systemset_get_entityset
+         es_response_context = es_response_context
+       ).
+*     Send specific entity data to the caller interface
+      copy_data_to_ref(
+        EXPORTING
+          is_data = systemset_get_entityset
+        CHANGING
+          cr_data = er_entityset
+      ).
+
+*-------------------------------------------------------------------------*
+*             EntitySet -  ProductSet
+*-------------------------------------------------------------------------*
+   WHEN 'ProductSet'.
+*     Call the entity set generated method
+      productset_get_entityset(
+        EXPORTING
+         iv_entity_name = iv_entity_name
+         iv_entity_set_name = iv_entity_set_name
+         iv_source_name = iv_source_name
+         it_filter_select_options = it_filter_select_options
+         it_order = it_order
+         is_paging = is_paging
+         it_navigation_path = it_navigation_path
+         it_key_tab = it_key_tab
+         iv_filter_string = iv_filter_string
+         iv_search_string = iv_search_string
+         io_tech_request_context = io_tech_request_context
+       IMPORTING
+         et_entityset = productset_get_entityset
+         es_response_context = es_response_context
+       ).
+*     Send specific entity data to the caller interface
+      copy_data_to_ref(
+        EXPORTING
+          is_data = productset_get_entityset
+        CHANGING
+          cr_data = er_entityset
+      ).
+
+*-------------------------------------------------------------------------*
+*             EntitySet -  FrontendConfigurationSet
+*-------------------------------------------------------------------------*
+   WHEN 'FrontendConfigurationSet'.
+*     Call the entity set generated method
+      frontendconfigur_get_entityset(
+        EXPORTING
+         iv_entity_name = iv_entity_name
+         iv_entity_set_name = iv_entity_set_name
+         iv_source_name = iv_source_name
+         it_filter_select_options = it_filter_select_options
+         it_order = it_order
+         is_paging = is_paging
+         it_navigation_path = it_navigation_path
+         it_key_tab = it_key_tab
+         iv_filter_string = iv_filter_string
+         iv_search_string = iv_search_string
+         io_tech_request_context = io_tech_request_context
+       IMPORTING
+         et_entityset = frontendconfigur_get_entityset
+         es_response_context = es_response_context
+       ).
+*     Send specific entity data to the caller interface
+      copy_data_to_ref(
+        EXPORTING
+          is_data = frontendconfigur_get_entityset
         CHANGING
           cr_data = er_entityset
       ).
@@ -2704,6 +2815,66 @@ CASE lv_entityset_name.
           cr_data = er_entityset
       ).
 
+*-------------------------------------------------------------------------*
+*             EntitySet -  CompanySet
+*-------------------------------------------------------------------------*
+   WHEN 'CompanySet'.
+*     Call the entity set generated method
+      companyset_get_entityset(
+        EXPORTING
+         iv_entity_name = iv_entity_name
+         iv_entity_set_name = iv_entity_set_name
+         iv_source_name = iv_source_name
+         it_filter_select_options = it_filter_select_options
+         it_order = it_order
+         is_paging = is_paging
+         it_navigation_path = it_navigation_path
+         it_key_tab = it_key_tab
+         iv_filter_string = iv_filter_string
+         iv_search_string = iv_search_string
+         io_tech_request_context = io_tech_request_context
+       IMPORTING
+         et_entityset = companyset_get_entityset
+         es_response_context = es_response_context
+       ).
+*     Send specific entity data to the caller interface
+      copy_data_to_ref(
+        EXPORTING
+          is_data = companyset_get_entityset
+        CHANGING
+          cr_data = er_entityset
+      ).
+
+*-------------------------------------------------------------------------*
+*             EntitySet -  PrioritySet
+*-------------------------------------------------------------------------*
+   WHEN 'PrioritySet'.
+*     Call the entity set generated method
+      priorityset_get_entityset(
+        EXPORTING
+         iv_entity_name = iv_entity_name
+         iv_entity_set_name = iv_entity_set_name
+         iv_source_name = iv_source_name
+         it_filter_select_options = it_filter_select_options
+         it_order = it_order
+         is_paging = is_paging
+         it_navigation_path = it_navigation_path
+         it_key_tab = it_key_tab
+         iv_filter_string = iv_filter_string
+         iv_search_string = iv_search_string
+         io_tech_request_context = io_tech_request_context
+       IMPORTING
+         et_entityset = priorityset_get_entityset
+         es_response_context = es_response_context
+       ).
+*     Send specific entity data to the caller interface
+      copy_data_to_ref(
+        EXPORTING
+          is_data = priorityset_get_entityset
+        CHANGING
+          cr_data = er_entityset
+      ).
+
     WHEN OTHERS.
       super->/iwbep/if_mgw_appl_srv_runtime~get_entityset(
         EXPORTING
@@ -2727,115 +2898,35 @@ CASE lv_entityset_name.
   method /IWBEP/IF_MGW_APPL_SRV_RUNTIME~UPDATE_ENTITY.
 *&----------------------------------------------------------------------------------------------*
 *&  Include           /IWBEP/DPC_TEMP_UPD_ENTITY_BASE
-*&* This class has been generated on 08.09.2023 11:46:46 in client 200
+*&* This class has been generated on 20.09.2023 12:17:45 in client 200
 *&*
 *&*       WARNING--> NEVER MODIFY THIS CLASS <--WARNING
 *&*   If you want to change the DPC implementation, use the
 *&*   generated methods inside the DPC provider subclass - YCL_SLPM_DPC_EXT
 *&-----------------------------------------------------------------------------------------------*
 
- DATA supportteamset_update_entity TYPE ycl_slpm_mpc=>ts_supportteam.
- DATA problemhistoryhi_update_entity TYPE ycl_slpm_mpc=>ts_problemhistoryhierarchy.
- DATA slampthistoryset_update_entity TYPE ycl_slpm_mpc=>ts_slampthistory.
  DATA slairthistoryset_update_entity TYPE ycl_slpm_mpc=>ts_slairthistory.
- DATA systemset_update_entity TYPE ycl_slpm_mpc=>ts_system.
- DATA frontendconfigur_update_entity TYPE ycl_slpm_mpc=>ts_frontendconfiguration.
- DATA companyset_update_entity TYPE ycl_slpm_mpc=>ts_company.
  DATA processorset_update_entity TYPE ycl_slpm_mpc=>ts_processor.
- DATA systemuserset_update_entity TYPE ycl_slpm_mpc=>ts_systemuser.
- DATA statusset_update_entity TYPE ycl_slpm_mpc=>ts_status.
- DATA priorityset_update_entity TYPE ycl_slpm_mpc=>ts_priority.
- DATA productset_update_entity TYPE ycl_slpm_mpc=>ts_product.
+ DATA slampthistoryset_update_entity TYPE ycl_slpm_mpc=>ts_slampthistory.
  DATA attachmentset_update_entity TYPE ycl_slpm_mpc=>ts_attachment.
  DATA textset_update_entity TYPE ycl_slpm_mpc=>ts_text.
+ DATA systemset_update_entity TYPE ycl_slpm_mpc=>ts_system.
+ DATA problemhistoryhi_update_entity TYPE ycl_slpm_mpc=>ts_problemhistoryhierarchy.
+ DATA companyset_update_entity TYPE ycl_slpm_mpc=>ts_company.
+ DATA priorityset_update_entity TYPE ycl_slpm_mpc=>ts_priority.
+ DATA supportteamset_update_entity TYPE ycl_slpm_mpc=>ts_supportteam.
+ DATA statusset_update_entity TYPE ycl_slpm_mpc=>ts_status.
  DATA problemset_update_entity TYPE ycl_slpm_mpc=>ts_problem.
+ DATA frontendconfigur_update_entity TYPE ycl_slpm_mpc=>ts_frontendconfiguration.
+ DATA frontendconstant_update_entity TYPE ycl_slpm_mpc=>ts_frontendconstants.
+ DATA productset_update_entity TYPE ycl_slpm_mpc=>ts_product.
+ DATA systemuserset_update_entity TYPE ycl_slpm_mpc=>ts_systemuser.
  DATA lv_entityset_name TYPE string.
  DATA lr_entity TYPE REF TO data. "#EC NEEDED
 
 lv_entityset_name = io_tech_request_context->get_entity_set_name( ).
 
 CASE lv_entityset_name.
-*-------------------------------------------------------------------------*
-*             EntitySet -  SupportTeamSet
-*-------------------------------------------------------------------------*
-      WHEN 'SupportTeamSet'.
-*     Call the entity set generated method
-          supportteamset_update_entity(
-               EXPORTING iv_entity_name     = iv_entity_name
-                         iv_entity_set_name = iv_entity_set_name
-                         iv_source_name     = iv_source_name
-                         io_data_provider   = io_data_provider
-                         it_key_tab         = it_key_tab
-                         it_navigation_path = it_navigation_path
-                         io_tech_request_context = io_tech_request_context
-               IMPORTING er_entity          = supportteamset_update_entity
-          ).
-       IF supportteamset_update_entity IS NOT INITIAL.
-*     Send specific entity data to the caller interface
-          copy_data_to_ref(
-            EXPORTING
-              is_data = supportteamset_update_entity
-            CHANGING
-              cr_data = er_entity
-          ).
-        ELSE.
-*         In case of initial values - unbind the entity reference
-          er_entity = lr_entity.
-        ENDIF.
-*-------------------------------------------------------------------------*
-*             EntitySet -  ProblemHistoryHierarchySet
-*-------------------------------------------------------------------------*
-      WHEN 'ProblemHistoryHierarchySet'.
-*     Call the entity set generated method
-          problemhistoryhi_update_entity(
-               EXPORTING iv_entity_name     = iv_entity_name
-                         iv_entity_set_name = iv_entity_set_name
-                         iv_source_name     = iv_source_name
-                         io_data_provider   = io_data_provider
-                         it_key_tab         = it_key_tab
-                         it_navigation_path = it_navigation_path
-                         io_tech_request_context = io_tech_request_context
-               IMPORTING er_entity          = problemhistoryhi_update_entity
-          ).
-       IF problemhistoryhi_update_entity IS NOT INITIAL.
-*     Send specific entity data to the caller interface
-          copy_data_to_ref(
-            EXPORTING
-              is_data = problemhistoryhi_update_entity
-            CHANGING
-              cr_data = er_entity
-          ).
-        ELSE.
-*         In case of initial values - unbind the entity reference
-          er_entity = lr_entity.
-        ENDIF.
-*-------------------------------------------------------------------------*
-*             EntitySet -  SLAMptHistorySet
-*-------------------------------------------------------------------------*
-      WHEN 'SLAMptHistorySet'.
-*     Call the entity set generated method
-          slampthistoryset_update_entity(
-               EXPORTING iv_entity_name     = iv_entity_name
-                         iv_entity_set_name = iv_entity_set_name
-                         iv_source_name     = iv_source_name
-                         io_data_provider   = io_data_provider
-                         it_key_tab         = it_key_tab
-                         it_navigation_path = it_navigation_path
-                         io_tech_request_context = io_tech_request_context
-               IMPORTING er_entity          = slampthistoryset_update_entity
-          ).
-       IF slampthistoryset_update_entity IS NOT INITIAL.
-*     Send specific entity data to the caller interface
-          copy_data_to_ref(
-            EXPORTING
-              is_data = slampthistoryset_update_entity
-            CHANGING
-              cr_data = er_entity
-          ).
-        ELSE.
-*         In case of initial values - unbind the entity reference
-          er_entity = lr_entity.
-        ENDIF.
 *-------------------------------------------------------------------------*
 *             EntitySet -  SLAIrtHistorySet
 *-------------------------------------------------------------------------*
@@ -2856,87 +2947,6 @@ CASE lv_entityset_name.
           copy_data_to_ref(
             EXPORTING
               is_data = slairthistoryset_update_entity
-            CHANGING
-              cr_data = er_entity
-          ).
-        ELSE.
-*         In case of initial values - unbind the entity reference
-          er_entity = lr_entity.
-        ENDIF.
-*-------------------------------------------------------------------------*
-*             EntitySet -  SystemSet
-*-------------------------------------------------------------------------*
-      WHEN 'SystemSet'.
-*     Call the entity set generated method
-          systemset_update_entity(
-               EXPORTING iv_entity_name     = iv_entity_name
-                         iv_entity_set_name = iv_entity_set_name
-                         iv_source_name     = iv_source_name
-                         io_data_provider   = io_data_provider
-                         it_key_tab         = it_key_tab
-                         it_navigation_path = it_navigation_path
-                         io_tech_request_context = io_tech_request_context
-               IMPORTING er_entity          = systemset_update_entity
-          ).
-       IF systemset_update_entity IS NOT INITIAL.
-*     Send specific entity data to the caller interface
-          copy_data_to_ref(
-            EXPORTING
-              is_data = systemset_update_entity
-            CHANGING
-              cr_data = er_entity
-          ).
-        ELSE.
-*         In case of initial values - unbind the entity reference
-          er_entity = lr_entity.
-        ENDIF.
-*-------------------------------------------------------------------------*
-*             EntitySet -  FrontendConfigurationSet
-*-------------------------------------------------------------------------*
-      WHEN 'FrontendConfigurationSet'.
-*     Call the entity set generated method
-          frontendconfigur_update_entity(
-               EXPORTING iv_entity_name     = iv_entity_name
-                         iv_entity_set_name = iv_entity_set_name
-                         iv_source_name     = iv_source_name
-                         io_data_provider   = io_data_provider
-                         it_key_tab         = it_key_tab
-                         it_navigation_path = it_navigation_path
-                         io_tech_request_context = io_tech_request_context
-               IMPORTING er_entity          = frontendconfigur_update_entity
-          ).
-       IF frontendconfigur_update_entity IS NOT INITIAL.
-*     Send specific entity data to the caller interface
-          copy_data_to_ref(
-            EXPORTING
-              is_data = frontendconfigur_update_entity
-            CHANGING
-              cr_data = er_entity
-          ).
-        ELSE.
-*         In case of initial values - unbind the entity reference
-          er_entity = lr_entity.
-        ENDIF.
-*-------------------------------------------------------------------------*
-*             EntitySet -  CompanySet
-*-------------------------------------------------------------------------*
-      WHEN 'CompanySet'.
-*     Call the entity set generated method
-          companyset_update_entity(
-               EXPORTING iv_entity_name     = iv_entity_name
-                         iv_entity_set_name = iv_entity_set_name
-                         iv_source_name     = iv_source_name
-                         io_data_provider   = io_data_provider
-                         it_key_tab         = it_key_tab
-                         it_navigation_path = it_navigation_path
-                         io_tech_request_context = io_tech_request_context
-               IMPORTING er_entity          = companyset_update_entity
-          ).
-       IF companyset_update_entity IS NOT INITIAL.
-*     Send specific entity data to the caller interface
-          copy_data_to_ref(
-            EXPORTING
-              is_data = companyset_update_entity
             CHANGING
               cr_data = er_entity
           ).
@@ -2972,11 +2982,11 @@ CASE lv_entityset_name.
           er_entity = lr_entity.
         ENDIF.
 *-------------------------------------------------------------------------*
-*             EntitySet -  SystemUserSet
+*             EntitySet -  SLAMptHistorySet
 *-------------------------------------------------------------------------*
-      WHEN 'SystemUserSet'.
+      WHEN 'SLAMptHistorySet'.
 *     Call the entity set generated method
-          systemuserset_update_entity(
+          slampthistoryset_update_entity(
                EXPORTING iv_entity_name     = iv_entity_name
                          iv_entity_set_name = iv_entity_set_name
                          iv_source_name     = iv_source_name
@@ -2984,94 +2994,13 @@ CASE lv_entityset_name.
                          it_key_tab         = it_key_tab
                          it_navigation_path = it_navigation_path
                          io_tech_request_context = io_tech_request_context
-               IMPORTING er_entity          = systemuserset_update_entity
+               IMPORTING er_entity          = slampthistoryset_update_entity
           ).
-       IF systemuserset_update_entity IS NOT INITIAL.
+       IF slampthistoryset_update_entity IS NOT INITIAL.
 *     Send specific entity data to the caller interface
           copy_data_to_ref(
             EXPORTING
-              is_data = systemuserset_update_entity
-            CHANGING
-              cr_data = er_entity
-          ).
-        ELSE.
-*         In case of initial values - unbind the entity reference
-          er_entity = lr_entity.
-        ENDIF.
-*-------------------------------------------------------------------------*
-*             EntitySet -  StatusSet
-*-------------------------------------------------------------------------*
-      WHEN 'StatusSet'.
-*     Call the entity set generated method
-          statusset_update_entity(
-               EXPORTING iv_entity_name     = iv_entity_name
-                         iv_entity_set_name = iv_entity_set_name
-                         iv_source_name     = iv_source_name
-                         io_data_provider   = io_data_provider
-                         it_key_tab         = it_key_tab
-                         it_navigation_path = it_navigation_path
-                         io_tech_request_context = io_tech_request_context
-               IMPORTING er_entity          = statusset_update_entity
-          ).
-       IF statusset_update_entity IS NOT INITIAL.
-*     Send specific entity data to the caller interface
-          copy_data_to_ref(
-            EXPORTING
-              is_data = statusset_update_entity
-            CHANGING
-              cr_data = er_entity
-          ).
-        ELSE.
-*         In case of initial values - unbind the entity reference
-          er_entity = lr_entity.
-        ENDIF.
-*-------------------------------------------------------------------------*
-*             EntitySet -  PrioritySet
-*-------------------------------------------------------------------------*
-      WHEN 'PrioritySet'.
-*     Call the entity set generated method
-          priorityset_update_entity(
-               EXPORTING iv_entity_name     = iv_entity_name
-                         iv_entity_set_name = iv_entity_set_name
-                         iv_source_name     = iv_source_name
-                         io_data_provider   = io_data_provider
-                         it_key_tab         = it_key_tab
-                         it_navigation_path = it_navigation_path
-                         io_tech_request_context = io_tech_request_context
-               IMPORTING er_entity          = priorityset_update_entity
-          ).
-       IF priorityset_update_entity IS NOT INITIAL.
-*     Send specific entity data to the caller interface
-          copy_data_to_ref(
-            EXPORTING
-              is_data = priorityset_update_entity
-            CHANGING
-              cr_data = er_entity
-          ).
-        ELSE.
-*         In case of initial values - unbind the entity reference
-          er_entity = lr_entity.
-        ENDIF.
-*-------------------------------------------------------------------------*
-*             EntitySet -  ProductSet
-*-------------------------------------------------------------------------*
-      WHEN 'ProductSet'.
-*     Call the entity set generated method
-          productset_update_entity(
-               EXPORTING iv_entity_name     = iv_entity_name
-                         iv_entity_set_name = iv_entity_set_name
-                         iv_source_name     = iv_source_name
-                         io_data_provider   = io_data_provider
-                         it_key_tab         = it_key_tab
-                         it_navigation_path = it_navigation_path
-                         io_tech_request_context = io_tech_request_context
-               IMPORTING er_entity          = productset_update_entity
-          ).
-       IF productset_update_entity IS NOT INITIAL.
-*     Send specific entity data to the caller interface
-          copy_data_to_ref(
-            EXPORTING
-              is_data = productset_update_entity
+              is_data = slampthistoryset_update_entity
             CHANGING
               cr_data = er_entity
           ).
@@ -3134,6 +3063,168 @@ CASE lv_entityset_name.
           er_entity = lr_entity.
         ENDIF.
 *-------------------------------------------------------------------------*
+*             EntitySet -  SystemSet
+*-------------------------------------------------------------------------*
+      WHEN 'SystemSet'.
+*     Call the entity set generated method
+          systemset_update_entity(
+               EXPORTING iv_entity_name     = iv_entity_name
+                         iv_entity_set_name = iv_entity_set_name
+                         iv_source_name     = iv_source_name
+                         io_data_provider   = io_data_provider
+                         it_key_tab         = it_key_tab
+                         it_navigation_path = it_navigation_path
+                         io_tech_request_context = io_tech_request_context
+               IMPORTING er_entity          = systemset_update_entity
+          ).
+       IF systemset_update_entity IS NOT INITIAL.
+*     Send specific entity data to the caller interface
+          copy_data_to_ref(
+            EXPORTING
+              is_data = systemset_update_entity
+            CHANGING
+              cr_data = er_entity
+          ).
+        ELSE.
+*         In case of initial values - unbind the entity reference
+          er_entity = lr_entity.
+        ENDIF.
+*-------------------------------------------------------------------------*
+*             EntitySet -  ProblemHistoryHierarchySet
+*-------------------------------------------------------------------------*
+      WHEN 'ProblemHistoryHierarchySet'.
+*     Call the entity set generated method
+          problemhistoryhi_update_entity(
+               EXPORTING iv_entity_name     = iv_entity_name
+                         iv_entity_set_name = iv_entity_set_name
+                         iv_source_name     = iv_source_name
+                         io_data_provider   = io_data_provider
+                         it_key_tab         = it_key_tab
+                         it_navigation_path = it_navigation_path
+                         io_tech_request_context = io_tech_request_context
+               IMPORTING er_entity          = problemhistoryhi_update_entity
+          ).
+       IF problemhistoryhi_update_entity IS NOT INITIAL.
+*     Send specific entity data to the caller interface
+          copy_data_to_ref(
+            EXPORTING
+              is_data = problemhistoryhi_update_entity
+            CHANGING
+              cr_data = er_entity
+          ).
+        ELSE.
+*         In case of initial values - unbind the entity reference
+          er_entity = lr_entity.
+        ENDIF.
+*-------------------------------------------------------------------------*
+*             EntitySet -  CompanySet
+*-------------------------------------------------------------------------*
+      WHEN 'CompanySet'.
+*     Call the entity set generated method
+          companyset_update_entity(
+               EXPORTING iv_entity_name     = iv_entity_name
+                         iv_entity_set_name = iv_entity_set_name
+                         iv_source_name     = iv_source_name
+                         io_data_provider   = io_data_provider
+                         it_key_tab         = it_key_tab
+                         it_navigation_path = it_navigation_path
+                         io_tech_request_context = io_tech_request_context
+               IMPORTING er_entity          = companyset_update_entity
+          ).
+       IF companyset_update_entity IS NOT INITIAL.
+*     Send specific entity data to the caller interface
+          copy_data_to_ref(
+            EXPORTING
+              is_data = companyset_update_entity
+            CHANGING
+              cr_data = er_entity
+          ).
+        ELSE.
+*         In case of initial values - unbind the entity reference
+          er_entity = lr_entity.
+        ENDIF.
+*-------------------------------------------------------------------------*
+*             EntitySet -  PrioritySet
+*-------------------------------------------------------------------------*
+      WHEN 'PrioritySet'.
+*     Call the entity set generated method
+          priorityset_update_entity(
+               EXPORTING iv_entity_name     = iv_entity_name
+                         iv_entity_set_name = iv_entity_set_name
+                         iv_source_name     = iv_source_name
+                         io_data_provider   = io_data_provider
+                         it_key_tab         = it_key_tab
+                         it_navigation_path = it_navigation_path
+                         io_tech_request_context = io_tech_request_context
+               IMPORTING er_entity          = priorityset_update_entity
+          ).
+       IF priorityset_update_entity IS NOT INITIAL.
+*     Send specific entity data to the caller interface
+          copy_data_to_ref(
+            EXPORTING
+              is_data = priorityset_update_entity
+            CHANGING
+              cr_data = er_entity
+          ).
+        ELSE.
+*         In case of initial values - unbind the entity reference
+          er_entity = lr_entity.
+        ENDIF.
+*-------------------------------------------------------------------------*
+*             EntitySet -  SupportTeamSet
+*-------------------------------------------------------------------------*
+      WHEN 'SupportTeamSet'.
+*     Call the entity set generated method
+          supportteamset_update_entity(
+               EXPORTING iv_entity_name     = iv_entity_name
+                         iv_entity_set_name = iv_entity_set_name
+                         iv_source_name     = iv_source_name
+                         io_data_provider   = io_data_provider
+                         it_key_tab         = it_key_tab
+                         it_navigation_path = it_navigation_path
+                         io_tech_request_context = io_tech_request_context
+               IMPORTING er_entity          = supportteamset_update_entity
+          ).
+       IF supportteamset_update_entity IS NOT INITIAL.
+*     Send specific entity data to the caller interface
+          copy_data_to_ref(
+            EXPORTING
+              is_data = supportteamset_update_entity
+            CHANGING
+              cr_data = er_entity
+          ).
+        ELSE.
+*         In case of initial values - unbind the entity reference
+          er_entity = lr_entity.
+        ENDIF.
+*-------------------------------------------------------------------------*
+*             EntitySet -  StatusSet
+*-------------------------------------------------------------------------*
+      WHEN 'StatusSet'.
+*     Call the entity set generated method
+          statusset_update_entity(
+               EXPORTING iv_entity_name     = iv_entity_name
+                         iv_entity_set_name = iv_entity_set_name
+                         iv_source_name     = iv_source_name
+                         io_data_provider   = io_data_provider
+                         it_key_tab         = it_key_tab
+                         it_navigation_path = it_navigation_path
+                         io_tech_request_context = io_tech_request_context
+               IMPORTING er_entity          = statusset_update_entity
+          ).
+       IF statusset_update_entity IS NOT INITIAL.
+*     Send specific entity data to the caller interface
+          copy_data_to_ref(
+            EXPORTING
+              is_data = statusset_update_entity
+            CHANGING
+              cr_data = er_entity
+          ).
+        ELSE.
+*         In case of initial values - unbind the entity reference
+          er_entity = lr_entity.
+        ENDIF.
+*-------------------------------------------------------------------------*
 *             EntitySet -  ProblemSet
 *-------------------------------------------------------------------------*
       WHEN 'ProblemSet'.
@@ -3153,6 +3244,114 @@ CASE lv_entityset_name.
           copy_data_to_ref(
             EXPORTING
               is_data = problemset_update_entity
+            CHANGING
+              cr_data = er_entity
+          ).
+        ELSE.
+*         In case of initial values - unbind the entity reference
+          er_entity = lr_entity.
+        ENDIF.
+*-------------------------------------------------------------------------*
+*             EntitySet -  FrontendConfigurationSet
+*-------------------------------------------------------------------------*
+      WHEN 'FrontendConfigurationSet'.
+*     Call the entity set generated method
+          frontendconfigur_update_entity(
+               EXPORTING iv_entity_name     = iv_entity_name
+                         iv_entity_set_name = iv_entity_set_name
+                         iv_source_name     = iv_source_name
+                         io_data_provider   = io_data_provider
+                         it_key_tab         = it_key_tab
+                         it_navigation_path = it_navigation_path
+                         io_tech_request_context = io_tech_request_context
+               IMPORTING er_entity          = frontendconfigur_update_entity
+          ).
+       IF frontendconfigur_update_entity IS NOT INITIAL.
+*     Send specific entity data to the caller interface
+          copy_data_to_ref(
+            EXPORTING
+              is_data = frontendconfigur_update_entity
+            CHANGING
+              cr_data = er_entity
+          ).
+        ELSE.
+*         In case of initial values - unbind the entity reference
+          er_entity = lr_entity.
+        ENDIF.
+*-------------------------------------------------------------------------*
+*             EntitySet -  FrontendConstantsSet
+*-------------------------------------------------------------------------*
+      WHEN 'FrontendConstantsSet'.
+*     Call the entity set generated method
+          frontendconstant_update_entity(
+               EXPORTING iv_entity_name     = iv_entity_name
+                         iv_entity_set_name = iv_entity_set_name
+                         iv_source_name     = iv_source_name
+                         io_data_provider   = io_data_provider
+                         it_key_tab         = it_key_tab
+                         it_navigation_path = it_navigation_path
+                         io_tech_request_context = io_tech_request_context
+               IMPORTING er_entity          = frontendconstant_update_entity
+          ).
+       IF frontendconstant_update_entity IS NOT INITIAL.
+*     Send specific entity data to the caller interface
+          copy_data_to_ref(
+            EXPORTING
+              is_data = frontendconstant_update_entity
+            CHANGING
+              cr_data = er_entity
+          ).
+        ELSE.
+*         In case of initial values - unbind the entity reference
+          er_entity = lr_entity.
+        ENDIF.
+*-------------------------------------------------------------------------*
+*             EntitySet -  ProductSet
+*-------------------------------------------------------------------------*
+      WHEN 'ProductSet'.
+*     Call the entity set generated method
+          productset_update_entity(
+               EXPORTING iv_entity_name     = iv_entity_name
+                         iv_entity_set_name = iv_entity_set_name
+                         iv_source_name     = iv_source_name
+                         io_data_provider   = io_data_provider
+                         it_key_tab         = it_key_tab
+                         it_navigation_path = it_navigation_path
+                         io_tech_request_context = io_tech_request_context
+               IMPORTING er_entity          = productset_update_entity
+          ).
+       IF productset_update_entity IS NOT INITIAL.
+*     Send specific entity data to the caller interface
+          copy_data_to_ref(
+            EXPORTING
+              is_data = productset_update_entity
+            CHANGING
+              cr_data = er_entity
+          ).
+        ELSE.
+*         In case of initial values - unbind the entity reference
+          er_entity = lr_entity.
+        ENDIF.
+*-------------------------------------------------------------------------*
+*             EntitySet -  SystemUserSet
+*-------------------------------------------------------------------------*
+      WHEN 'SystemUserSet'.
+*     Call the entity set generated method
+          systemuserset_update_entity(
+               EXPORTING iv_entity_name     = iv_entity_name
+                         iv_entity_set_name = iv_entity_set_name
+                         iv_source_name     = iv_source_name
+                         io_data_provider   = io_data_provider
+                         it_key_tab         = it_key_tab
+                         it_navigation_path = it_navigation_path
+                         io_tech_request_context = io_tech_request_context
+               IMPORTING er_entity          = systemuserset_update_entity
+          ).
+       IF systemuserset_update_entity IS NOT INITIAL.
+*     Send specific entity data to the caller interface
+          copy_data_to_ref(
+            EXPORTING
+              is_data = systemuserset_update_entity
             CHANGING
               cr_data = er_entity
           ).
@@ -3412,6 +3611,46 @@ lo_logger = /iwbep/if_mgw_conv_srv_runtime~get_logger( ).
     EXPORTING
       textid = /iwbep/cx_mgw_not_impl_exc=>method_not_implemented
       method = 'FRONTENDCONFIGUR_UPDATE_ENTITY'.
+  endmethod.
+
+
+  method FRONTENDCONSTANT_CREATE_ENTITY.
+  RAISE EXCEPTION TYPE /iwbep/cx_mgw_not_impl_exc
+    EXPORTING
+      textid = /iwbep/cx_mgw_not_impl_exc=>method_not_implemented
+      method = 'FRONTENDCONSTANT_CREATE_ENTITY'.
+  endmethod.
+
+
+  method FRONTENDCONSTANT_DELETE_ENTITY.
+  RAISE EXCEPTION TYPE /iwbep/cx_mgw_not_impl_exc
+    EXPORTING
+      textid = /iwbep/cx_mgw_not_impl_exc=>method_not_implemented
+      method = 'FRONTENDCONSTANT_DELETE_ENTITY'.
+  endmethod.
+
+
+  method FRONTENDCONSTANT_GET_ENTITY.
+  RAISE EXCEPTION TYPE /iwbep/cx_mgw_not_impl_exc
+    EXPORTING
+      textid = /iwbep/cx_mgw_not_impl_exc=>method_not_implemented
+      method = 'FRONTENDCONSTANT_GET_ENTITY'.
+  endmethod.
+
+
+  method FRONTENDCONSTANT_GET_ENTITYSET.
+  RAISE EXCEPTION TYPE /iwbep/cx_mgw_not_impl_exc
+    EXPORTING
+      textid = /iwbep/cx_mgw_not_impl_exc=>method_not_implemented
+      method = 'FRONTENDCONSTANT_GET_ENTITYSET'.
+  endmethod.
+
+
+  method FRONTENDCONSTANT_UPDATE_ENTITY.
+  RAISE EXCEPTION TYPE /iwbep/cx_mgw_not_impl_exc
+    EXPORTING
+      textid = /iwbep/cx_mgw_not_impl_exc=>method_not_implemented
+      method = 'FRONTENDCONSTANT_UPDATE_ENTITY'.
   endmethod.
 
 

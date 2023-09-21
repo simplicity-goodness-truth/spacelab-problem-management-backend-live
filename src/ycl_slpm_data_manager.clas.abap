@@ -1117,7 +1117,7 @@ update_timestamp update_timezone
 
     select guid apptguid problemguid mpttimestamp mpttimezone mptperc
         update_timestamp update_timezone statusin
-        statusout priorityin priorityout from yslpm_mpt_hist into
+        statusout priorityin priorityout username manualchange from yslpm_mpt_hist into
         corresponding fields of table lt_sla_mpt_history
         where problemguid = ip_guid.
 
@@ -1512,6 +1512,52 @@ update_timestamp update_timezone
       cs_problem-supportteambusinesspartner = lo_problem_processor->get_support_team_bp( ).
 
     endif.
+
+  endmethod.
+
+  method yif_slpm_data_manager~get_frontend_constants.
+
+    rt_constants = value #(
+
+        ( class = 'statusNames' parameter = 'new' value = 'E0001')
+        ( class = 'statusNames' parameter = 'approved' value = 'E0015')
+        ( class = 'statusNames' parameter = 'inProcess' value = 'E0002')
+        ( class = 'statusNames' parameter = 'customerAction' value = 'E0003')
+        ( class = 'statusNames' parameter = 'solutionProvided' value = 'E0005')
+        ( class = 'statusNames' parameter = 'confirmed' value = 'E0008')
+        ( class = 'statusNames' parameter = 'withdrawn' value = 'E0010')
+        ( class = 'statusNames' parameter = 'onApproval' value = 'E0016')
+        ( class = 'statusNames' parameter = 'informationRequested' value = 'E0017')
+        ( class = 'textTypes' parameter = 'reply' value = 'SU01')
+        ( class = 'textTypes' parameter = 'description' value = 'SU99')
+        ( class = 'textTypes' parameter = 'reproductionSteps' value = 'SURS')
+        ( class = 'textTypes' parameter = 'internalNote' value = 'SU04')
+        ( class = 'textTypes' parameter = 'solution' value = 'SUSO')
+        ( class = 'textTypes' parameter = 'businessConsequences' value = 'SUBI')
+        ( class = 'textTypes' parameter = 'additionalInformation' value = 'SU30')
+        ( class = 'textTypesForStatuses' parameter = 'approved' value = 'SU01')
+        ( class = 'textTypesForStatuses' parameter = 'customerAction' value = 'SU01')
+        ( class = 'textTypesForStatuses' parameter = 'solutionProvided' value = 'SUSO')
+        ( class = 'textTypesForStatuses' parameter = 'informationRequested' value = 'SU01')
+        ( class = 'textTypesOfProblemCreation' parameter = 'textTypes' value = 'description')
+        ( class = 'textTypesOfProblemCreation' parameter = 'textTypes' value = 'reproductionSteps')
+        ( class = 'textTypesOfProblemCreation' parameter = 'textTypes' value = 'businessConsequences')
+        ( class = 'statusesWithMandatoryTextComments' parameter = 'statuses' value = 'customerAction')
+        ( class = 'statusesWithMandatoryTextComments' parameter = 'statuses' value = 'solutionProvided')
+        ( class = 'statusesWithMandatoryTextComments' parameter = 'statuses' value = 'informationRequested')
+        ( class = 'statusesWithMandatoryTextComments' parameter = 'statuses' value = 'withdrawn')
+        ( class = 'statusesWithPossibleProccessorChange' parameter = 'statuses' value = 'new')
+        ( class = 'statusesWithPossibleProccessorChange' parameter = 'statuses' value = 'approved')
+        ( class = 'statusesWithPossibleProccessorChange' parameter = 'statuses' value = 'inProcess')
+        ( class = 'statusesWithPossibleProccessorChange' parameter = 'statuses' value = 'onApproval')
+        ( class = 'mandatoryInputFields' parameter = 'mandatoryInputFields' value = 'tableGeneralDataItemInputName')
+        ( class = 'mandatoryInputFields' parameter = 'mandatoryInputFields' value = 'tableGeneralDataItemInputDescription')
+        ( class = 'mandatoryInputFields' parameter = 'mandatoryInputFields' value = 'tableGeneralDataItemSelectSystem')
+        ( class = 'inputFieldsWithMinCharsValidation' parameter = 'inputFieldsWithMinCharsValidation' value = 'tableGeneralDataItemInputName')
+        ( class = 'inputFieldsWithMinCharsValidation' parameter = 'inputFieldsWithMinCharsValidation' value = 'tableGeneralDataItemInputDescription')
+        ( class = 'emailAddressInputFields' parameter = 'emailAddressInputFields' value = 'tableGeneralDataItemInputContactPersonEmail')
+
+    ).
 
   endmethod.
 
