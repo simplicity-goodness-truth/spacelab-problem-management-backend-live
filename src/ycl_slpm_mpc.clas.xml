@@ -222,6 +222,24 @@
      <ENTRY>Alert configuration: string</ENTRY>
      <LENGTH>132</LENGTH>
     </item>
+    <item>
+     <ID>I</ID>
+     <KEY>036</KEY>
+     <ENTRY>Single-Character Flag</ENTRY>
+     <LENGTH>132</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>037</KEY>
+     <ENTRY>Alert configuration: string</ENTRY>
+     <LENGTH>132</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>038</KEY>
+     <ENTRY>Alert configuration: string</ENTRY>
+     <LENGTH>132</LENGTH>
+    </item>
    </TPOOL>
    <DESCRIPTIONS>
     <SEOCOMPOTX>
@@ -258,6 +276,11 @@
      <CMPNAME>DEFINE_PROBLEM</CMPNAME>
      <LANGU>E</LANGU>
      <DESCRIPT>DEFINE_PROBLEM</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CMPNAME>DEFINE_PROBLEMFLOWSTATISTICS</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>DEFINE_PROBLEMFLOWSTATISTICS</DESCRIPT>
     </SEOCOMPOTX>
     <SEOCOMPOTX>
      <CMPNAME>DEFINE_PROBLEMHISTORYHIERARCHY</CMPNAME>

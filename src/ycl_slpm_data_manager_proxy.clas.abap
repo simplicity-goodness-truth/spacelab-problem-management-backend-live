@@ -203,7 +203,13 @@ class ycl_slpm_data_manager_proxy definition
 
       adjust_scapptseg_mpt
         importing
-          ip_guid type crmt_object_guid.
+          ip_guid type crmt_object_guid,
+
+      fill_extra_fields_for_update
+        changing
+          cs_problem type ycrm_order_ts_sl_problem
+        raising
+          ycx_slpm_configuration_exc.
 
 endclass.
 
@@ -446,7 +452,8 @@ class ycl_slpm_data_manager_proxy implementation.
     data: ls_problem_old_state          type ycrm_order_ts_sl_problem,
           lv_log_record_text            type string,
           lv_product_id                 type comt_product_id,
-          lo_slpm_problem_history_store type ref to yif_slpm_problem_history_store.
+          lo_slpm_problem_history_store type ref to yif_slpm_problem_history_store,
+          ls_problem                    type ycrm_order_ts_sl_problem.
 
     " User has no authorizations to update problems
 
@@ -504,16 +511,22 @@ class ycl_slpm_data_manager_proxy implementation.
 
           endif.
 
+          " Filling extra fields before update
+
+          ls_problem = is_problem.
+
+          me->fill_extra_fields_for_update( changing cs_problem = ls_problem ).
+
           rs_result = mo_slpm_data_provider->update_problem(
             exporting
                 ip_guid = ip_guid
-                is_problem = is_problem ).
+                is_problem = ls_problem ).
 
           me->post_update_external_actions(
                exporting
                is_problem_new_state = rs_result
                is_problem_old_state = ls_problem_old_state
-               is_payload = is_problem  ).
+               is_payload = ls_problem  ).
 
 *          me->notify_on_problem_change(
 *                     exporting
@@ -533,7 +546,7 @@ class ycl_slpm_data_manager_proxy implementation.
 
           " Executing notification on update
 
-          notify_observers_on_update( is_problem ).
+          notify_observers_on_update( ls_problem ).
 
           " Invalidating record in cache
 
@@ -1850,5 +1863,40 @@ mo_active_configuration ).
     endif.
 
   endmethod.
+
+  method fill_extra_fields_for_update.
+
+    data:
+           lo_problem_processor type ref to yif_slpm_problem_processor.
+
+    if ( cs_problem-processorbusinesspartner eq '0000000000').
+
+      cs_problem-supportteambusinesspartner = '0000000000'.
+
+    endif.
+
+    " Setting Support Team
+
+    if ( cs_problem-processorbusinesspartner is not initial ) and
+        ( cs_problem-processorbusinesspartner ne '0000000000').
+
+      lo_problem_processor = new ycl_slpm_problem_processor( cs_problem-processorbusinesspartner ).
+
+      cs_problem-supportteambusinesspartner = lo_problem_processor->get_support_team_bp( ).
+
+    endif.
+
+
+  endmethod.
+
+  method yif_slpm_data_manager~is_status_a_customer_action.
+
+    if mo_slpm_data_provider is bound.
+
+      rp_customer_action = mo_slpm_data_provider->is_status_a_customer_action( ip_status ).
+
+    endif.
+
+endmethod.
 
 endclass.

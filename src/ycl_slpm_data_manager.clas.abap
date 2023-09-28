@@ -17,15 +17,16 @@ class ycl_slpm_data_manager definition
   protected section.
   private section.
     data:
-      mo_slpm_problem_api       type ref to ycl_slpm_problem_api,
-      mo_active_configuration   type ref to yif_slpm_configuration,
-      mo_system_user            type ref to yif_system_user,
-      mo_log                    type ref to ycl_logger_to_app_log,
-      mv_app_log_object         type balobj_d,
-      mv_app_log_subobject      type balsubobj,
-      mt_internal_pool          type yslpm_tt_users,
-      mt_proc_pool_assigned_pos type yorg_model_tt_positions,
-      mo_slpm_cache_controller  type ref to yif_slpm_problem_cache.
+      mo_slpm_problem_api         type ref to ycl_slpm_problem_api,
+      mo_active_configuration     type ref to yif_slpm_configuration,
+      mo_system_user              type ref to yif_system_user,
+      mo_log                      type ref to ycl_logger_to_app_log,
+      mv_app_log_object           type balobj_d,
+      mv_app_log_subobject        type balsubobj,
+      mt_internal_pool            type yslpm_tt_users,
+      mt_proc_pool_assigned_pos   type yorg_model_tt_positions,
+      mo_slpm_cache_controller    type ref to yif_slpm_problem_cache,
+      mt_customer_action_statuses type table of j_estat.
 
     methods:
 
@@ -147,11 +148,7 @@ class ycl_slpm_data_manager definition
         returning
           value(rp_visibility) type char1,
 
-      fill_extra_fields_for_update
-        changing
-          cs_problem type ycrm_order_ts_sl_problem
-        raising
-          ycx_slpm_configuration_exc.
+      set_customer_action_statuses.
 
 endclass.
 
@@ -500,6 +497,7 @@ class ycl_slpm_data_manager implementation.
     me->set_app_logger(  ).
     mo_slpm_problem_api = new ycl_slpm_problem_api( io_active_configuration ).
     me->set_slpm_cache_controller(  ).
+    me->set_customer_action_statuses(  ).
 
   endmethod.
 
@@ -511,10 +509,6 @@ class ycl_slpm_data_manager implementation.
       ls_problem type ycrm_order_ts_sl_problem.
 
     ls_problem = is_problem.
-
-    " Filling extra fields before update
-
-    me->fill_extra_fields_for_update( changing cs_problem = ls_problem ).
 
     get reference of ls_problem into lr_problem.
 
@@ -701,6 +695,39 @@ class ycl_slpm_data_manager implementation.
             lo_slpm_product->get_processing_org_unit( )
         else
             mo_active_configuration->get_parameter_value( 'PROCESSORS_POOL_ORG_UNIT_NUMBER' ) ).
+
+
+    " Total response time in minutes
+
+    if ( cs_problem-firstreactiontimestamp is not initial ).
+
+      clear lv_duration_sec.
+
+      " SLA IRT has been achieved
+
+      lv_duration_sec = ycl_assistant_utilities=>calc_duration_btw_timestamps(
+        exporting
+            ip_timestamp_1 = cs_problem-created_at
+            ip_timestamp_2 = cs_problem-firstreactiontimestamp ).
+
+
+    else.
+
+      " SLA IRT has been not achieved
+
+      lv_system_timezone =  ycl_assistant_utilities=>get_system_timezone(  ).
+
+      convert date sy-datum time sy-uzeit into time stamp lv_timestamp time zone lv_system_timezone.
+
+      lv_duration_sec = ycl_assistant_utilities=>calc_duration_btw_timestamps(
+        exporting
+            ip_timestamp_1 = cs_problem-created_at
+            ip_timestamp_2 = lv_timestamp ).
+
+    endif.
+
+    cs_problem-totalresptimeminutes = lv_duration_sec div 60.
+
 
 
   endmethod.
@@ -1497,24 +1524,6 @@ update_timestamp update_timezone
 
   endmethod.
 
-  method fill_extra_fields_for_update.
-
-    data:
-          lo_problem_processor type ref to yif_slpm_problem_processor.
-
-
-    " Setting Support Team
-
-    if cs_problem-processorbusinesspartner is not initial.
-
-      lo_problem_processor = new ycl_slpm_problem_processor( cs_problem-processorbusinesspartner ).
-
-      cs_problem-supportteambusinesspartner = lo_problem_processor->get_support_team_bp( ).
-
-    endif.
-
-  endmethod.
-
   method yif_slpm_data_manager~get_frontend_constants.
 
     rt_constants = value #(
@@ -1558,6 +1567,28 @@ update_timestamp update_timezone
         ( class = 'emailAddressInputFields' parameter = 'emailAddressInputFields' value = 'tableGeneralDataItemInputContactPersonEmail')
 
     ).
+
+  endmethod.
+
+  method set_customer_action_statuses.
+
+    mt_customer_action_statuses = value #(
+        ( 'E0017' )
+        ( 'E0003' )
+        ( 'E0005' )
+    ).
+
+  endmethod.
+
+  method yif_slpm_data_manager~is_status_a_customer_action.
+
+
+    if line_exists( mt_customer_action_statuses[ table_line = ip_status ] ).
+
+      rp_customer_action = abap_true.
+
+    endif.
+
 
   endmethod.
 

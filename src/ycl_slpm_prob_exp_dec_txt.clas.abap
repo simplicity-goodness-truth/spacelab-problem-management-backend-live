@@ -44,7 +44,7 @@ class YCL_SLPM_PROB_EXP_DEC_TXT definition
 
       compose_problem_attributes
         importing
-          is_problem                    type zcrm_order_ts_sl_problem
+          is_problem                    type ycrm_order_ts_sl_problem
         exporting
           ep_problem_folder_path        type string
           ep_problem_file_path_and_name type string,

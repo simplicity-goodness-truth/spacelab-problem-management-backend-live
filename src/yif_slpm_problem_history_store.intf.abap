@@ -25,6 +25,13 @@ interface yif_slpm_problem_history_store
 
     delete_arch_history_records
       importing
-        ip_password type string.
+        ip_password type string,
+
+    get_problem_flow_stat
+      returning
+        value(rt_problem_flow_stat) type yslpm_tt_pr_flow_stat
+      raising
+        ycx_crm_order_api_exc
+        ycx_system_user_exc.
 
 endinterface.

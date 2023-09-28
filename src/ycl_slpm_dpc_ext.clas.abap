@@ -8,6 +8,7 @@ class ycl_slpm_dpc_ext definition
     methods /iwbep/if_mgw_appl_srv_runtime~create_stream redefinition.
     methods /iwbep/if_mgw_appl_srv_runtime~delete_stream redefinition.
   protected section.
+    methods problemflowstati_get_entityset redefinition.
     methods frontendconstant_get_entityset redefinition.
     methods supportteamset_get_entityset redefinition.
     methods problemhistoryhi_get_entityset redefinition.
@@ -70,93 +71,67 @@ class ycl_slpm_dpc_ext definition
         returning
           value(et_select_options) type /iwbep/t_cod_select_options .
 
-endclass.
+ENDCLASS.
 
 
-class ycl_slpm_dpc_ext implementation.
 
-  method raise_exception.
-
-    set_exception_text( ip_exception_text ).
-
-    raise exception type /iwbep/cx_mgw_busi_exception
-      exporting
-        message_container = set_exception_response( mv_exception_text ).
-
-  endmethod.
-
-  method set_exception_text.
-
-    mv_exception_text = ip_exception_text.
-
-  endmethod.
+CLASS YCL_SLPM_DPC_EXT IMPLEMENTATION.
 
 
-  method set_exception_response.
+  method /iwbep/if_mgw_appl_srv_runtime~create_stream.
 
-    if mv_exception_text is not initial.
+    data: lv_guid               type crmt_object_guid,
+          lv_file_name          type string,
+          lv_mime_type          type string,
+          lv_content            type xstring,
+          lv_dp_facade          type ref to /iwbep/if_mgw_dp_fw_facade,
+          lt_request_header     type         tihttpnvp,
+          ls_request_header     like line of lt_request_header,
+          lo_slpm_data_provider type ref to yif_slpm_data_manager,
+          lv_visilibility       type char1.
 
-      call method /iwbep/if_mgw_conv_srv_runtime~get_message_container
-        receiving
-          ro_message_container = ep_msg.
+    loop at it_key_tab assigning field-symbol(<ls_guid>).
+      move <ls_guid>-value to lv_guid.
+    endloop.
 
-      call method ep_msg->add_message_text_only
+    lv_dp_facade ?= me->/iwbep/if_mgw_conv_srv_runtime~get_dp_facade( ).
+
+    lt_request_header = lv_dp_facade->/iwbep/if_mgw_dp_int_facade~get_request_header( ).
+
+    " Getting SLUG parameter
+
+    read table lt_request_header into ls_request_header with key name = 'slug'.
+
+    if ls_request_header is not initial.
+      lv_file_name = ls_request_header-value.
+    endif.
+
+    " Getting VISIBILITY parameter
+
+    clear ls_request_header.
+
+    read table lt_request_header into ls_request_header with key name = 'visibility'.
+
+    if ls_request_header is not initial.
+      lv_visilibility = ls_request_header-value.
+    endif.
+
+    lv_file_name = cl_http_utility=>if_http_utility~unescape_url( lv_file_name ).
+
+    lv_mime_type = is_media_resource-mime_type.
+    lv_content = is_media_resource-value.
+
+    try.
+
+        lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
+
+        lo_slpm_data_provider->create_attachment(
         exporting
-          iv_msg_type = /iwbep/cl_cos_logger=>error
-          iv_msg_text = mv_exception_text.
-
-    endif.
-
-  endmethod.
-
-  method problemset_get_entityset.
-
-    data: lo_slpm_data_provider type ref to yif_slpm_data_manager,
-          lv_exception_text     type bapi_msg,
-          lt_set_filters        type /iwbep/t_mgw_select_option.
-
-    lt_set_filters = io_tech_request_context->get_filter( )->get_filter_select_options( ).
-
-    try.
-        lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
-
-        et_entityset = lo_slpm_data_provider->get_problems_list(
-            exporting
-            it_filters = lt_set_filters
-            it_order = it_order ).
-
-      catch ycx_slpm_data_manager_exc ycx_crm_order_api_exc
-        ycx_assistant_utilities_exc ycx_slpm_configuration_exc
-        ycx_system_user_exc into data(lcx_process_exception).
-        raise_exception( lcx_process_exception->get_text(  ) ).
-
-    endtry.
-
-  endmethod.
-
-  method problemset_get_entity.
-
-    data: lv_guid               type crmt_object_guid,
-          lo_slpm_data_provider type ref to yif_slpm_data_manager.
-
-    try.
-
-        read table it_key_tab into data(ls_key_tab) with key name = 'Guid'.
-
-        lv_guid = ls_key_tab-value.
-
-        if lv_guid is initial.
-
-          raise exception type ycx_slpm_odata_exc
-            exporting
-              textid    = ycx_slpm_odata_exc=>guid_not_provided_for_entity
-              mv_entity = iv_entity_name.
-
-        endif.
-
-        lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
-
-        er_entity = lo_slpm_data_provider->get_problem( lv_guid ).
+        ip_content = lv_content
+        ip_file_name = lv_file_name
+        ip_mime_type = lv_mime_type
+        ip_guid = lv_guid
+        ip_visibility = lv_visilibility ).
 
       catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
         ycx_assistant_utilities_exc ycx_slpm_configuration_exc
@@ -168,91 +143,7 @@ class ycl_slpm_dpc_ext implementation.
   endmethod.
 
 
-  method textset_get_entityset.
-    data:
-      lt_texts              type ycl_slpm_mpc=>tt_text,
-      ls_texts              like line of et_entityset,
-      lo_slpm_data_provider type ref to yif_slpm_data_manager,
-      lv_guid               type crmt_object_guid,
-      lt_filter_tdid        type /iwbep/t_cod_select_options.
-
-
-    lt_filter_tdid = get_filter_select_options( io_tech_request_context = io_tech_request_context
-                                              ip_property = 'TDID' ).
-
-    try.
-
-        read table it_key_tab into data(ls_key_tab) with key name = 'Guid'.
-
-        lv_guid = ls_key_tab-value.
-
-        if lv_guid is initial.
-
-          raise exception type ycx_slpm_odata_exc
-            exporting
-              textid    = ycx_slpm_odata_exc=>guid_not_provided_for_entity
-              mv_entity = iv_entity_name.
-
-        endif.
-
-        lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
-
-        lo_slpm_data_provider->get_texts(
-            exporting ip_guid = lv_guid
-            importing et_texts = lt_texts ).
-
-      catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
-        ycx_assistant_utilities_exc ycx_slpm_configuration_exc
-        ycx_system_user_exc into data(lcx_process_exception).
-        raise_exception( lcx_process_exception->get_text(  ) ).
-
-    endtry.
-
-
-    loop at lt_texts assigning field-symbol(<ls_text>) where tdid in
-lt_filter_tdid.
-
-      ls_texts = <ls_text>.
-
-      append ls_texts to et_entityset.
-
-    endloop. " loop at lt_entityset assigning field-symbol(<ls_entityset>)
-
-  endmethod.
-
-  method attachmentset_get_entityset.
-
-    data: lv_guid               type crmt_object_guid,
-          lo_slpm_data_provider type ref to yif_slpm_data_manager.
-
-
-    read table it_key_tab into data(ls_key_tab) with key name = 'Guid'.
-
-    lv_guid = ls_key_tab-value.
-
-    if lv_guid is not initial.
-
-      try.
-
-          lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
-
-          lo_slpm_data_provider->get_attachments_list( exporting
-              ip_guid = lv_guid
-              importing
-              et_attachments_list = et_entityset ).
-
-        catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
-            ycx_assistant_utilities_exc ycx_slpm_configuration_exc
-            ycx_system_user_exc into data(lcx_process_exception).
-          raise_exception( lcx_process_exception->get_text(  ) ).
-
-      endtry.
-
-    endif.
-
-  endmethod.
-
-  method attachmentset_get_entity.
+  method /iwbep/if_mgw_appl_srv_runtime~delete_stream.
 
     data: lv_guid               type crmt_object_guid,
           lv_loio               type string,
@@ -260,15 +151,14 @@ lt_filter_tdid.
           lo_slpm_data_provider type ref to yif_slpm_data_manager.
 
     me->get_attachment_keys(
-     exporting
-         it_key_tab = it_key_tab
-     importing
-         ep_guid = lv_guid
-         ep_loio = lv_loio
-         ep_phio = lv_phio ).
+       exporting
+           it_key_tab = it_key_tab
+       importing
+           ep_guid = lv_guid
+           ep_loio = lv_loio
+           ep_phio = lv_phio ).
 
-    if ( lv_loio is initial ) or ( lv_phio is initial ) or ( lv_guid is
-initial ).
+    if ( lv_loio is initial ) or ( lv_phio is initial ) or ( lv_guid is initial ).
       return.
     endif.
 
@@ -276,7 +166,11 @@ initial ).
 
         lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
 
-        er_entity = lo_slpm_data_provider->get_attachment( exporting ip_guid = lv_guid ip_loio = lv_loio ip_phio = lv_phio ).
+        lo_slpm_data_provider->delete_attachment(
+            exporting
+                ip_guid = lv_guid
+                ip_loio = lv_loio
+                ip_phio = lv_phio ).
 
       catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
         ycx_assistant_utilities_exc ycx_slpm_configuration_exc
@@ -286,6 +180,7 @@ initial ).
     endtry.
 
   endmethod.
+
 
   method /iwbep/if_mgw_appl_srv_runtime~get_stream.
 
@@ -353,128 +248,6 @@ cl_abap_format=>e_url ).
 
   endmethod.
 
-  method get_attachment_keys.
-
-    data ls_key_tab_itab       type /iwbep/s_mgw_name_value_pair.
-
-    read table it_key_tab with key name = 'LoioId' into ls_key_tab_itab.
-    if sy-subrc = 0.
-      ep_loio = ls_key_tab_itab-value.
-    endif.
-
-    read table it_key_tab with key name = 'PhioId' into ls_key_tab_itab.
-    if sy-subrc = 0.
-      ep_phio = ls_key_tab_itab-value.
-    endif.
-
-    read table it_key_tab with key name = 'refGuid' into ls_key_tab_itab.
-    if sy-subrc = 0.
-      move ls_key_tab_itab-value to ep_guid.
-    endif.
-
-  endmethod.
-
-  method /iwbep/if_mgw_appl_srv_runtime~create_stream.
-
-    data: lv_guid               type crmt_object_guid,
-          lv_file_name          type string,
-          lv_mime_type          type string,
-          lv_content            type xstring,
-          lv_dp_facade          type ref to /iwbep/if_mgw_dp_fw_facade,
-          lt_request_header     type         tihttpnvp,
-          ls_request_header     like line of lt_request_header,
-          lo_slpm_data_provider type ref to yif_slpm_data_manager,
-          lv_visilibility       type char1.
-
-    loop at it_key_tab assigning field-symbol(<ls_guid>).
-      move <ls_guid>-value to lv_guid.
-    endloop.
-
-    lv_dp_facade ?= me->/iwbep/if_mgw_conv_srv_runtime~get_dp_facade( ).
-
-    lt_request_header = lv_dp_facade->/iwbep/if_mgw_dp_int_facade~get_request_header( ).
-
-    " Getting SLUG parameter
-
-    read table lt_request_header into ls_request_header with key name = 'slug'.
-
-    if ls_request_header is not initial.
-      lv_file_name = ls_request_header-value.
-    endif.
-
-    " Getting VISIBILITY parameter
-
-    clear ls_request_header.
-
-    read table lt_request_header into ls_request_header with key name = 'visibility'.
-
-    if ls_request_header is not initial.
-      lv_visilibility = ls_request_header-value.
-    endif.
-
-    lv_file_name = cl_http_utility=>if_http_utility~unescape_url( lv_file_name ).
-
-    lv_mime_type = is_media_resource-mime_type.
-    lv_content = is_media_resource-value.
-
-    try.
-
-        lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
-
-        lo_slpm_data_provider->create_attachment(
-        exporting
-        ip_content = lv_content
-        ip_file_name = lv_file_name
-        ip_mime_type = lv_mime_type
-        ip_guid = lv_guid
-        ip_visibility = lv_visilibility ).
-
-      catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
-        ycx_assistant_utilities_exc ycx_slpm_configuration_exc
-        ycx_system_user_exc into data(lcx_process_exception).
-        raise_exception( lcx_process_exception->get_text(  ) ).
-
-    endtry.
-
-  endmethod.
-
-  method /iwbep/if_mgw_appl_srv_runtime~delete_stream.
-
-    data: lv_guid               type crmt_object_guid,
-          lv_loio               type string,
-          lv_phio               type string,
-          lo_slpm_data_provider type ref to yif_slpm_data_manager.
-
-    me->get_attachment_keys(
-       exporting
-           it_key_tab = it_key_tab
-       importing
-           ep_guid = lv_guid
-           ep_loio = lv_loio
-           ep_phio = lv_phio ).
-
-    if ( lv_loio is initial ) or ( lv_phio is initial ) or ( lv_guid is initial ).
-      return.
-    endif.
-
-    try.
-
-        lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
-
-        lo_slpm_data_provider->delete_attachment(
-            exporting
-                ip_guid = lv_guid
-                ip_loio = lv_loio
-                ip_phio = lv_phio ).
-
-      catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
-        ycx_assistant_utilities_exc ycx_slpm_configuration_exc
-        ycx_system_user_exc into data(lcx_process_exception).
-        raise_exception( lcx_process_exception->get_text(  ) ).
-
-    endtry.
-
-  endmethod.
 
   method attachmentset_delete_entity.
 
@@ -516,25 +289,24 @@ cl_abap_format=>e_url ).
 
   endmethod.
 
-  method textset_create_entity.
+
+  method attachmentset_get_entity.
 
     data: lv_guid               type crmt_object_guid,
-          lv_tdid               type tdid,
-          lv_text               type string,
+          lv_loio               type string,
+          lv_phio               type string,
           lo_slpm_data_provider type ref to yif_slpm_data_manager.
 
-    loop at it_key_tab assigning field-symbol(<ls_guid>).
-      move <ls_guid>-value to lv_guid.
-    endloop.
+    me->get_attachment_keys(
+     exporting
+         it_key_tab = it_key_tab
+     importing
+         ep_guid = lv_guid
+         ep_loio = lv_loio
+         ep_phio = lv_phio ).
 
-    call method io_data_provider->read_entry_data
-      importing
-        es_data = er_entity.
-
-    lv_text = er_entity-text.
-    lv_tdid = er_entity-tdid.
-
-    if lv_tdid is initial.
+    if ( lv_loio is initial ) or ( lv_phio is initial ) or ( lv_guid is
+initial ).
       return.
     endif.
 
@@ -542,13 +314,7 @@ cl_abap_format=>e_url ).
 
         lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
 
-        lo_slpm_data_provider->create_text(
-        exporting
-            ip_guid = lv_guid
-            ip_tdid = lv_tdid
-            ip_text = lv_text ).
-
-        er_entity = lo_slpm_data_provider->get_last_text( exporting ip_guid = lv_guid ).
+        er_entity = lo_slpm_data_provider->get_attachment( exporting ip_guid = lv_guid ip_loio = lv_loio ip_phio = lv_phio ).
 
       catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
         ycx_assistant_utilities_exc ycx_slpm_configuration_exc
@@ -558,6 +324,447 @@ cl_abap_format=>e_url ).
     endtry.
 
   endmethod.
+
+
+  method attachmentset_get_entityset.
+
+    data: lv_guid               type crmt_object_guid,
+          lo_slpm_data_provider type ref to yif_slpm_data_manager.
+
+
+    read table it_key_tab into data(ls_key_tab) with key name = 'Guid'.
+
+    lv_guid = ls_key_tab-value.
+
+    if lv_guid is not initial.
+
+      try.
+
+          lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
+
+          lo_slpm_data_provider->get_attachments_list( exporting
+              ip_guid = lv_guid
+              importing
+              et_attachments_list = et_entityset ).
+
+        catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
+            ycx_assistant_utilities_exc ycx_slpm_configuration_exc
+            ycx_system_user_exc into data(lcx_process_exception).
+          raise_exception( lcx_process_exception->get_text(  ) ).
+
+      endtry.
+
+    endif.
+
+  endmethod.
+
+
+  method companyset_get_entityset.
+
+    data: lo_slpm_data_provider type ref to yif_slpm_data_manager.
+
+    try.
+
+        lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
+
+        et_entityset = lo_slpm_data_provider->get_list_of_companies(  ).
+
+      catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
+        ycx_assistant_utilities_exc ycx_slpm_configuration_exc
+        ycx_system_user_exc into data(lcx_process_exception).
+        raise_exception( lcx_process_exception->get_text(  ) ).
+
+    endtry.
+
+  endmethod.
+
+
+  method frontendconfigur_get_entityset.
+
+    data: lv_application        type char100,
+          lo_slpm_data_provider type ref to yif_slpm_data_manager.
+
+    lv_application = get_filter_value(
+        exporting
+        io_tech_request_context = io_tech_request_context
+        ip_property             = 'APPLICATION').
+
+    if lv_application is initial.
+
+      return.
+
+    endif.
+
+    try.
+
+        lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
+
+        et_entityset = lo_slpm_data_provider->get_frontend_configuration( lv_application ).
+
+      catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
+        ycx_assistant_utilities_exc ycx_slpm_configuration_exc
+        ycx_system_user_exc into data(lcx_process_exception).
+        raise_exception( lcx_process_exception->get_text(  ) ).
+
+    endtry.
+
+
+  endmethod.
+
+
+  method frontendconstant_get_entityset.
+
+    data lo_slpm_data_provider type ref to yif_slpm_data_manager.
+
+    try.
+
+        lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
+
+        et_entityset = lo_slpm_data_provider->get_frontend_constants(  ).
+
+      catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
+            ycx_assistant_utilities_exc ycx_slpm_configuration_exc
+            ycx_system_user_exc into data(lcx_process_exception).
+        raise_exception( lcx_process_exception->get_text(  ) ).
+
+    endtry.
+
+  endmethod.
+
+
+  method get_attachment_keys.
+
+    data ls_key_tab_itab       type /iwbep/s_mgw_name_value_pair.
+
+    read table it_key_tab with key name = 'LoioId' into ls_key_tab_itab.
+    if sy-subrc = 0.
+      ep_loio = ls_key_tab_itab-value.
+    endif.
+
+    read table it_key_tab with key name = 'PhioId' into ls_key_tab_itab.
+    if sy-subrc = 0.
+      ep_phio = ls_key_tab_itab-value.
+    endif.
+
+    read table it_key_tab with key name = 'refGuid' into ls_key_tab_itab.
+    if sy-subrc = 0.
+      move ls_key_tab_itab-value to ep_guid.
+    endif.
+
+  endmethod.
+
+
+  method get_filter_select_options.
+
+    data(it_filter_so) = io_tech_request_context->get_filter( )->get_filter_select_options( ).
+
+    if line_exists( it_filter_so[ property = ip_property ] ).
+
+      et_select_options = it_filter_so[ property = ip_property ]-select_options.
+
+    endif.
+
+  endmethod.
+
+
+  method get_filter_value.
+
+    data  rg_filter_so     type /iwbep/t_cod_select_options.
+
+    data(it_filter_so) = io_tech_request_context->get_filter( )->get_filter_select_options( ).
+
+    if line_exists( it_filter_so[ property = ip_property ] ).
+
+      rg_filter_so = it_filter_so[ property = ip_property ]-select_options.
+      loop at rg_filter_so assigning field-symbol(<rs_filter_so>).
+        ep_value = <rs_filter_so>-low.
+      endloop.
+
+    endif.
+
+  endmethod.
+
+
+  method priorityset_get_entityset.
+
+    data: lo_slpm_data_provider    type ref to yif_slpm_data_manager,
+          lv_product_guid          type comt_product_guid,
+          lt_priorities            type ycrm_order_tt_priorities,
+          lt_priorities_of_product type ycrm_order_tt_priorities,
+          lt_priorities_range      type range  of char40,
+          ls_priority_range        like line of lt_priorities_range.
+
+    loop at it_key_tab assigning field-symbol(<ls_guid>).
+      move <ls_guid>-value to lv_product_guid.
+    endloop.
+
+    try.
+
+        lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
+
+        lt_priorities = lo_slpm_data_provider->get_all_priorities(  ).
+
+        sort lt_priorities.
+
+
+        " Priorities of a product
+        " Filter all priorities removing priorities not relevant for a product
+
+        if lv_product_guid is not initial.
+
+          lt_priorities_of_product = lo_slpm_data_provider->get_priorities_of_product( lv_product_guid ).
+
+          loop at lt_priorities_of_product assigning field-symbol(<ls_priority_of_product>).
+
+            ls_priority_range-low = <ls_priority_of_product>-code.
+            ls_priority_range-option = 'EQ'.
+            ls_priority_range-sign = 'E'.
+
+            append ls_priority_range to lt_priorities_range.
+
+          endloop.
+
+          delete  lt_priorities where code  in lt_priorities_range.
+
+        endif.
+
+        et_entityset = lt_priorities.
+
+
+      catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
+        ycx_assistant_utilities_exc ycx_slpm_configuration_exc
+        ycx_system_user_exc into data(lcx_process_exception).
+        raise_exception( lcx_process_exception->get_text(  ) ).
+
+    endtry.
+
+  endmethod.
+
+
+  method problemflowstati_get_entityset.
+
+    data: lv_guid                       type crmt_object_guid,
+          lo_slpm_problem_history_store type ref to yif_slpm_problem_history_store,
+          lt_filter_status              type /iwbep/t_cod_select_options,
+          lt_filter_processorname       type /iwbep/t_cod_select_options,
+          lt_entityset                  type ycl_slpm_mpc=>tt_problemflowstatistics.
+
+
+    lt_filter_status = get_filter_select_options( io_tech_request_context  = io_tech_request_context
+                                              ip_property = 'STATUS' ).
+
+    lt_filter_processorname = get_filter_select_options( io_tech_request_context  = io_tech_request_context
+        ip_property = 'PROCESSORNAME' ).
+
+    read table it_key_tab into data(ls_key_tab) with key name = 'Guid'.
+
+    lv_guid = ls_key_tab-value.
+
+    if lv_guid is not initial.
+
+      try.
+
+          lo_slpm_problem_history_store = new ycl_slpm_problem_history_store( lv_guid ).
+
+          lt_entityset = lo_slpm_problem_history_store->get_problem_flow_stat( ).
+
+          loop at lt_entityset assigning field-symbol(<ls_entityset>)
+            where status in lt_filter_status and
+            processorname in lt_filter_processorname.
+
+            append <ls_entityset> to et_entityset.
+
+          endloop.
+
+        catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
+        ycx_assistant_utilities_exc ycx_slpm_configuration_exc
+        ycx_system_user_exc into data(lcx_process_exception).
+          raise_exception( lcx_process_exception->get_text(  ) ).
+
+      endtry.
+
+    endif.
+  endmethod.
+
+
+  method problemhistoryhi_get_entityset.
+
+
+    data: lv_guid                       type crmt_object_guid,
+          lo_slpm_problem_history_store type ref to yif_slpm_problem_history_store.
+
+    read table it_key_tab into data(ls_key_tab) with key name = 'Guid'.
+
+    lv_guid = ls_key_tab-value.
+
+    if lv_guid is not initial.
+
+      lo_slpm_problem_history_store = new ycl_slpm_problem_history_store( lv_guid ).
+
+      et_entityset = lo_slpm_problem_history_store->get_problem_history_hierarchy(  ).
+
+    endif.
+
+  endmethod.
+
+
+  method problemset_create_entity.
+
+    data: lo_slpm_data_provider type ref to yif_slpm_data_manager,
+          lv_guid               type crmt_object_guid.
+
+    io_data_provider->read_entry_data( importing es_data = er_entity ).
+
+    try.
+
+        lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
+
+        er_entity = lo_slpm_data_provider->create_problem( er_entity ).
+
+      catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
+        ycx_assistant_utilities_exc ycx_slpm_configuration_exc
+        ycx_system_user_exc into data(lcx_process_exception).
+        raise_exception( lcx_process_exception->get_text(  ) ).
+
+    endtry.
+
+  endmethod.
+
+
+  method problemset_get_entity.
+
+    data: lv_guid               type crmt_object_guid,
+          lo_slpm_data_provider type ref to yif_slpm_data_manager.
+
+    try.
+
+        read table it_key_tab into data(ls_key_tab) with key name = 'Guid'.
+
+        lv_guid = ls_key_tab-value.
+
+        if lv_guid is initial.
+
+          raise exception type ycx_slpm_odata_exc
+            exporting
+              textid    = ycx_slpm_odata_exc=>guid_not_provided_for_entity
+              mv_entity = iv_entity_name.
+
+        endif.
+
+        lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
+
+        er_entity = lo_slpm_data_provider->get_problem( lv_guid ).
+
+      catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
+        ycx_assistant_utilities_exc ycx_slpm_configuration_exc
+        ycx_system_user_exc into data(lcx_process_exception).
+        raise_exception( lcx_process_exception->get_text(  ) ).
+
+    endtry.
+
+  endmethod.
+
+
+  method problemset_get_entityset.
+
+    data: lo_slpm_data_provider type ref to yif_slpm_data_manager,
+          lv_exception_text     type bapi_msg,
+          lt_set_filters        type /iwbep/t_mgw_select_option.
+
+    lt_set_filters = io_tech_request_context->get_filter( )->get_filter_select_options( ).
+
+    try.
+        lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
+
+        et_entityset = lo_slpm_data_provider->get_problems_list(
+            exporting
+            it_filters = lt_set_filters
+            it_order = it_order ).
+
+      catch ycx_slpm_data_manager_exc ycx_crm_order_api_exc
+        ycx_assistant_utilities_exc ycx_slpm_configuration_exc
+        ycx_system_user_exc into data(lcx_process_exception).
+        raise_exception( lcx_process_exception->get_text(  ) ).
+
+    endtry.
+
+  endmethod.
+
+
+  method problemset_update_entity.
+
+    data: lo_slpm_data_provider type ref to yif_slpm_data_manager,
+          lv_guid               type crmt_object_guid.
+
+    loop at it_key_tab assigning field-symbol(<ls_guid>).
+      move <ls_guid>-value to lv_guid.
+    endloop.
+
+    io_data_provider->read_entry_data( importing es_data = er_entity ).
+
+    try.
+
+        lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
+
+        er_entity = lo_slpm_data_provider->update_problem(
+        exporting
+         ip_guid = lv_guid
+         is_problem = er_entity ).
+
+      catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
+        ycx_assistant_utilities_exc ycx_slpm_configuration_exc
+        ycx_system_user_exc into data(lcx_process_exception).
+        raise_exception( lcx_process_exception->get_text(  ) ).
+
+    endtry.
+
+
+  endmethod.
+
+
+  method processorset_get_entityset.
+
+    data: lo_slpm_data_provider type ref to yif_slpm_data_manager.
+
+    try.
+
+        lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
+
+        et_entityset = lo_slpm_data_provider->get_list_of_processors( ).
+
+      catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
+        ycx_assistant_utilities_exc ycx_slpm_configuration_exc
+        ycx_system_user_exc into data(lcx_process_exception).
+        raise_exception( lcx_process_exception->get_text(  ) ).
+
+    endtry.
+
+  endmethod.
+
+
+  method productset_get_entity.
+
+    data: lv_guid                type comt_product_guid,
+          lo_crm_service_product type ref to yif_crm_service_product,
+          lo_slpm_product        type ref to yif_slpm_product.
+
+    loop at it_key_tab assigning field-symbol(<ls_guid>).
+      move <ls_guid>-value to lv_guid.
+    endloop.
+
+    lo_slpm_product = new ycl_slpm_product( lv_guid ).
+
+    lo_crm_service_product ?= lo_slpm_product.
+
+    er_entity-guid = lv_guid.
+    er_entity-id = lo_crm_service_product->yif_crm_product~get_id( ).
+    er_entity-name = lo_crm_service_product->yif_crm_product~get_name(  ).
+    er_entity-prioritiescount = lo_crm_service_product->get_resp_profile_prio_count(  ).
+
+    er_entity-showpriorities =  lo_slpm_product->is_show_priority_set(  ).
+
+  endmethod.
+
 
   method productset_get_entityset.
 
@@ -644,134 +851,101 @@ cl_abap_format=>e_url ).
 
   endmethod.
 
-  method productset_get_entity.
 
-    data: lv_guid                type comt_product_guid,
-          lo_crm_service_product type ref to yif_crm_service_product,
-          lo_slpm_product        type ref to yif_slpm_product.
+  method raise_exception.
 
-    loop at it_key_tab assigning field-symbol(<ls_guid>).
-      move <ls_guid>-value to lv_guid.
-    endloop.
+    set_exception_text( ip_exception_text ).
 
-    lo_slpm_product = new ycl_slpm_product( lv_guid ).
-
-    lo_crm_service_product ?= lo_slpm_product.
-
-    er_entity-guid = lv_guid.
-    er_entity-id = lo_crm_service_product->yif_crm_product~get_id( ).
-    er_entity-name = lo_crm_service_product->yif_crm_product~get_name(  ).
-    er_entity-prioritiescount = lo_crm_service_product->get_resp_profile_prio_count(  ).
-
-    er_entity-showpriorities =  lo_slpm_product->is_show_priority_set(  ).
-
-  endmethod.
-
-  method problemset_create_entity.
-
-    data: lo_slpm_data_provider type ref to yif_slpm_data_manager,
-          lv_guid               type crmt_object_guid.
-
-    io_data_provider->read_entry_data( importing es_data = er_entity ).
-
-    try.
-
-        lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
-
-        er_entity = lo_slpm_data_provider->create_problem( er_entity ).
-
-      catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
-        ycx_assistant_utilities_exc ycx_slpm_configuration_exc
-        ycx_system_user_exc into data(lcx_process_exception).
-        raise_exception( lcx_process_exception->get_text(  ) ).
-
-    endtry.
-
-  endmethod.
-
-  method priorityset_get_entityset.
-
-    data: lo_slpm_data_provider    type ref to yif_slpm_data_manager,
-          lv_product_guid          type comt_product_guid,
-          lt_priorities            type ycrm_order_tt_priorities,
-          lt_priorities_of_product type ycrm_order_tt_priorities,
-          lt_priorities_range      type range  of char40,
-          ls_priority_range        like line of lt_priorities_range.
-
-    loop at it_key_tab assigning field-symbol(<ls_guid>).
-      move <ls_guid>-value to lv_product_guid.
-    endloop.
-
-    try.
-
-        lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
-
-        lt_priorities = lo_slpm_data_provider->get_all_priorities(  ).
-
-        sort lt_priorities.
-
-
-        " Priorities of a product
-        " Filter all priorities removing priorities not relevant for a product
-
-        if lv_product_guid is not initial.
-
-          lt_priorities_of_product = lo_slpm_data_provider->get_priorities_of_product( lv_product_guid ).
-
-          loop at lt_priorities_of_product assigning field-symbol(<ls_priority_of_product>).
-
-            ls_priority_range-low = <ls_priority_of_product>-code.
-            ls_priority_range-option = 'EQ'.
-            ls_priority_range-sign = 'E'.
-
-            append ls_priority_range to lt_priorities_range.
-
-          endloop.
-
-          delete  lt_priorities where code  in lt_priorities_range.
-
-        endif.
-
-        et_entityset = lt_priorities.
-
-
-      catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
-        ycx_assistant_utilities_exc ycx_slpm_configuration_exc
-        ycx_system_user_exc into data(lcx_process_exception).
-        raise_exception( lcx_process_exception->get_text(  ) ).
-
-    endtry.
+    raise exception type /iwbep/cx_mgw_busi_exception
+      exporting
+        message_container = set_exception_response( mv_exception_text ).
 
   endmethod.
 
 
-  method problemset_update_entity.
+  method set_exception_response.
 
-    data: lo_slpm_data_provider type ref to yif_slpm_data_manager,
-          lv_guid               type crmt_object_guid.
+    if mv_exception_text is not initial.
 
-    loop at it_key_tab assigning field-symbol(<ls_guid>).
-      move <ls_guid>-value to lv_guid.
-    endloop.
+      call method /iwbep/if_mgw_conv_srv_runtime~get_message_container
+        receiving
+          ro_message_container = ep_msg.
 
-    io_data_provider->read_entry_data( importing es_data = er_entity ).
-
-    try.
-
-        lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
-
-        er_entity = lo_slpm_data_provider->update_problem(
+      call method ep_msg->add_message_text_only
         exporting
-         ip_guid = lv_guid
-         is_problem = er_entity ).
+          iv_msg_type = /iwbep/cl_cos_logger=>error
+          iv_msg_text = mv_exception_text.
 
-      catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
-        ycx_assistant_utilities_exc ycx_slpm_configuration_exc
-        ycx_system_user_exc into data(lcx_process_exception).
-        raise_exception( lcx_process_exception->get_text(  ) ).
+    endif.
 
-    endtry.
+  endmethod.
 
+
+  method set_exception_text.
+
+    mv_exception_text = ip_exception_text.
+
+  endmethod.
+
+
+  method slairthistoryset_get_entityset.
+
+    data: lv_guid               type crmt_object_guid,
+          lo_slpm_data_provider type ref to yif_slpm_data_manager.
+
+
+    read table it_key_tab into data(ls_key_tab) with key name = 'Guid'.
+
+    lv_guid = ls_key_tab-value.
+
+    if lv_guid is not initial.
+
+      try.
+
+          lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
+
+          et_entityset = lo_slpm_data_provider->get_problem_sla_irt_history( exporting
+              ip_guid = lv_guid ).
+
+        catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
+            ycx_assistant_utilities_exc ycx_slpm_configuration_exc
+            ycx_system_user_exc into data(lcx_process_exception).
+          raise_exception( lcx_process_exception->get_text(  ) ).
+
+      endtry.
+
+    endif.
+
+  endmethod.
+
+
+  method slampthistoryset_get_entityset.
+
+    data: lv_guid               type crmt_object_guid,
+          lo_slpm_data_provider type ref to yif_slpm_data_manager.
+
+
+    read table it_key_tab into data(ls_key_tab) with key name = 'Guid'.
+
+    lv_guid = ls_key_tab-value.
+
+    if lv_guid is not initial.
+
+      try.
+
+          lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
+
+          et_entityset = lo_slpm_data_provider->get_problem_sla_mpt_history( exporting
+              ip_guid = lv_guid ).
+
+        catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
+            ycx_assistant_utilities_exc ycx_slpm_configuration_exc
+            ycx_system_user_exc into data(lcx_process_exception).
+          raise_exception( lcx_process_exception->get_text(  ) ).
+
+      endtry.
+
+    endif.
 
   endmethod.
 
@@ -803,34 +977,63 @@ cl_abap_format=>e_url ).
 
   endmethod.
 
-  method get_filter_value.
 
-    data  rg_filter_so     type /iwbep/t_cod_select_options.
+  method supportteamset_get_entityset.
 
-    data(it_filter_so) = io_tech_request_context->get_filter( )->get_filter_select_options( ).
+    data lo_slpm_data_provider type ref to yif_slpm_data_manager.
 
-    if line_exists( it_filter_so[ property = ip_property ] ).
+    try.
 
-      rg_filter_so = it_filter_so[ property = ip_property ]-select_options.
-      loop at rg_filter_so assigning field-symbol(<rs_filter_so>).
-        ep_value = <rs_filter_so>-low.
-      endloop.
+        lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
 
-    endif.
+        et_entityset = lo_slpm_data_provider->get_list_of_support_teams( ).
+
+      catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
+            ycx_assistant_utilities_exc ycx_slpm_configuration_exc
+            ycx_system_user_exc into data(lcx_process_exception).
+        raise_exception( lcx_process_exception->get_text(  ) ).
+
+    endtry.
+
+  endmethod.
+
+
+  method systemset_get_entityset.
+
+    data:
+      ls_entity             like line of et_entityset,
+      lo_slpm_customer      type ref to yif_slpm_customer,
+      lv_filter_customer_bp type bu_partner.
+
+    " Providing all systems of a SLPM customer
+
+    " Get filter of Customer BP
+
+    lv_filter_customer_bp = get_filter_value(
+       exporting
+         io_tech_request_context = io_tech_request_context
+         ip_property             = 'COMPANYBUSINESSPARTNER').
+
+
+    try.
+
+        if lv_filter_customer_bp is not initial.
+
+          lo_slpm_customer  = new ycl_slpm_customer( lv_filter_customer_bp  ).
+          et_entityset = lo_slpm_customer->get_slpm_systems_of_customer(  ).
+
+        endif.
+
+      catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
+          ycx_assistant_utilities_exc ycx_slpm_configuration_exc
+          ycx_system_user_exc into data(lcx_process_exception).
+        raise_exception( lcx_process_exception->get_text(  ) ).
+
+    endtry.
+
 
   endmethod.
 
-  method get_filter_select_options.
-
-    data(it_filter_so) = io_tech_request_context->get_filter( )->get_filter_select_options( ).
-
-    if line_exists( it_filter_so[ property = ip_property ] ).
-
-      et_select_options = it_filter_so[ property = ip_property ]-select_options.
-
-    endif.
-
-  endmethod.
 
   method systemuserset_get_entityset.
 
@@ -874,65 +1077,40 @@ cl_abap_format=>e_url ).
 
   endmethod.
 
-  method processorset_get_entityset.
 
-    data: lo_slpm_data_provider type ref to yif_slpm_data_manager.
+  method textset_create_entity.
 
-    try.
-
-        lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
-
-        et_entityset = lo_slpm_data_provider->get_list_of_processors( ).
-
-      catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
-        ycx_assistant_utilities_exc ycx_slpm_configuration_exc
-        ycx_system_user_exc into data(lcx_process_exception).
-        raise_exception( lcx_process_exception->get_text(  ) ).
-
-    endtry.
-
-  endmethod.
-
-  method companyset_get_entityset.
-
-    data: lo_slpm_data_provider type ref to yif_slpm_data_manager.
-
-    try.
-
-        lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
-
-        et_entityset = lo_slpm_data_provider->get_list_of_companies(  ).
-
-      catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
-        ycx_assistant_utilities_exc ycx_slpm_configuration_exc
-        ycx_system_user_exc into data(lcx_process_exception).
-        raise_exception( lcx_process_exception->get_text(  ) ).
-
-    endtry.
-
-  endmethod.
-
-  method frontendconfigur_get_entityset.
-
-    data: lv_application        type char100,
+    data: lv_guid               type crmt_object_guid,
+          lv_tdid               type tdid,
+          lv_text               type string,
           lo_slpm_data_provider type ref to yif_slpm_data_manager.
 
-    lv_application = get_filter_value(
-        exporting
-        io_tech_request_context = io_tech_request_context
-        ip_property             = 'APPLICATION').
+    loop at it_key_tab assigning field-symbol(<ls_guid>).
+      move <ls_guid>-value to lv_guid.
+    endloop.
 
-    if lv_application is initial.
+    call method io_data_provider->read_entry_data
+      importing
+        es_data = er_entity.
 
+    lv_text = er_entity-text.
+    lv_tdid = er_entity-tdid.
+
+    if lv_tdid is initial.
       return.
-
     endif.
 
     try.
 
         lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
 
-        et_entityset = lo_slpm_data_provider->get_frontend_configuration( lv_application ).
+        lo_slpm_data_provider->create_text(
+        exporting
+            ip_guid = lv_guid
+            ip_tdid = lv_tdid
+            ip_text = lv_text ).
+
+        er_entity = lo_slpm_data_provider->get_last_text( exporting ip_guid = lv_guid ).
 
       catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
         ycx_assistant_utilities_exc ycx_slpm_configuration_exc
@@ -941,161 +1119,58 @@ cl_abap_format=>e_url ).
 
     endtry.
 
-
   endmethod.
 
-  method systemset_get_entityset.
 
+  method textset_get_entityset.
     data:
-      ls_entity             like line of et_entityset,
-      lo_slpm_customer      type ref to yif_slpm_customer,
-      lv_filter_customer_bp type bu_partner.
+      lt_texts              type ycl_slpm_mpc=>tt_text,
+      ls_texts              like line of et_entityset,
+      lo_slpm_data_provider type ref to yif_slpm_data_manager,
+      lv_guid               type crmt_object_guid,
+      lt_filter_tdid        type /iwbep/t_cod_select_options.
 
-    " Providing all systems of a SLPM customer
 
-    " Get filter of Customer BP
-
-    lv_filter_customer_bp = get_filter_value(
-       exporting
-         io_tech_request_context = io_tech_request_context
-         ip_property             = 'COMPANYBUSINESSPARTNER').
-
+    lt_filter_tdid = get_filter_select_options( io_tech_request_context = io_tech_request_context
+                                              ip_property = 'TDID' ).
 
     try.
 
-        if lv_filter_customer_bp is not initial.
+        read table it_key_tab into data(ls_key_tab) with key name = 'Guid'.
 
-          lo_slpm_customer  = new ycl_slpm_customer( lv_filter_customer_bp  ).
-          et_entityset = lo_slpm_customer->get_slpm_systems_of_customer(  ).
+        lv_guid = ls_key_tab-value.
+
+        if lv_guid is initial.
+
+          raise exception type ycx_slpm_odata_exc
+            exporting
+              textid    = ycx_slpm_odata_exc=>guid_not_provided_for_entity
+              mv_entity = iv_entity_name.
 
         endif.
 
-      catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
-          ycx_assistant_utilities_exc ycx_slpm_configuration_exc
-          ycx_system_user_exc into data(lcx_process_exception).
-        raise_exception( lcx_process_exception->get_text(  ) ).
-
-    endtry.
-
-
-  endmethod.
-
-  method slairthistoryset_get_entityset.
-
-    data: lv_guid               type crmt_object_guid,
-          lo_slpm_data_provider type ref to yif_slpm_data_manager.
-
-
-    read table it_key_tab into data(ls_key_tab) with key name = 'Guid'.
-
-    lv_guid = ls_key_tab-value.
-
-    if lv_guid is not initial.
-
-      try.
-
-          lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
-
-          et_entityset = lo_slpm_data_provider->get_problem_sla_irt_history( exporting
-              ip_guid = lv_guid ).
-
-        catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
-            ycx_assistant_utilities_exc ycx_slpm_configuration_exc
-            ycx_system_user_exc into data(lcx_process_exception).
-          raise_exception( lcx_process_exception->get_text(  ) ).
-
-      endtry.
-
-    endif.
-
-  endmethod.
-
-  method slampthistoryset_get_entityset.
-
-    data: lv_guid               type crmt_object_guid,
-          lo_slpm_data_provider type ref to yif_slpm_data_manager.
-
-
-    read table it_key_tab into data(ls_key_tab) with key name = 'Guid'.
-
-    lv_guid = ls_key_tab-value.
-
-    if lv_guid is not initial.
-
-      try.
-
-          lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
-
-          et_entityset = lo_slpm_data_provider->get_problem_sla_mpt_history( exporting
-              ip_guid = lv_guid ).
-
-        catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
-            ycx_assistant_utilities_exc ycx_slpm_configuration_exc
-            ycx_system_user_exc into data(lcx_process_exception).
-          raise_exception( lcx_process_exception->get_text(  ) ).
-
-      endtry.
-
-    endif.
-
-  endmethod.
-
-  method problemhistoryhi_get_entityset.
-
-
-    data: lv_guid                       type crmt_object_guid,
-          lo_slpm_problem_history_store type ref to yif_slpm_problem_history_store.
-
-    read table it_key_tab into data(ls_key_tab) with key name = 'Guid'.
-
-    lv_guid = ls_key_tab-value.
-
-    if lv_guid is not initial.
-
-      lo_slpm_problem_history_store = new ycl_slpm_problem_history_store( lv_guid ).
-
-      et_entityset = lo_slpm_problem_history_store->get_problem_history_hierarchy(  ).
-
-    endif.
-
-  endmethod.
-
-  method supportteamset_get_entityset.
-
-    data lo_slpm_data_provider type ref to yif_slpm_data_manager.
-
-    try.
-
         lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
 
-        et_entityset = lo_slpm_data_provider->get_list_of_support_teams( ).
+        lo_slpm_data_provider->get_texts(
+            exporting ip_guid = lv_guid
+            importing et_texts = lt_texts ).
 
       catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
-            ycx_assistant_utilities_exc ycx_slpm_configuration_exc
-            ycx_system_user_exc into data(lcx_process_exception).
+        ycx_assistant_utilities_exc ycx_slpm_configuration_exc
+        ycx_system_user_exc into data(lcx_process_exception).
         raise_exception( lcx_process_exception->get_text(  ) ).
 
     endtry.
 
-  endmethod.
 
-  method frontendconstant_get_entityset.
+    loop at lt_texts assigning field-symbol(<ls_text>) where tdid in
+lt_filter_tdid.
 
-    data lo_slpm_data_provider type ref to yif_slpm_data_manager.
+      ls_texts = <ls_text>.
 
-    try.
+      append ls_texts to et_entityset.
 
-        lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
-
-        et_entityset = lo_slpm_data_provider->get_frontend_constants(  ).
-
-      catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
-            ycx_assistant_utilities_exc ycx_slpm_configuration_exc
-            ycx_system_user_exc into data(lcx_process_exception).
-        raise_exception( lcx_process_exception->get_text(  ) ).
-
-    endtry.
+    endloop. " loop at lt_entityset assigning field-symbol(<ls_entityset>)
 
   endmethod.
-
-endclass.
+ENDCLASS.

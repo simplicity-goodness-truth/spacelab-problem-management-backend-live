@@ -229,6 +229,12 @@ interface yif_slpm_data_manager
 
     get_frontend_constants
       returning
-        value(rt_constants) type yslpm_tt_frontend_const.
+        value(rt_constants) type yslpm_tt_frontend_const,
+
+    is_status_a_customer_action
+      importing
+        ip_status                 type j_estat
+      returning
+        value(rp_customer_action) type abap_bool.
 
 endinterface.
