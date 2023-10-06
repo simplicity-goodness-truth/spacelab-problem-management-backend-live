@@ -24,6 +24,7 @@
      <SPRSL>E</SPRSL>
      <ARBGB>YSLPM_ODATA</ARBGB>
      <MSGNR>002</MSGNR>
+     <TEXT>OData: Client not supported</TEXT>
     </T100>
    </T100>
   </asx:values>

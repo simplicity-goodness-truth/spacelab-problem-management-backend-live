@@ -69,13 +69,23 @@ class ycl_slpm_dpc_ext definition
           !ip_property             type string
           !io_tech_request_context type ref to /iwbep/if_mgw_req_entityset
         returning
-          value(et_select_options) type /iwbep/t_cod_select_options .
+          value(et_select_options) type /iwbep/t_cod_select_options,
 
-ENDCLASS.
+      is_valid_slpm_odata_request
+        importing
+          io_slpm_data_provider type ref to yif_slpm_data_manager optional
+        returning
+          value(rp_valid)       type abap_bool
+        raising
+          ycx_slpm_odata_exc
+          ycx_slpm_configuration_exc
+          ycx_slpm_data_manager_exc.
+
+endclass.
 
 
 
-CLASS YCL_SLPM_DPC_EXT IMPLEMENTATION.
+class ycl_slpm_dpc_ext implementation.
 
 
   method /iwbep/if_mgw_appl_srv_runtime~create_stream.
@@ -272,6 +282,9 @@ cl_abap_format=>e_url ).
 
         lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
 
+        " Validation of SLPM OData request
+        me->is_valid_slpm_odata_request( lo_slpm_data_provider ).
+
         lo_slpm_data_provider->delete_attachment(
             exporting
                 ip_guid = lv_guid
@@ -314,6 +327,9 @@ initial ).
 
         lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
 
+        " Validation of SLPM OData request
+        me->is_valid_slpm_odata_request( lo_slpm_data_provider ).
+
         er_entity = lo_slpm_data_provider->get_attachment( exporting ip_guid = lv_guid ip_loio = lv_loio ip_phio = lv_phio ).
 
       catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
@@ -342,6 +358,9 @@ initial ).
 
           lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
 
+          " Validation of SLPM OData request
+          me->is_valid_slpm_odata_request( lo_slpm_data_provider ).
+
           lo_slpm_data_provider->get_attachments_list( exporting
               ip_guid = lv_guid
               importing
@@ -366,6 +385,9 @@ initial ).
     try.
 
         lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
+
+        " Validation of SLPM OData request
+        me->is_valid_slpm_odata_request( lo_slpm_data_provider ).
 
         et_entityset = lo_slpm_data_provider->get_list_of_companies(  ).
 
@@ -399,6 +421,9 @@ initial ).
 
         lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
 
+        " Validation of SLPM OData request
+        me->is_valid_slpm_odata_request( lo_slpm_data_provider ).
+
         et_entityset = lo_slpm_data_provider->get_frontend_configuration( lv_application ).
 
       catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
@@ -419,6 +444,9 @@ initial ).
     try.
 
         lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
+
+        " Validation of SLPM OData request
+        me->is_valid_slpm_odata_request( lo_slpm_data_provider ).
 
         et_entityset = lo_slpm_data_provider->get_frontend_constants(  ).
 
@@ -502,6 +530,9 @@ initial ).
 
         lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
 
+        " Validation of SLPM OData request
+        me->is_valid_slpm_odata_request( lo_slpm_data_provider ).
+
         lt_priorities = lo_slpm_data_provider->get_all_priorities(  ).
 
         sort lt_priorities.
@@ -547,7 +578,8 @@ initial ).
           lo_slpm_problem_history_store type ref to yif_slpm_problem_history_store,
           lt_filter_status              type /iwbep/t_cod_select_options,
           lt_filter_processorname       type /iwbep/t_cod_select_options,
-          lt_entityset                  type ycl_slpm_mpc=>tt_problemflowstatistics.
+          lt_entityset                  type ycl_slpm_mpc=>tt_problemflowstatistics,
+          lo_slpm_data_provider         type ref to yif_slpm_data_manager.
 
 
     lt_filter_status = get_filter_select_options( io_tech_request_context  = io_tech_request_context
@@ -563,6 +595,12 @@ initial ).
     if lv_guid is not initial.
 
       try.
+
+          " Validation of SLPM OData request
+
+          lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
+
+          me->is_valid_slpm_odata_request( lo_slpm_data_provider ).
 
           lo_slpm_problem_history_store = new ycl_slpm_problem_history_store( lv_guid ).
 
@@ -591,7 +629,9 @@ initial ).
 
 
     data: lv_guid                       type crmt_object_guid,
-          lo_slpm_problem_history_store type ref to yif_slpm_problem_history_store.
+          lo_slpm_problem_history_store type ref to yif_slpm_problem_history_store,
+          lo_slpm_data_provider         type ref to yif_slpm_data_manager.
+
 
     read table it_key_tab into data(ls_key_tab) with key name = 'Guid'.
 
@@ -599,9 +639,25 @@ initial ).
 
     if lv_guid is not initial.
 
-      lo_slpm_problem_history_store = new ycl_slpm_problem_history_store( lv_guid ).
+      try.
 
-      et_entityset = lo_slpm_problem_history_store->get_problem_history_hierarchy(  ).
+          " Validation of SLPM OData request
+
+          lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
+
+          me->is_valid_slpm_odata_request( lo_slpm_data_provider ).
+
+
+          lo_slpm_problem_history_store = new ycl_slpm_problem_history_store( lv_guid ).
+
+          et_entityset = lo_slpm_problem_history_store->get_problem_history_hierarchy(  ).
+
+        catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
+            ycx_assistant_utilities_exc ycx_slpm_configuration_exc
+                ycx_system_user_exc into data(lcx_process_exception).
+          raise_exception( lcx_process_exception->get_text(  ) ).
+
+      endtry.
 
     endif.
 
@@ -618,6 +674,9 @@ initial ).
     try.
 
         lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
+
+        " Validation of SLPM OData request
+        me->is_valid_slpm_odata_request( lo_slpm_data_provider ).
 
         er_entity = lo_slpm_data_provider->create_problem( er_entity ).
 
@@ -653,6 +712,9 @@ initial ).
 
         lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
 
+        " Validation of SLPM OData request
+        me->is_valid_slpm_odata_request( lo_slpm_data_provider ).
+
         er_entity = lo_slpm_data_provider->get_problem( lv_guid ).
 
       catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
@@ -676,12 +738,15 @@ initial ).
     try.
         lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
 
+        " Validation of SLPM OData request
+        me->is_valid_slpm_odata_request( lo_slpm_data_provider ).
+
         et_entityset = lo_slpm_data_provider->get_problems_list(
             exporting
             it_filters = lt_set_filters
             it_order = it_order ).
 
-      catch ycx_slpm_data_manager_exc ycx_crm_order_api_exc
+      catch ycx_slpm_odata_exc ycx_slpm_data_manager_exc ycx_crm_order_api_exc
         ycx_assistant_utilities_exc ycx_slpm_configuration_exc
         ycx_system_user_exc into data(lcx_process_exception).
         raise_exception( lcx_process_exception->get_text(  ) ).
@@ -705,6 +770,9 @@ initial ).
     try.
 
         lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
+
+        " Validation of SLPM OData request
+        me->is_valid_slpm_odata_request( lo_slpm_data_provider ).
 
         er_entity = lo_slpm_data_provider->update_problem(
         exporting
@@ -730,6 +798,9 @@ initial ).
 
         lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
 
+        " Validation of SLPM OData request
+        me->is_valid_slpm_odata_request( lo_slpm_data_provider ).
+
         et_entityset = lo_slpm_data_provider->get_list_of_processors( ).
 
       catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
@@ -746,22 +817,40 @@ initial ).
 
     data: lv_guid                type comt_product_guid,
           lo_crm_service_product type ref to yif_crm_service_product,
-          lo_slpm_product        type ref to yif_slpm_product.
+          lo_slpm_product        type ref to yif_slpm_product,
+          lo_slpm_data_provider  type ref to yif_slpm_data_manager.
 
-    loop at it_key_tab assigning field-symbol(<ls_guid>).
-      move <ls_guid>-value to lv_guid.
-    endloop.
 
-    lo_slpm_product = new ycl_slpm_product( lv_guid ).
+    try.
 
-    lo_crm_service_product ?= lo_slpm_product.
+        " Validation of SLPM OData request
 
-    er_entity-guid = lv_guid.
-    er_entity-id = lo_crm_service_product->yif_crm_product~get_id( ).
-    er_entity-name = lo_crm_service_product->yif_crm_product~get_name(  ).
-    er_entity-prioritiescount = lo_crm_service_product->get_resp_profile_prio_count(  ).
+        lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
 
-    er_entity-showpriorities =  lo_slpm_product->is_show_priority_set(  ).
+        me->is_valid_slpm_odata_request( lo_slpm_data_provider ).
+
+
+        loop at it_key_tab assigning field-symbol(<ls_guid>).
+          move <ls_guid>-value to lv_guid.
+        endloop.
+
+        lo_slpm_product = new ycl_slpm_product( lv_guid ).
+
+        lo_crm_service_product ?= lo_slpm_product.
+
+        er_entity-guid = lv_guid.
+        er_entity-id = lo_crm_service_product->yif_crm_product~get_id( ).
+        er_entity-name = lo_crm_service_product->yif_crm_product~get_name(  ).
+        er_entity-prioritiescount = lo_crm_service_product->get_resp_profile_prio_count(  ).
+
+        er_entity-showpriorities =  lo_slpm_product->is_show_priority_set(  ).
+
+      catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
+            ycx_assistant_utilities_exc ycx_slpm_configuration_exc
+                ycx_system_user_exc into data(lcx_process_exception).
+        raise_exception( lcx_process_exception->get_text(  ) ).
+
+    endtry.
 
   endmethod.
 
@@ -775,75 +864,91 @@ initial ).
           lt_filter_customer_bp  type /iwbep/t_cod_select_options,
           lo_bp_master_data      type ref to yif_bp_master_data,
           lv_bp_num              type bu_partner,
-          lo_slpm_product        type ref to yif_slpm_product.
-
-    " Get filter
-
-    lt_filter_customer_bp = get_filter_select_options( io_tech_request_context  = io_tech_request_context
-                                           ip_property = 'COMPANYBUSINESSPARTNER' ).
+          lo_slpm_product        type ref to yif_slpm_product,
+          lo_slpm_data_provider  type ref to yif_slpm_data_manager.
 
     try.
 
-        " Conversion with leading zeroes is required
+        " Validation of SLPM OData request
 
-        lv_bp_num = lt_filter_customer_bp[ 1 ]-low.
+        lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
 
-        lo_bp_master_data  = new ycl_bp_master_data( lv_bp_num ).
+        me->is_valid_slpm_odata_request( lo_slpm_data_provider ).
 
-        lt_filter_customer_bp[ 1 ]-low = lo_bp_master_data->get_bp_number( ).
+        " Get filter
 
-      catch cx_sy_itab_line_not_found.
+        lt_filter_customer_bp = get_filter_select_options( io_tech_request_context  = io_tech_request_context
+                                               ip_property = 'COMPANYBUSINESSPARTNER' ).
 
-    endtry.
+        try.
 
-    " Get products, available for user
+            " Conversion with leading zeroes is required
 
-    try.
+            lv_bp_num = lt_filter_customer_bp[ 1 ]-low.
 
-        lo_slpm_user = new ycl_slpm_user( sy-uname ).
+            lo_bp_master_data  = new ycl_bp_master_data( lv_bp_num ).
 
-        lt_products = lo_slpm_user->get_slpm_products_of_user(  ).
+            lt_filter_customer_bp[ 1 ]-low = lo_bp_master_data->get_bp_number( ).
 
-        loop at lt_products assigning field-symbol(<ls_product>) where companybusinesspartner in lt_filter_customer_bp.
+          catch cx_sy_itab_line_not_found.
 
-          ls_entity-guid = <ls_product>-guid.
-          ls_entity-id = <ls_product>-id.
-          ls_entity-name = <ls_product>-name.
-          ls_entity-companybusinesspartner = cond #(
-            when lt_filter_customer_bp is not initial then <ls_product>-companybusinesspartner
-            else '' ).
+        endtry.
 
-          lo_slpm_product = new ycl_slpm_product( <ls_product>-guid ).
+        " Get products, available for user
 
-          ls_entity-showpriorities = lo_slpm_product->is_show_priority_set(  ).
+        try.
 
-          lo_crm_service_product ?= lo_slpm_product.
+            lo_slpm_user = new ycl_slpm_user( sy-uname ).
 
-          ls_entity-prioritiescount = lo_crm_service_product->get_resp_profile_prio_count(  ).
+            lt_products = lo_slpm_user->get_slpm_products_of_user(  ).
 
-          " We skip all products, which don't have proper priorities assigned
-          " through a response profile
+            loop at lt_products assigning field-symbol(<ls_product>) where companybusinesspartner in lt_filter_customer_bp.
 
-          if ls_entity-prioritiescount > 0.
+              ls_entity-guid = <ls_product>-guid.
+              ls_entity-id = <ls_product>-id.
+              ls_entity-name = <ls_product>-name.
+              ls_entity-companybusinesspartner = cond #(
+                when lt_filter_customer_bp is not initial then <ls_product>-companybusinesspartner
+                else '' ).
 
-            append  ls_entity to et_entityset.
+              lo_slpm_product = new ycl_slpm_product( <ls_product>-guid ).
 
-          endif.
+              ls_entity-showpriorities = lo_slpm_product->is_show_priority_set(  ).
 
-          clear ls_entity.
-        endloop.
+              lo_crm_service_product ?= lo_slpm_product.
 
-        " For empty company filter we just display all products of user without duplicates
+              ls_entity-prioritiescount = lo_crm_service_product->get_resp_profile_prio_count(  ).
 
-        if lt_filter_customer_bp is initial.
+              " We skip all products, which don't have proper priorities assigned
+              " through a response profile
 
-          sort et_entityset.
+              if ls_entity-prioritiescount > 0.
 
-          delete adjacent duplicates from et_entityset comparing id.
+                append  ls_entity to et_entityset.
 
-        endif.
+              endif.
 
-      catch ycx_system_user_exc ycx_slpm_configuration_exc into data(lcx_process_exception).
+              clear ls_entity.
+            endloop.
+
+            " For empty company filter we just display all products of user without duplicates
+
+            if lt_filter_customer_bp is initial.
+
+              sort et_entityset.
+
+              delete adjacent duplicates from et_entityset comparing id.
+
+            endif.
+
+          catch ycx_system_user_exc ycx_slpm_configuration_exc into data(lcx_process_exception).
+            raise_exception( lcx_process_exception->get_text(  ) ).
+
+        endtry.
+
+      catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
+             ycx_assistant_utilities_exc ycx_slpm_configuration_exc
+             ycx_system_user_exc into lcx_process_exception.
         raise_exception( lcx_process_exception->get_text(  ) ).
 
     endtry.
@@ -904,6 +1009,9 @@ initial ).
 
           lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
 
+          " Validation of SLPM OData request
+          me->is_valid_slpm_odata_request( lo_slpm_data_provider ).
+
           et_entityset = lo_slpm_data_provider->get_problem_sla_irt_history( exporting
               ip_guid = lv_guid ).
 
@@ -935,6 +1043,9 @@ initial ).
 
           lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
 
+          " Validation of SLPM OData request
+          me->is_valid_slpm_odata_request( lo_slpm_data_provider ).
+
           et_entityset = lo_slpm_data_provider->get_problem_sla_mpt_history( exporting
               ip_guid = lv_guid ).
 
@@ -963,6 +1074,9 @@ initial ).
     try.
         lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
 
+        " Validation of SLPM OData request
+        me->is_valid_slpm_odata_request( lo_slpm_data_provider ).
+
         et_entityset = cond #(
             when lv_status is initial then lo_slpm_data_provider->get_all_statuses(  )
             else lo_slpm_data_provider->get_list_of_possible_statuses( lv_status )
@@ -986,6 +1100,9 @@ initial ).
 
         lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
 
+        " Validation of SLPM OData request
+        me->is_valid_slpm_odata_request( lo_slpm_data_provider ).
+
         et_entityset = lo_slpm_data_provider->get_list_of_support_teams( ).
 
       catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
@@ -1003,7 +1120,8 @@ initial ).
     data:
       ls_entity             like line of et_entityset,
       lo_slpm_customer      type ref to yif_slpm_customer,
-      lv_filter_customer_bp type bu_partner.
+      lv_filter_customer_bp type bu_partner,
+      lo_slpm_data_provider type ref to yif_slpm_data_manager.
 
     " Providing all systems of a SLPM customer
 
@@ -1016,6 +1134,13 @@ initial ).
 
 
     try.
+
+        " Validation of SLPM OData request
+
+        lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
+
+        me->is_valid_slpm_odata_request( lo_slpm_data_provider ).
+
 
         if lv_filter_customer_bp is not initial.
 
@@ -1038,12 +1163,19 @@ initial ).
   method systemuserset_get_entityset.
 
     data:
-      lo_system_user type ref to yif_system_user,
-      lo_slpm_user   type ref to yif_slpm_user,
-      ls_entity      like line of et_entityset,
-      ls_company     type yslpm_ts_company.
+      lo_system_user        type ref to yif_system_user,
+      lo_slpm_user          type ref to yif_slpm_user,
+      ls_entity             like line of et_entityset,
+      ls_company            type yslpm_ts_company,
+      lo_slpm_data_provider type ref to yif_slpm_data_manager.
 
     try.
+
+        " Validation of SLPM OData request
+
+        lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
+
+        me->is_valid_slpm_odata_request( lo_slpm_data_provider ).
 
         lo_slpm_user = new ycl_slpm_user( sy-uname ).
 
@@ -1069,8 +1201,8 @@ initial ).
 
         append ls_entity to et_entityset.
 
-      catch ycx_system_user_exc into data(lcx_process_exception).
-
+      catch ycx_slpm_odata_exc ycx_system_user_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
+        ycx_assistant_utilities_exc ycx_slpm_configuration_exc into data(lcx_process_exception).
         raise_exception( lcx_process_exception->get_text(  ) ).
 
     endtry.
@@ -1103,6 +1235,9 @@ initial ).
     try.
 
         lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
+
+        " Validation of SLPM OData request
+        me->is_valid_slpm_odata_request( lo_slpm_data_provider ).
 
         lo_slpm_data_provider->create_text(
         exporting
@@ -1151,6 +1286,9 @@ initial ).
 
         lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
 
+        " Validation of SLPM OData request
+        me->is_valid_slpm_odata_request( lo_slpm_data_provider ).
+
         lo_slpm_data_provider->get_texts(
             exporting ip_guid = lv_guid
             importing et_texts = lt_texts ).
@@ -1163,8 +1301,7 @@ initial ).
     endtry.
 
 
-    loop at lt_texts assigning field-symbol(<ls_text>) where tdid in
-lt_filter_tdid.
+    loop at lt_texts assigning field-symbol(<ls_text>) where tdid in lt_filter_tdid.
 
       ls_texts = <ls_text>.
 
@@ -1173,4 +1310,25 @@ lt_filter_tdid.
     endloop. " loop at lt_entityset assigning field-symbol(<ls_entityset>)
 
   endmethod.
-ENDCLASS.
+
+  method is_valid_slpm_odata_request.
+
+    data: lo_slpm_odata_request type ref to ycl_slpm_odata_request.
+
+    lo_slpm_odata_request = new ycl_slpm_odata_request(
+        io_request_details = me->mr_request_details
+        io_slpm_data_provider = io_slpm_data_provider ).
+
+    " Checking if a client is secure
+
+    if ( lo_slpm_odata_request->yif_slpm_odata_request~is_client_secure( ) eq abap_false ).
+
+      raise exception type ycx_slpm_odata_exc
+        exporting
+          textid = ycx_slpm_odata_exc=>client_not_supported.
+
+    endif.
+
+  endmethod.
+
+endclass.

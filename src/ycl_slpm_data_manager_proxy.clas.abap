@@ -20,6 +20,11 @@ class ycl_slpm_data_manager_proxy definition
              replacement type string,
            end of ty_text_vulnerabilities_list.
 
+    types: begin of ty_statuses_for_sla_shift,
+             statusin  type j_estat,
+             statusout type j_estat,
+           end of ty_statuses_for_sla_shift.
+
     data:
       mo_slpm_data_provider        type ref to yif_slpm_data_manager,
       mo_active_configuration      type ref to yif_slpm_configuration,
@@ -30,8 +35,11 @@ class ycl_slpm_data_manager_proxy definition
       mv_app_log_subobject         type balsubobj,
       mt_text_vulnerabilities_list type table of ty_text_vulnerabilities_list,
       mt_problem_observers         type standard table of ref to yif_slpm_problem_observer,
-      "mo_slpm_cache_controller     type ref to yif_cache
-      mo_slpm_cache_controller     type ref to yif_slpm_problem_cache.
+      mo_slpm_cache_controller     type ref to yif_slpm_problem_cache,
+      mt_statuses_for_irt_recalc   type table of ty_statuses_for_sla_shift,
+      mt_statuses_for_irt_store    type table of ty_statuses_for_sla_shift,
+      mt_statuses_for_mpt_recalc   type table of ty_statuses_for_sla_shift,
+      mt_statuses_for_mpt_store    type table of ty_statuses_for_sla_shift.
 
     methods:
 
@@ -209,7 +217,15 @@ class ycl_slpm_data_manager_proxy definition
         changing
           cs_problem type ycrm_order_ts_sl_problem
         raising
-          ycx_slpm_configuration_exc.
+          ycx_slpm_configuration_exc,
+
+      set_statuses_for_mpt_recalc,
+
+      set_statuses_for_irt_recalc,
+
+      set_statuses_for_mpt_store,
+
+      set_statuses_for_irt_store.
 
 endclass.
 
@@ -285,6 +301,14 @@ class ycl_slpm_data_manager_proxy implementation.
     me->fill_vulnerabilities_list(  ).
 
     me->set_slpm_cache_controller(  ).
+
+    me->set_statuses_for_irt_recalc(  ).
+
+    me->set_statuses_for_mpt_recalc(  ).
+
+    me->set_statuses_for_irt_store(  ).
+
+    me->set_statuses_for_mpt_store(  ).
 
   endmethod.
 
@@ -1103,34 +1127,9 @@ mo_active_configuration ).
 
     endif.
 
-    " Storing MPT SLA when switch to 'Customer Action' and 'Solution Proposed' are done
+    " Storing MPT and IRT SLAs for specific statuses
 
-    if ( is_problem_old_state-status = 'E0002' and is_problem_new_state-status = 'E0003' ) or
-        ( is_problem_old_state-status = 'E0002' and is_problem_new_state-status = 'E0005' ).
-
-      lv_method_name = |STORE_MPT_SLA|.
-
-      ls_method-method_name = lv_method_name.
-
-      clear lt_method_params.
-      lt_method_params = corresponding #( lt_common_params ).
-
-      lt_specific_params = value #(
-         ( name = 'IP_MPT_PERC' value = ref #( is_problem_new_state-mpt_perc ) kind = cl_abap_objectdescr=>exporting )
-        ).
-
-      insert lines of lt_specific_params into table lt_method_params.
-
-      ls_method-parameters = lt_method_params.
-
-      append ls_method to lt_methods_list.
-
-    endif.
-
-    " When status is changed from 'Information Requested' to 'In approval'
-    " we need to store IRT and MPT SLA timestamps
-
-    if ( is_problem_old_state-status = 'E0016' and is_problem_new_state-status = 'E0017' ).
+    if line_exists( mt_statuses_for_irt_store[ statusin = is_problem_old_state-status statusout = is_problem_new_state-status ] ).
 
       if ( mo_active_configuration->get_parameter_value( 'SHIFT_IRT_ON_INFORMATION_REQUESTED_STAT' ) eq 'X').
 
@@ -1154,32 +1153,45 @@ mo_active_configuration ).
 
         endif.
 
-        lv_method_name = |STORE_MPT_SLA|.
+      endif.
 
-        ls_method-method_name = lv_method_name.
+    endif.
 
-        clear lt_method_params.
-        lt_method_params = corresponding #( lt_common_params ).
+    if line_exists( mt_statuses_for_mpt_store[ statusin = is_problem_old_state-status statusout = is_problem_new_state-status ] ).
 
-        lt_specific_params = value #(
-             ( name = 'IP_MPT_PERC' value = ref #( is_problem_new_state-mpt_perc ) kind = cl_abap_objectdescr=>exporting )
-         ).
+      if ( mo_active_configuration->get_parameter_value( 'SHIFT_MPT_ON_INFORMATION_REQUESTED_STAT' ) eq 'X').
 
-        insert lines of lt_specific_params into table lt_method_params.
+        " Storing of IRT SLA happens only if MPT SLA is not overdue
+        if ( is_problem_new_state-mpt_icon_bsp eq 'NOTDUE').
 
-        ls_method-parameters = lt_method_params.
-        append ls_method to lt_methods_list.
+          lv_method_name = |STORE_MPT_SLA|.
+          ls_method-method_name = lv_method_name.
+
+          clear lt_method_params.
+          lt_method_params = corresponding #( lt_common_params ).
+
+          lt_specific_params = value #(
+                     ( name = 'IP_MPT_PERC' value = ref #( is_problem_new_state-mpt_perc ) kind = cl_abap_objectdescr=>exporting )
+                 ).
+
+          insert lines of lt_specific_params into table lt_method_params.
+
+          ls_method-parameters = lt_method_params.
+          append ls_method to lt_methods_list.
+
+        endif.
 
       endif.
 
     endif.
 
-    if ( is_problem_old_state-status = 'E0017' and is_problem_new_state-status = 'E0016' ).
+    " Recalculations for IRT and MPT SLAs
 
-      " Recalculation will be done only if IRT is not overdue
+    if line_exists( mt_statuses_for_irt_recalc[ statusin = is_problem_old_state-status statusout = is_problem_new_state-status ] ).
 
-      if ( mo_active_configuration->get_parameter_value( 'SHIFT_IRT_ON_INFORMATION_REQUESTED_STAT' ) eq 'X') and
-        ( is_problem_new_state-irt_icon_bsp eq 'NOTDUE').
+      if ( mo_active_configuration->get_parameter_value( 'SHIFT_IRT_ON_INFORMATION_REQUESTED_STAT' ) eq 'X').
+        "and
+        " ( is_problem_new_state-irt_icon_bsp eq 'NOTDUE').
 
         lv_method_name = |RECALC_IRT_SLA|.
 
@@ -1207,11 +1219,13 @@ mo_active_configuration ).
 
       endif.
 
+    endif.
 
-      " Recalculation will be done only if MPT is not overdue
+    if line_exists( mt_statuses_for_mpt_recalc[ statusin = is_problem_old_state-status statusout = is_problem_new_state-status ] ).
 
-      if ( mo_active_configuration->get_parameter_value( 'SHIFT_MPT_ON_INFORMATION_REQUESTED_STAT' ) eq 'X') and
-        ( is_problem_new_state-irt_icon_bsp eq 'NOTDUE').
+      if ( mo_active_configuration->get_parameter_value( 'SHIFT_MPT_ON_INFORMATION_REQUESTED_STAT' ) eq 'X').
+        "and
+        "( is_problem_new_state-mpt_icon_bsp eq 'NOTDUE').
 
         lv_method_name = |RECALC_MPT_SLA|.
 
@@ -1238,7 +1252,6 @@ mo_active_configuration ).
         append ls_method to lt_methods_list.
 
       endif.
-
 
     endif.
 
@@ -1897,6 +1910,82 @@ mo_active_configuration ).
 
     endif.
 
-endmethod.
+  endmethod.
+
+  method set_statuses_for_mpt_recalc.
+
+    mt_statuses_for_mpt_recalc = value #(
+
+      ( statusin = 'E0017' statusout = 'E0016' )
+      ( statusin = 'E0003' statusout = 'E0002' )
+      ( statusin = 'E0005' statusout = 'E0002' )
+
+    ).
+
+
+  endmethod.
+
+  method set_statuses_for_irt_recalc.
+
+    mt_statuses_for_irt_recalc = value #(
+
+        ( statusin = 'E0017' statusout = 'E0016' )
+
+    ).
+
+  endmethod.
+
+  method set_statuses_for_mpt_store.
+
+    mt_statuses_for_mpt_store = value #(
+
+      ( statusin = 'E0016' statusout = 'E0017' )
+      ( statusin = 'E0002' statusout = 'E0003' )
+      ( statusin = 'E0002' statusout = 'E0005' )
+
+    ).
+
+  endmethod.
+
+  method set_statuses_for_irt_store.
+
+    mt_statuses_for_irt_store = value #(
+
+        ( statusin = 'E0016' statusout = 'E0017' )
+
+    ).
+
+  endmethod.
+
+  method yif_slpm_data_manager~is_status_a_final_status.
+
+    if mo_slpm_data_provider is bound.
+
+      rp_final_status = mo_slpm_data_provider->is_status_a_final_status( ip_status ).
+
+    endif.
+
+  endmethod.
+
+  method yif_slpm_data_manager~get_final_status_codes.
+
+    if mo_slpm_data_provider is bound.
+
+      rt_final_status_codes = mo_slpm_data_provider->get_final_status_codes( ).
+
+    endif.
+
+  endmethod.
+
+  method yif_slpm_data_manager~get_active_configuration.
+
+    if mo_slpm_data_provider is bound.
+
+      ro_active_configuration = mo_slpm_data_provider->get_active_configuration( ).
+
+    endif.
+
+
+  endmethod.
 
 endclass.

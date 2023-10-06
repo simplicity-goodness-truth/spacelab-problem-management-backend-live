@@ -17,16 +17,26 @@ class ycl_slpm_data_manager definition
   protected section.
   private section.
     data:
-      mo_slpm_problem_api         type ref to ycl_slpm_problem_api,
-      mo_active_configuration     type ref to yif_slpm_configuration,
-      mo_system_user              type ref to yif_system_user,
-      mo_log                      type ref to ycl_logger_to_app_log,
-      mv_app_log_object           type balobj_d,
-      mv_app_log_subobject        type balsubobj,
-      mt_internal_pool            type yslpm_tt_users,
-      mt_proc_pool_assigned_pos   type yorg_model_tt_positions,
-      mo_slpm_cache_controller    type ref to yif_slpm_problem_cache,
-      mt_customer_action_statuses type table of j_estat.
+      mo_slpm_problem_api            type ref to ycl_slpm_problem_api,
+      mo_active_configuration        type ref to yif_slpm_configuration,
+      mo_system_user                 type ref to yif_system_user,
+      mo_log                         type ref to ycl_logger_to_app_log,
+      mv_app_log_object              type balobj_d,
+      mv_app_log_subobject           type balsubobj,
+      mt_internal_pool               type yslpm_tt_users,
+      mt_proc_pool_assigned_pos      type yorg_model_tt_positions,
+      mo_slpm_cache_controller       type ref to yif_slpm_problem_cache,
+      mt_cust_action_status_codes    type table of j_estat,
+      mt_final_status_codes          type table of j_estat,
+      mt_hold_irt_sla_status_codes   type table of j_estat,
+      mt_hold_mpt_sla_status_codes   type table of j_estat,
+      mt_reqconfenab_status_codes    type table of j_estat,
+      mt_reqrepenab_status_codes     type table of j_estat,
+      mt_requpdenab_status_codes     type table of j_estat,
+      mt_reqwitenab_status_codes     type table of j_estat,
+      mt_procedmodeenab_status_codes type table of j_estat,
+      mt_procprichgenab_status_codes type table of j_estat,
+      mt_procretwitenab_status_codes type table of j_estat.
 
     methods:
 
@@ -148,7 +158,27 @@ class ycl_slpm_data_manager definition
         returning
           value(rp_visibility) type char1,
 
-      set_customer_action_statuses.
+      set_cust_action_status_codes,
+
+      set_final_status_codes,
+
+      set_hold_irt_sla_status_codes,
+
+      set_hold_mpt_sla_status_codes,
+
+      set_reqconfenab_status_code,
+
+      set_reqrepenab_status_codes ,
+
+      set_requpdenab_status_codes,
+
+      set_reqwitenab_status_codes,
+
+      set_procedmodeena_status_codes,
+
+      set_procprichgena_status_codes,
+
+      set_procretwitena_status_codes.
 
 endclass.
 
@@ -497,7 +527,17 @@ class ycl_slpm_data_manager implementation.
     me->set_app_logger(  ).
     mo_slpm_problem_api = new ycl_slpm_problem_api( io_active_configuration ).
     me->set_slpm_cache_controller(  ).
-    me->set_customer_action_statuses(  ).
+    me->set_cust_action_status_codes(  ).
+    me->set_final_status_codes( ).
+    me->set_hold_irt_sla_status_codes(  ).
+    me->set_hold_mpt_sla_status_codes(  ).
+    me->set_reqconfenab_status_code(  ).
+    me->set_reqrepenab_status_codes(  ).
+    me->set_requpdenab_status_codes(  ).
+    me->set_reqwitenab_status_codes(  ).
+    me->set_procedmodeena_status_codes(  ).
+    me->set_procprichgena_status_codes(  ).
+    me->set_procretwitena_status_codes(  ).
 
   endmethod.
 
@@ -628,27 +668,20 @@ class ycl_slpm_data_manager implementation.
 
     " SLAs on Hold flag
 
-    "if ( cs_problem-irt_icon_bsp ne 'OVERDUE' ) and  ( cs_problem-mpt_icon_bsp ne 'OVERDUE' ).
+    cs_problem-irtslaonhold = cond abap_bool(
+        when line_exists( mt_hold_irt_sla_status_codes[ table_line = cs_problem-status ] )  then abap_true
+            else abap_false ).
 
-    cs_problem-irtslaonhold = switch char4(  cs_problem-status
-                  when 'E0017'    then abap_true
-                      else abap_false ).
-
-    cs_problem-mptslaonhold = switch char4(  cs_problem-status
-                    when 'E0017'    then abap_true
-                    when 'E0003'    then abap_true
-                    when 'E0005'    then abap_true
-                    else abap_false ).
-
-
-    "endif.
+    cs_problem-mptslaonhold = cond abap_bool(
+        when line_exists( mt_hold_mpt_sla_status_codes[ table_line = cs_problem-status ] )  then abap_true
+            else abap_false ).
 
     "Closed flag
 
-    cs_problem-closed = switch char4(  cs_problem-status
-                    when 'E0008'    then abap_true
-                    when 'E0010'    then abap_true
-                    else abap_false ).
+    cs_problem-closed = cond abap_bool(
+        when me->yif_slpm_data_manager~is_status_a_final_status( cs_problem-status ) then abap_true
+            else abap_false
+    ).
 
     " Total processing time
 
@@ -736,81 +769,61 @@ class ycl_slpm_data_manager implementation.
 
     " Requester confirmation: when is enabled
 
-    cs_problem-requesterconfirmenabled = switch #( cs_problem-status
-                  when 'E0005'    then abap_true
-                      else abap_false ).
+    cs_problem-requesterconfirmenabled  = cond abap_bool(
+        when line_exists( mt_reqconfenab_status_codes[ table_line = cs_problem-status ] )  then abap_true
+            else abap_false ).
 
     " Requester reply: when is enabled
-    cs_problem-requesterreplyenabled = switch #( cs_problem-status
-              when 'E0003'    then abap_true
-              when 'E0005'    then abap_true
-              when 'E0017'    then abap_true
-                  else abap_false ).
+
+    cs_problem-requesterreplyenabled = cond abap_bool(
+        when line_exists( mt_reqrepenab_status_codes[ table_line = cs_problem-status ] )  then abap_true
+            else abap_false ).
 
     " Requester update(extra data provision): when is enabled
-    cs_problem-requesterupdateenabled = switch #( cs_problem-status
-              when 'E0001'    then abap_true
-              when 'E0002'    then abap_true
-              when 'E0016'    then abap_true
-                  else abap_false ).
+
+    cs_problem-requesterupdateenabled = cond abap_bool(
+            when line_exists( mt_requpdenab_status_codes[ table_line = cs_problem-status ] )  then abap_true
+                else abap_false ).
 
     " Requester withdrawal: when is enabled
-    cs_problem-requesterwithdrawenabled = switch #( cs_problem-status
-              when 'E0001'    then abap_true
-              when 'E0002'    then abap_true
-                  else abap_false ).
+
+    cs_problem-requesterwithdrawenabled = cond abap_bool(
+        when line_exists( mt_reqwitenab_status_codes[ table_line = cs_problem-status ] )  then abap_true
+            else abap_false ).
 
     " Processor editing: when is enabled
-    cs_problem-processoreditmodeenabled = cond bu_partner(
+
+    cs_problem-processoreditmodeenabled = cond abap_bool(
         when cs_problem-processorbusinesspartner = mo_system_user->get_businesspartner( ) then
-            switch char5( cs_problem-status
-              when 'E0001'    then abap_true
-              when 'E0002'    then abap_true
-              when 'E0003'    then abap_true
-              when 'E0015'    then abap_true
-              when 'E0016'    then abap_true
-              when 'E0005'    then abap_true
-                  else abap_false )
+            cond abap_bool(
+                when line_exists( mt_procedmodeenab_status_codes[ table_line = cs_problem-status ] ) then abap_true
+                    else abap_false )
         else abap_false ) .
-
-    " Processor take over: when is enabled
-
-*    cs_problem-processortakeoverenabled = cond bu_partner( when ( cs_problem-processorbusinesspartner  is initial )
-*        or ( cs_problem-processorbusinesspartner eq '0' )
-*        then switch char5( cs_problem-status
-*
-*              when 'E0001'    then abap_true
-*              when 'E0002'    then abap_true
-*              when 'E0015'    then abap_true
-*                  else abap_false )
-*
-*        else abap_false ).
 
     " ViaRight Requirement: take over should be possible in all statuses
 
-    cs_problem-processortakeoverenabled = cond bu_partner(
-    when cs_problem-processorbusinesspartner ne mo_system_user->get_businesspartner( ) then
-       abap_true
-        else abap_false ).
+    cs_problem-processortakeoverenabled = cond abap_bool(
+        when cs_problem-processorbusinesspartner ne mo_system_user->get_businesspartner( ) then abap_true
+            else abap_false ).
 
     " Processor priority change: when is enabled
 
-    cs_problem-processorprioritychangeenabled = cond bu_partner(
-            when cs_problem-processorbusinesspartner = mo_system_user->get_businesspartner( ) then
-                switch char5( cs_problem-status
-                  when 'E0001'    then abap_true
-                  when 'E0016'    then abap_true
-                      else abap_false )
-            else abap_false ) .
+    cs_problem-processorprioritychangeenabled = cond abap_bool(
+        when cs_problem-processorbusinesspartner = mo_system_user->get_businesspartner( ) then
+            cond abap_bool(
+                when line_exists( mt_procprichgenab_status_codes[ table_line = cs_problem-status ] )  then abap_true
+                    else abap_false )
+        else abap_false ) .
 
     " Processor return from withdrawal: when is enabled
 
-    cs_problem-processorreturnfromwithdrawal = cond bu_partner(
-           when cs_problem-processorbusinesspartner = mo_system_user->get_businesspartner( ) then
-                switch char5( cs_problem-status
-                    when 'E0010'    then abap_true
+    cs_problem-processorreturnfromwithdrawal = cond abap_bool(
+        when cs_problem-processorbusinesspartner = mo_system_user->get_businesspartner( ) then
+            cond abap_bool(
+                when line_exists( mt_procretwitenab_status_codes[ table_line = cs_problem-status ] )  then abap_true
                     else abap_false )
-            else abap_false ) .
+    else abap_false ) .
+
 
   endmethod.
 
@@ -1570,9 +1583,9 @@ update_timestamp update_timezone
 
   endmethod.
 
-  method set_customer_action_statuses.
+  method set_cust_action_status_codes.
 
-    mt_customer_action_statuses = value #(
+    mt_cust_action_status_codes = value #(
         ( 'E0017' )
         ( 'E0003' )
         ( 'E0005' )
@@ -1583,12 +1596,153 @@ update_timestamp update_timezone
   method yif_slpm_data_manager~is_status_a_customer_action.
 
 
-    if line_exists( mt_customer_action_statuses[ table_line = ip_status ] ).
+    if line_exists( mt_cust_action_status_codes[ table_line = ip_status ] ).
 
       rp_customer_action = abap_true.
 
     endif.
 
+
+  endmethod.
+
+  method yif_slpm_data_manager~is_status_a_final_status.
+
+    if line_exists( mt_final_status_codes[ table_line = ip_status ] ).
+
+      rp_final_status = abap_true.
+
+    endif.
+
+  endmethod.
+
+  method set_final_status_codes.
+
+    mt_final_status_codes = value #(
+
+    ( 'E0010' )
+    ( 'E0008' )
+
+    ).
+
+  endmethod.
+
+  method yif_slpm_data_manager~get_final_status_codes.
+
+    loop at mt_final_status_codes assigning field-symbol(<fs_final_status>).
+
+      append <fs_final_status> to rt_final_status_codes.
+
+    endloop.
+
+  endmethod.
+
+  method set_hold_irt_sla_status_codes.
+
+    mt_hold_irt_sla_status_codes = value #(
+
+      ( 'E0017' )
+
+    ).
+
+  endmethod.
+
+
+  method set_hold_mpt_sla_status_codes.
+
+    mt_hold_mpt_sla_status_codes = value #(
+
+      ( 'E0017' )
+      ( 'E0003' )
+      ( 'E0005' )
+
+    ).
+
+  endmethod.
+
+  method set_reqconfenab_status_code.
+
+    mt_reqconfenab_status_codes = value #(
+
+    ( 'E0005' )
+
+    ).
+
+  endmethod.
+
+  method set_reqrepenab_status_codes.
+
+    mt_reqrepenab_status_codes = value #(
+
+     ( 'E0003' )
+     ( 'E0005' )
+     ( 'E0017' )
+
+    ).
+
+  endmethod.
+
+  method set_requpdenab_status_codes.
+
+    mt_requpdenab_status_codes = value #(
+
+        ( 'E0001' )
+        ( 'E0002' )
+        ( 'E0016' )
+
+    ).
+
+  endmethod.
+
+  method set_reqwitenab_status_codes.
+
+    mt_reqwitenab_status_codes = value #(
+
+        ( 'E0001' )
+        ( 'E0002' )
+
+    ).
+
+  endmethod.
+
+  method set_procedmodeena_status_codes.
+
+    mt_procedmodeenab_status_codes = value #(
+
+        ( 'E0001' )
+        ( 'E0002' )
+        ( 'E0003' )
+        ( 'E0015' )
+        ( 'E0016' )
+        ( 'E0005' )
+
+    ).
+
+  endmethod.
+
+  method set_procprichgena_status_codes.
+
+    mt_procprichgenab_status_codes = value #(
+
+        ( 'E0001' )
+        ( 'E0016' )
+
+     ).
+
+  endmethod.
+
+  method set_procretwitena_status_codes.
+
+    mt_procretwitenab_status_codes = value #(
+
+        ( 'E0010' )
+
+    ).
+
+  endmethod.
+
+  method yif_slpm_data_manager~get_active_configuration.
+
+    ro_active_configuration = mo_active_configuration.
 
   endmethod.
 

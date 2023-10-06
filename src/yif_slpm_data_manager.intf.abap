@@ -235,6 +235,20 @@ interface yif_slpm_data_manager
       importing
         ip_status                 type j_estat
       returning
-        value(rp_customer_action) type abap_bool.
+        value(rp_customer_action) type abap_bool,
+
+    is_status_a_final_status
+      importing
+        ip_status              type j_estat
+      returning
+        value(rp_final_status) type abap_bool,
+
+    get_final_status_codes
+      returning
+        value(rt_final_status_codes) type zcrm_order_tt_statuses,
+
+    get_active_configuration
+      returning
+        value(ro_active_configuration) type ref to yif_slpm_configuration.
 
 endinterface.
