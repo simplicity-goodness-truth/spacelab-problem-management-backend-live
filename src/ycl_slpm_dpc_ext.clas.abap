@@ -744,7 +744,8 @@ initial ).
         et_entityset = lo_slpm_data_provider->get_problems_list(
             exporting
             it_filters = lt_set_filters
-            it_order = it_order ).
+            it_order = it_order
+            ip_exclude_exp_fields = abap_true ).
 
       catch ycx_slpm_odata_exc ycx_slpm_data_manager_exc ycx_crm_order_api_exc
         ycx_assistant_utilities_exc ycx_slpm_configuration_exc

@@ -1,6 +1,24 @@
 *---------------------------------------------------------------------*
 *    view related data declarations
 *---------------------------------------------------------------------*
+*...processing: YCRMOAUTOSTATVW.................................*
+TABLES: YCRMOAUTOSTATVW, *YCRMOAUTOSTATVW. "view work areas
+CONTROLS: TCTRL_YCRMOAUTOSTATVW
+TYPE TABLEVIEW USING SCREEN '0085'.
+DATA: BEGIN OF STATUS_YCRMOAUTOSTATVW. "state vector
+          INCLUDE STRUCTURE VIMSTATUS.
+DATA: END OF STATUS_YCRMOAUTOSTATVW.
+* Table for entries selected to show on screen
+DATA: BEGIN OF YCRMOAUTOSTATVW_EXTRACT OCCURS 0010.
+INCLUDE STRUCTURE YCRMOAUTOSTATVW.
+          INCLUDE STRUCTURE VIMFLAGTAB.
+DATA: END OF YCRMOAUTOSTATVW_EXTRACT.
+* Table for all entries loaded from database
+DATA: BEGIN OF YCRMOAUTOSTATVW_TOTAL OCCURS 0010.
+INCLUDE STRUCTURE YCRMOAUTOSTATVW.
+          INCLUDE STRUCTURE VIMFLAGTAB.
+DATA: END OF YCRMOAUTOSTATVW_TOTAL.
+
 *...processing: YCRMOSLAESCALVW.................................*
 TABLES: YCRMOSLAESCALVW, *YCRMOSLAESCALVW. "view work areas
 CONTROLS: TCTRL_YCRMOSLAESCALVW
@@ -182,6 +200,7 @@ INCLUDE STRUCTURE YSLPMSTATFLOWVW.
 DATA: END OF YSLPMSTATFLOWVW_TOTAL.
 
 *.........table declarations:.................................*
+TABLES: YCRMO_AUTO_STAT                .
 TABLES: YCRMO_SLA_ESCAL                .
 TABLES: YSLPM_CUST_PROD                .
 TABLES: YSLPM_CUST_SYST                .

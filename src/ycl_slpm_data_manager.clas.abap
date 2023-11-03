@@ -41,9 +41,12 @@ class ycl_slpm_data_manager definition
     methods:
 
       add_problem_non_db_fields
-        changing cs_problem type ycrm_order_ts_sl_problem
+        importing
+          ip_exclude_exp_fields type abap_bool optional
+        changing
+          cs_problem            type ycrm_order_ts_sl_problem
         raising
-                 ycx_slpm_configuration_exc,
+          ycx_slpm_configuration_exc,
 
       fill_possible_problem_actions
         changing
@@ -178,7 +181,19 @@ class ycl_slpm_data_manager definition
 
       set_procprichgena_status_codes,
 
-      set_procretwitena_status_codes.
+      set_procretwitena_status_codes,
+
+      get_stored_mpt_perc
+        importing
+          ip_guid                   type crmt_object_guid
+        returning
+          value(rp_stored_mpt_perc) type int4,
+
+      get_last_slpm_mpt_hist
+        importing
+          ip_guid                 type crmt_object_guid
+        returning
+          value(rs_slpm_mpt_hist) type yslpm_mpt_hist.
 
 endclass.
 
@@ -374,6 +389,8 @@ class ycl_slpm_data_manager implementation.
     " Adding problem non-database fields
 
     add_problem_non_db_fields(
+        exporting
+            ip_exclude_exp_fields = ip_exclude_exp_fields
         changing
             cs_problem = es_result ).
 
@@ -429,6 +446,8 @@ class ycl_slpm_data_manager implementation.
           ls_result = me->yif_slpm_data_manager~get_problem(
                    exporting
                      ip_guid = <ls_crm_guid>-guid
+                     ip_exclude_exp_fields = ip_exclude_exp_fields
+
                      ).
 
 
@@ -608,16 +627,20 @@ class ycl_slpm_data_manager implementation.
 
   method add_problem_non_db_fields.
 
-    data: lo_slpm_customer   type ref to yif_slpm_customer,
-          lo_company         type ref to yif_company,
-          lv_duration_sec    type integer,
-          lv_system_timezone type timezone,
-          lv_timestamp       type timestamp,
-          lo_slpm_product    type ref to yif_slpm_product.
+    data: lo_slpm_customer            type ref to yif_slpm_customer,
+          lo_company                  type ref to yif_company,
+          lv_duration_sec             type integer,
+          lv_system_timezone          type timezone,
+          lv_timestamp                type timestamp,
+          lo_slpm_product             type ref to yif_slpm_product,
+          lv_stored_irt_perc          type int4,
+          lv_pending_irt_shift_exists type abap_bool,
+          lv_stored_mpt_perc          type int4,
+          lv_pending_mpt_shift_exists type abap_bool.
 
     me->fill_possible_problem_actions(
-        changing
-        cs_problem = cs_problem ).
+       changing
+       cs_problem = cs_problem ).
 
     " Requester company name and system details
 
@@ -633,7 +656,7 @@ class ycl_slpm_data_manager implementation.
 
       if cs_problem-sapsystemname is not initial.
 
-        data lt_customer_systems type yslpm_tt_systems.
+        data lt_customer_systems type zslpm_tt_systems.
 
         try.
 
@@ -647,18 +670,6 @@ class ycl_slpm_data_manager implementation.
         endtry.
 
       endif.
-
-      " IRT history available
-
-      cs_problem-irthistoryavailable = me->is_irt_history_available( cs_problem-guid  ).
-
-      " MPT history available
-
-      cs_problem-mpthistoryavailable = me->is_mpt_history_available( cs_problem-guid  ).
-
-      " Stored IRT percent
-
-      cs_problem-storedirtperc = me->get_stored_irt_perc( cs_problem-guid  ).
 
     endif.
 
@@ -676,6 +687,49 @@ class ycl_slpm_data_manager implementation.
         when line_exists( mt_hold_mpt_sla_status_codes[ table_line = cs_problem-status ] )  then abap_true
             else abap_false ).
 
+    " Stored IRT percent
+
+    if cs_problem-irtslaonhold eq abap_true.
+
+      clear: lv_stored_irt_perc, lv_pending_irt_shift_exists.
+
+      new ycl_slpm_sla_irt_hist( cs_problem-guid )->yif_slpm_sla_hist~get_sla_perc_of_pending_shift(
+        exporting
+            ip_status = cs_problem-status
+        importing
+            ep_pending_shift_sla_perc = lv_stored_irt_perc
+            ep_pending_shift_exists = lv_pending_irt_shift_exists
+      ).
+
+      cs_problem-storedirtperc = cond int4(
+             when lv_pending_irt_shift_exists eq abap_true then lv_stored_irt_perc
+             else cs_problem-irt_perc
+           ).
+
+
+    endif.
+
+    " Stored MPT percent
+
+    if cs_problem-mptslaonhold eq abap_true.
+
+      clear: lv_stored_mpt_perc, lv_pending_mpt_shift_exists.
+
+      new ycl_slpm_sla_mpt_hist( cs_problem-guid )->yif_slpm_sla_hist~get_sla_perc_of_pending_shift(
+        exporting
+            ip_status = cs_problem-status
+        importing
+            ep_pending_shift_sla_perc = lv_stored_mpt_perc
+            ep_pending_shift_exists = lv_pending_mpt_shift_exists
+      ).
+
+      cs_problem-storedmptperc = cond int4(
+             when lv_pending_mpt_shift_exists eq abap_true then lv_stored_mpt_perc
+             else cs_problem-mpt_perc
+           ).
+
+    endif.
+
     "Closed flag
 
     cs_problem-closed = cond abap_bool(
@@ -683,43 +737,26 @@ class ycl_slpm_data_manager implementation.
             else abap_false
     ).
 
-    " Total processing time
-
-    cs_problem-totalproctimeminutes = 0.
-
-    if ( cs_problem-closed eq abap_true ).
-
-      " For statuses Withdrawn (E0010) and Confirmed (E0008) it is a difference between completion timestamp
-      " and last change timestamp
-
-      lv_duration_sec = ycl_assistant_utilities=>calc_duration_btw_timestamps(
-        exporting
-            ip_timestamp_1 = cs_problem-created_at
-            ip_timestamp_2 = cs_problem-changedat ).
-
-
-    else.
-
-      " For statuses except Withdrawn (E0010) and Confirmed (E0008)  it is a difference between now and creation timestamp
-
-      lv_system_timezone =  ycl_assistant_utilities=>get_system_timezone(  ).
-
-      convert date sy-datum time sy-uzeit into time stamp lv_timestamp time zone lv_system_timezone.
-
-      lv_duration_sec = ycl_assistant_utilities=>calc_duration_btw_timestamps(
-        exporting
-            ip_timestamp_1 = cs_problem-created_at
-            ip_timestamp_2 = lv_timestamp ).
-
-    endif.
-
-    cs_problem-totalproctimeminutes = lv_duration_sec div 60.
 
     " Show Priorities
 
     lo_slpm_product = new ycl_slpm_product( cs_problem-productguid ).
 
     cs_problem-showpriorities = lo_slpm_product->is_show_priority_set(  ).
+
+    " IRT history available
+
+    cs_problem-irthistoryavailable = cond abap_bool(
+        when lv_pending_irt_shift_exists eq abap_true then abap_true
+            else me->is_irt_history_available(  cs_problem-guid  )
+    ).
+
+    " MPT history available
+
+    cs_problem-mpthistoryavailable = cond abap_bool(
+    when lv_pending_mpt_shift_exists eq abap_true then abap_true
+        else me->is_mpt_history_available(  cs_problem-guid  )
+    ).
 
     " Default processing unit
 
@@ -729,39 +766,77 @@ class ycl_slpm_data_manager implementation.
         else
             mo_active_configuration->get_parameter_value( 'PROCESSORS_POOL_ORG_UNIT_NUMBER' ) ).
 
+    " Adding expensive fields filling
 
-    " Total response time in minutes
+    if ip_exclude_exp_fields eq abap_false.
 
-    if ( cs_problem-firstreactiontimestamp is not initial ).
+      " Total processing time
 
-      clear lv_duration_sec.
+      cs_problem-totalproctimeminutes = 0.
 
-      " SLA IRT has been achieved
+      if ( cs_problem-closed eq abap_true ).
 
-      lv_duration_sec = ycl_assistant_utilities=>calc_duration_btw_timestamps(
-        exporting
-            ip_timestamp_1 = cs_problem-created_at
-            ip_timestamp_2 = cs_problem-firstreactiontimestamp ).
+        " For statuses Withdrawn (E0010) and Confirmed (E0008) it is a difference between completion timestamp
+        " and last change timestamp
+
+        lv_duration_sec = zcl_assistant_utilities=>calc_duration_btw_timestamps(
+          exporting
+              ip_timestamp_1 = cs_problem-created_at
+              ip_timestamp_2 = cs_problem-changedat ).
+
+      else.
+
+        " For statuses except Withdrawn (E0010) and Confirmed (E0008)  it is a difference between now and creation timestamp
+
+        lv_system_timezone =  zcl_assistant_utilities=>get_system_timezone(  ).
+
+        convert date sy-datum time sy-uzeit into time stamp lv_timestamp time zone lv_system_timezone.
+
+        lv_duration_sec = zcl_assistant_utilities=>calc_duration_btw_timestamps(
+          exporting
+              ip_timestamp_1 = cs_problem-created_at
+              ip_timestamp_2 = lv_timestamp ).
+
+      endif.
+
+      cs_problem-totalproctimeminutes = lv_duration_sec div 60.
 
 
-    else.
 
-      " SLA IRT has been not achieved
 
-      lv_system_timezone =  ycl_assistant_utilities=>get_system_timezone(  ).
+      " Total response time in minutes
 
-      convert date sy-datum time sy-uzeit into time stamp lv_timestamp time zone lv_system_timezone.
+      if ( cs_problem-firstreactiontimestamp is not initial ).
 
-      lv_duration_sec = ycl_assistant_utilities=>calc_duration_btw_timestamps(
-        exporting
-            ip_timestamp_1 = cs_problem-created_at
-            ip_timestamp_2 = lv_timestamp ).
+        clear lv_duration_sec.
+
+        " SLA IRT has been achieved
+
+        lv_duration_sec = zcl_assistant_utilities=>calc_duration_btw_timestamps(
+          exporting
+              ip_timestamp_1 = cs_problem-created_at
+              ip_timestamp_2 = cs_problem-firstreactiontimestamp ).
+
+
+      else.
+
+        " SLA IRT has been not achieved
+
+        lv_system_timezone =  zcl_assistant_utilities=>get_system_timezone(  ).
+
+        convert date sy-datum time sy-uzeit into time stamp lv_timestamp time zone lv_system_timezone.
+
+        lv_duration_sec = zcl_assistant_utilities=>calc_duration_btw_timestamps(
+          exporting
+              ip_timestamp_1 = cs_problem-created_at
+              ip_timestamp_2 = lv_timestamp ).
+
+      endif.
+
+      cs_problem-totalresptimeminutes = lv_duration_sec div 60.
+
 
     endif.
-
-    cs_problem-totalresptimeminutes = lv_duration_sec div 60.
-
-
 
   endmethod.
 
@@ -1743,6 +1818,24 @@ update_timestamp update_timezone
   method yif_slpm_data_manager~get_active_configuration.
 
     ro_active_configuration = mo_active_configuration.
+
+  endmethod.
+
+  method get_last_slpm_mpt_hist.
+
+    select guid apptguid problemguid mpttimestamp mpttimezone mptperc update_timestamp update_timezone
+      from yslpm_mpt_hist
+      into corresponding fields of rs_slpm_mpt_hist
+     up to 1 rows
+       where problemguid = ip_guid order by update_timestamp descending.
+
+    endselect.
+
+  endmethod.
+
+  method get_stored_mpt_perc.
+
+    rp_stored_mpt_perc = me->get_last_slpm_mpt_hist( ip_guid )-mptperc.
 
   endmethod.
 

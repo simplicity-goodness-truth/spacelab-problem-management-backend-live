@@ -19,7 +19,7 @@ interface yif_custom_crm_order_init
 
     set_structure_name
       importing
-        ip_structure_name type strukname,
+        ip_structure_name type strukname optional,
 
     set_sold_to_party
       importing

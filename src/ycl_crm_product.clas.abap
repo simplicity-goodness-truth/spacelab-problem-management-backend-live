@@ -21,24 +21,12 @@ class ycl_crm_product implementation.
 
   method constructor.
 
-    data lt_products type ycrm_tt_products.
+    select single  product_guid product_id into ( mv_guid, mv_id )
+       from comm_product where product_guid = ip_guid.
 
-    select a~product_guid a~product_id b~short_text
-         from (
-             comm_product as a inner join
-             comm_prshtext as b
-             on a~product_guid = b~product_guid )
-             into table lt_products
-             where a~product_guid = ip_guid and
-             b~langu = sy-langu.
-
-    loop at lt_products assigning field-symbol(<ls_product>).
-
-      mv_guid = <ls_product>-guid.
-      mv_id = <ls_product>-id.
-      mv_name = <ls_product>-name.
-
-    endloop.
+    select single short_text into mv_name
+        from comm_prshtext where product_guid = ip_guid
+        and langu = sy-langu.
 
   endmethod.
 

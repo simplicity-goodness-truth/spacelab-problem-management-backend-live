@@ -1571,7 +1571,15 @@ lv_short_text ).
 
     if me->mv_structure_name is initial.
 
-      me->mv_structure_name = ip_structure_name.
+      if ip_structure_name is not initial.
+
+        me->mv_structure_name = ip_structure_name.
+
+      else.
+
+        me->mv_structure_name = 'YCRM_ORDER_TS'.
+
+      endif.
 
     endif.
 
