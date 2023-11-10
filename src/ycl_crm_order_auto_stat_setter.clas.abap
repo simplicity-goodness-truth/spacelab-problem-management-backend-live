@@ -24,7 +24,12 @@ class ycl_crm_order_auto_stat_setter definition
     types: tt_changed_orders type table of ty_changed_orders.
 
     data:
-      mt_crmo_auto_stat_settings type table of ycrmo_auto_stat.
+      mt_crmo_auto_stat_settings type table of ycrmo_auto_stat,
+
+      mo_order_update_api        type ref to data,
+
+      mo_order_update_api_method type ref to data.
+
 
     methods:
 
@@ -38,22 +43,37 @@ class ycl_crm_order_auto_stat_setter definition
         returning
           value(rp_time_to_set_status) type abap_bool,
 
-      set_order_status
+      update_order
         importing
           ip_guid                  type crmt_object_guid
           ip_status                type j_estat
           io_custom_crm_order_init type ref to yif_custom_crm_order_init
+          ip_tdid                  type tdid
+          ip_text_name             type tdobname
+          ip_process_type          type crmt_process_type optional
         raising
           ycx_crm_order_api_exc,
 
-      add_order_text
+
+      update_yslp_order
         importing
-          ip_tdid                  type tdid
-          ip_text_name             type tdobname
-          ip_guid                  type crmt_object_guid
-          io_custom_crm_order_init type ref to yif_custom_crm_order_init
+          ip_guid   type crmt_object_guid
+          ip_status type j_estat
+          ip_tdid   type tdid
+          ip_text   type string
         raising
           ycx_crm_order_api_exc,
+
+      update_regular_order
+        importing
+          ip_guid                  type crmt_object_guid
+          ip_status                type j_estat
+          io_custom_crm_order_init type ref to yif_custom_crm_order_init
+          ip_tdid                  type tdid
+          ip_text                  type string
+        raising
+          ycx_crm_order_api_exc,
+
 
       get_compiled_text
         importing
@@ -67,8 +87,6 @@ class ycl_crm_order_auto_stat_setter definition
           it_changed_orders type tt_changed_orders.
 
 endclass.
-
-
 
 class ycl_crm_order_auto_stat_setter implementation.
 
@@ -142,25 +160,15 @@ class ycl_crm_order_auto_stat_setter implementation.
                   " If last status change contains a user status from automatic setup table,
                   " then change a status accordingly
 
-                  " Addition of a text (if required)
-
-                  if <fs_crmo_auto_stat_setting>-sttext is not initial.
-
-                    me->add_order_text(
-                        ip_guid = <ls_guid>-guid
-                        io_custom_crm_order_init = lo_crm_order_init
-                        ip_text_name = <fs_crmo_auto_stat_setting>-sttext
-                        ip_tdid = <fs_crmo_auto_stat_setting>-texttype ).
-
-                  endif.
-
-                  me->set_order_status(
+                  me->update_order(
                       exporting
                           ip_guid = <ls_guid>-guid
                           ip_status = <fs_crmo_auto_stat_setting>-statusout
                           io_custom_crm_order_init = lo_crm_order_init
+                          ip_text_name = <fs_crmo_auto_stat_setting>-sttext
+                          ip_tdid = <fs_crmo_auto_stat_setting>-texttype
+                          ip_process_type = <fs_crmo_auto_stat_setting>-processtype
                   ).
-
 
                   wa_changed_order-guid = <ls_guid>-guid.
                   wa_changed_order-statusout =  <fs_crmo_auto_stat_setting>-statusout.
@@ -202,24 +210,41 @@ class ycl_crm_order_auto_stat_setter implementation.
 
   endmethod.
 
-  method set_order_status.
+  method update_order.
 
-    data:
-      lo_custom_crm_order_update type ref to yif_custom_crm_order_update,
-      ls_payload                 type ycrm_order_ts,
-      lr_payload                 type ref to data.
+    data: lv_text type string.
 
-    lo_custom_crm_order_update ?= io_custom_crm_order_init.
+    " Getting a full text
 
-    ls_payload-status = ip_status.
+    lv_text = me->get_compiled_text(
+        exporting
+            ip_text_name = ip_text_name ).
 
-    get reference of ls_payload into lr_payload.
+    case ip_process_type.
 
-    lo_custom_crm_order_update->update_order(
-     exporting
-      ir_entity = lr_payload
-      ip_guid = ip_guid ).
+      when 'YSLP'.
 
+        " For SpaceLab problems a specific custom processing should take place,
+        " as we required additional authorizations check and status changes emails postings
+
+        me->update_yslp_order(
+            exporting
+                ip_guid = ip_guid
+                ip_status = ip_status
+                ip_tdid = ip_tdid
+                ip_text = lv_text ).
+
+      when others.
+
+        me->update_regular_order(
+        exporting
+            ip_guid = ip_guid
+            io_custom_crm_order_init = io_custom_crm_order_init
+            ip_status = ip_status
+            ip_tdid = ip_tdid
+            ip_text = lv_text ).
+
+    endcase.
 
   endmethod.
 
@@ -247,6 +272,8 @@ class ycl_crm_order_auto_stat_setter implementation.
 
     lv_hours_since_last_status = lv_seconds_since_last_status div 3600.
 
+    lv_hours_since_last_status = 5555.
+
     if lv_hours_since_last_status > ip_thresholdinhours.
 
       rp_time_to_set_status = abap_true.
@@ -255,22 +282,7 @@ class ycl_crm_order_auto_stat_setter implementation.
 
   endmethod.
 
-  method add_order_text.
 
-    data:
-      lo_custom_crm_order_create type ref to yif_custom_crm_order_create,
-      lv_text                    type string.
-
-    lv_text = me->get_compiled_text(
-        exporting
-            ip_text_name = ip_text_name ).
-
-    lo_custom_crm_order_create ?= io_custom_crm_order_init.
-
-    lo_custom_crm_order_create->create_text( ip_guid = ip_guid ip_tdid = ip_tdid ip_text = lv_text ).
-
-
-  endmethod.
 
   method get_compiled_text.
 
@@ -306,6 +318,57 @@ class ycl_crm_order_auto_stat_setter implementation.
     endloop.
 
     write: |Всего изменено | && |{ lv_total_counter }| && | документов(а).|.
+
+  endmethod.
+
+  method update_yslp_order.
+
+    data:
+      lo_slpm_data_provider type ref to yif_slpm_data_manager,
+      ls_slpm_problem_in    type ycrm_order_ts_sl_problem,
+      ls_slpm_problem_out   type ycrm_order_ts_sl_problem.
+
+    try.
+
+        lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
+
+        ls_slpm_problem_in-status = ip_status.
+
+        ls_slpm_problem_out = lo_slpm_data_provider->update_problem(
+                exporting
+                 ip_guid = ip_guid
+                 is_problem = ls_slpm_problem_in
+                 ip_tdid = ip_tdid
+                 ip_text = ip_text ).
+
+      catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
+        ycx_assistant_utilities_exc ycx_slpm_configuration_exc
+        ycx_system_user_exc into data(lcx_process_exception).
+
+    endtry.
+
+  endmethod.
+
+  method update_regular_order.
+
+    data:
+      lo_custom_crm_order_update type ref to yif_custom_crm_order_update,
+      ls_payload                 type ycrm_order_ts,
+      lr_payload                 type ref to data.
+
+    lo_custom_crm_order_update ?= io_custom_crm_order_init.
+
+    ls_payload-status = ip_status.
+
+    get reference of ls_payload into lr_payload.
+
+    lo_custom_crm_order_update->update_order(
+     exporting
+      ir_entity = lr_payload
+      ip_guid = ip_guid
+      ip_tdid = ip_tdid
+      ip_text = ip_text ).
+
 
   endmethod.
 endclass.

@@ -142,6 +142,8 @@ interface yif_slpm_data_manager
       importing
         ip_guid          type crmt_object_guid
         is_problem       type ycrm_order_ts_sl_problem
+        ip_text          type string optional
+        ip_tdid          type tdid optional
       returning
         value(rs_result) type ycrm_order_ts_sl_problem
       raising

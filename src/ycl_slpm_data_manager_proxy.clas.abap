@@ -2151,7 +2151,9 @@ ip_guid ).
           rs_result = mo_slpm_data_provider->update_problem(
             exporting
                 ip_guid = ip_guid
-                is_problem = ls_problem ).
+                is_problem = ls_problem
+                ip_tdid = ip_tdid
+                ip_text = ip_text ).
 
           me->post_update_external_actions(
                exporting

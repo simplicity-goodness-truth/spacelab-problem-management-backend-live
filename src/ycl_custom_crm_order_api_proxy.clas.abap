@@ -454,7 +454,9 @@ class ycl_custom_crm_order_api_proxy implementation.
       mo_custom_crm_order_update->update_order(
        exporting
         ir_entity = ir_entity
-        ip_guid = ip_guid ).
+        ip_guid = ip_guid
+        ip_tdid = ip_tdid
+        ip_text = ip_text ).
 
     endif.
 
@@ -490,21 +492,22 @@ class ycl_custom_crm_order_api_proxy implementation.
 
   method set_mo_custom_crm_order_update.
 
+    if ( mo_custom_crm_order_update is not bound ).
 
-    if ( mo_custom_crm_order_update is not bound ) and
-    ( mv_crm_user->is_auth_to_update_on_proc_type( mv_process_type ) eq abap_true ).
+      if ( mv_crm_user->is_auth_to_update_on_proc_type( mv_process_type ) eq abap_true ).
 
-      mo_custom_crm_order_update ?= mo_custom_crm_order_init.
+        mo_custom_crm_order_update ?= mo_custom_crm_order_init.
 
-    else.
+      else.
 
-      raise exception type ycx_crm_order_api_exc
-        exporting
-          textid  = ycx_crm_order_api_exc=>not_authorized_for_update
-          ip_user = sy-uname.
+        raise exception type ycx_crm_order_api_exc
+          exporting
+            textid  = zcx_crm_order_api_exc=>not_authorized_for_update
+            ip_user = sy-uname.
+
+      endif.
 
     endif.
-
 
   endmethod.
 

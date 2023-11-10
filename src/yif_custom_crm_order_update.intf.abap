@@ -5,6 +5,8 @@ interface yif_custom_crm_order_update
     importing
       ir_entity type ref to data
       ip_guid   type crmt_object_guid
+      ip_text   type string optional
+      ip_tdid   type tdid optional
     raising
       ycx_crm_order_api_exc,
 

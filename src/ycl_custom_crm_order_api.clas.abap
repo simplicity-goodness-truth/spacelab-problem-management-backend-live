@@ -1231,6 +1231,52 @@ lv_user_partner_out ).
 
     lo_cl_ags_crm_1o_api_sd ?= lo_cl_ags_crm_1o_api.
 
+    " ~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~~^~^~^~^~^~^~^~^
+    "   Optional text addition
+    " ~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~~^~^~^~^~^~^~^~^
+
+    if ( ip_tdid is not initial ) and ( ip_text is not initial ).
+
+      data:
+        lt_tline    type comt_text_lines_t,
+        lv_text     type string,
+        ls_text_com type crmt_text_com,
+        lt_text_com type crmt_text_comt.
+
+      lv_text = cl_bspwd_util=>replace_crlf_with_lf( iv_original_string = ip_text ).
+
+      cl_wd_ags_inci_trans_helper=>get_formatted_text_list(
+         exporting
+           iv_string        = lv_text
+         importing
+           et_crm_text_list =   lt_tline ).
+
+      clear ls_text_com.
+
+      ls_text_com-ref_guid    = lo_cl_ags_crm_1o_api->av_header_guid.
+      ls_text_com-ref_kind    = 'A'.
+      ls_text_com-text_object = 'CRM_ORDERH'.
+      ls_text_com-tdid        = ip_tdid.
+      ls_text_com-tdspras     = sy-langu.
+      ls_text_com-tdstyle     = 'SYSTEM'.
+      ls_text_com-tdform      = 'SYSTEM'.
+      ls_text_com-mode        = 'I'.
+      ls_text_com-lines       = lt_tline.
+
+      insert ls_text_com into table lt_text_com.
+
+      lo_cl_ags_crm_1o_api->set_texts(
+        exporting
+          it_text           =  lt_text_com
+        exceptions
+          error_occurred    = 1
+          document_locked   = 2
+          no_change_allowed = 3
+          no_authority      = 4
+          others            = 5 ).
+
+    endif.
+
     "~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~~^~^~^~^~^~^~^~^
     "   Decode incoming abstract entity
     "~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~~^~^~^~^~^~^~^~^
