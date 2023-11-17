@@ -2299,4 +2299,45 @@ ip_guid ).
   endmethod.
 
 
+  method yif_slpm_data_manager~is_problem_dispute_open.
+
+    if mo_slpm_data_provider is bound.
+
+      rp_dispute_active = mo_slpm_data_provider->is_problem_dispute_open( ip_guid ).
+
+    endif.
+
+  endmethod.
+
+  method yif_slpm_data_manager~open_problem_dispute.
+
+    if mo_slpm_data_provider is bound.
+
+      mo_slpm_data_provider->open_problem_dispute( ip_guid ).
+
+    endif.
+
+  endmethod.
+
+  method yif_slpm_data_manager~close_problem_dispute.
+
+      if mo_slpm_data_provider is bound.
+
+      mo_slpm_data_provider->close_problem_dispute( ip_guid ).
+
+    endif.
+
+  endmethod.
+
+  method yif_slpm_data_manager~get_problem_dispute_history.
+
+    if mo_slpm_data_provider is bound.
+
+      rt_dispute_history = mo_slpm_data_provider->get_problem_dispute_history( ip_guid ).
+
+    endif.
+
+
+  endmethod.
+
 endclass.

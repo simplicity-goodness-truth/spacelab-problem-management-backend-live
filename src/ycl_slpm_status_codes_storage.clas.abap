@@ -108,6 +108,13 @@ class ycl_slpm_status_codes_storage implementation.
             ( code = 'E0002' )
         ).
 
+      when 'DISPUTE_OPEN'.
+
+        lt_class_status_codes = value #(
+            ( code = 'E0005' )
+
+        ).
+
       when others.
 
     endcase.

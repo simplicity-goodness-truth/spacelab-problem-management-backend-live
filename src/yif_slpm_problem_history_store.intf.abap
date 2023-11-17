@@ -32,6 +32,12 @@ interface yif_slpm_problem_history_store
         value(rt_problem_flow_stat) type yslpm_tt_pr_flow_stat
       raising
         ycx_crm_order_api_exc
-        ycx_system_user_exc.
+        ycx_system_user_exc,
+
+    get_dist_stco_count_by_stco
+      importing
+        ip_status_code  type j_estat
+      returning
+        value(rp_count) type int4.
 
 endinterface.

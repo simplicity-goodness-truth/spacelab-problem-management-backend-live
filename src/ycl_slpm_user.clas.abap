@@ -353,4 +353,39 @@ class ycl_slpm_user implementation.
 
   endmethod.
 
+  method yif_slpm_user~is_auth_to_open_dispute_as_pro.
+
+    if sy-subrc = 0.
+
+      rb_authorized = abap_true.
+
+    endif.
+
+  endmethod.
+
+  method yif_slpm_user~is_auth_to_clos_dispute_as_pro.
+
+    if sy-subrc = 0.
+
+      rb_authorized = abap_true.
+
+    endif.
+
+  endmethod.
+
+  method yif_slpm_user~is_auth_to_open_dispute_as_req.
+
+    if sy-subrc = 0.
+
+      rb_authorized = abap_true.
+
+    endif.
+
+  endmethod.
+
+  method yif_slpm_user~is_auth_to_clos_dispute_as_req.
+
+
+  endmethod.
+
 endclass.

@@ -252,6 +252,33 @@ interface yif_slpm_data_manager
 
     get_active_configuration
       returning
-        value(ro_active_configuration) type ref to yif_slpm_configuration.
+        value(ro_active_configuration) type ref to yif_slpm_configuration,
+
+    is_problem_dispute_open
+      importing
+        ip_guid                  type crmt_object_guid
+      returning
+        value(rp_dispute_active) type abap_bool,
+
+    open_problem_dispute
+      importing
+        ip_guid type crmt_object_guid
+      raising
+        ycx_slpm_configuration_exc,
+
+    close_problem_dispute
+      importing
+        ip_guid type crmt_object_guid
+      raising
+        ycx_slpm_configuration_exc,
+
+    get_problem_dispute_history
+      importing
+        ip_guid                   type crmt_object_guid
+      returning
+        value(rt_dispute_history) type yslpm_tt_dispute_hist
+      raising
+        ycx_crm_order_api_exc
+        ycx_system_user_exc.
 
 endinterface.

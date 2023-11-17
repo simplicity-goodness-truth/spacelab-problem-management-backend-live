@@ -36,7 +36,11 @@ class ycl_slpm_data_manager definition
       mt_reqwitenab_status_codes     type table of j_estat,
       mt_procedmodeenab_status_codes type table of j_estat,
       mt_procprichgenab_status_codes type table of j_estat,
-      mt_procretwitenab_status_codes type table of j_estat.
+      mt_procretwitenab_status_codes type table of j_estat,
+      mt_procopdisenab_status_codes  type table of j_estat,
+      mt_reqopdisenab_status_codes   type table of j_estat,
+      mo_slpm_problem_disputes_store type ref to yif_slpm_problem_dispute_store,
+      mo_slpm_user                   type ref to yif_slpm_user.
 
     methods:
 
@@ -46,7 +50,11 @@ class ycl_slpm_data_manager definition
         changing
           cs_problem            type ycrm_order_ts_sl_problem
         raising
-          ycx_slpm_configuration_exc,
+          ycx_slpm_configuration_exc
+          ycx_crm_order_api_exc
+          ycx_assistant_utilities_exc
+          ycx_system_user_exc
+          ycx_slpm_data_manager_exc,
 
       fill_possible_problem_actions
         changing
@@ -199,7 +207,43 @@ class ycl_slpm_data_manager definition
         importing
           ip_status_codes_record_id type char64
         returning
-          value(rt_status_codes)    type ycrm_order_tt_status_codes.
+          value(rt_status_codes)    type ycrm_order_tt_status_codes,
+
+      set_slpm_problem_disputes
+        importing
+          ip_guid type crmt_object_guid,
+
+      set_procopdisena_status_codes,
+
+      set_reqopdisena_status_codes,
+
+      is_stco_cnt_permit_dis_ope_pro
+        importing
+          ip_guid             type crmt_object_guid
+          ip_status_code      type j_estat
+        returning
+          value(rp_permitted) type abap_bool
+        raising
+          ycx_crm_order_api_exc
+          ycx_assistant_utilities_exc
+          ycx_slpm_configuration_exc
+          ycx_system_user_exc
+          ycx_slpm_data_manager_exc,
+
+      is_stco_cnt_permit_dis_ope_req
+        importing
+          ip_guid             type crmt_object_guid
+          ip_status_code      type j_estat
+        returning
+          value(rp_permitted) type abap_bool
+        raising
+          ycx_crm_order_api_exc
+          ycx_assistant_utilities_exc
+          ycx_slpm_configuration_exc
+          ycx_system_user_exc
+          ycx_slpm_data_manager_exc,
+
+      set_slpm_user.
 
 
 endclass.
@@ -422,16 +466,66 @@ class ycl_slpm_data_manager implementation.
 
     endif.
 
+    " Dispute related fields
+
+*    data:
+*       lo_slpm_user type ref to yif_slpm_user.
+*
+*    lo_slpm_user = new ycl_slpm_user( sy-uname ).
+
+    if ( mo_active_configuration->get_parameter_value( 'USE_DISPUTES' ) eq 'X').
+
+      if me->yif_slpm_data_manager~is_problem_dispute_open( cs_problem-guid ) eq abap_false.
+
+        cs_problem-isdisputeopen = abap_false.
+
+        cs_problem-requesteropendisputeenabled =  cond abap_bool(
+        when mo_slpm_user->is_auth_to_open_dispute_as_req( ) then
+            cond abap_bool(
+                when line_exists( mt_reqopdisenab_status_codes[ table_line = cs_problem-status ] ) then
+                    cond abap_bool(
+                        when me->is_stco_cnt_permit_dis_ope_req( ip_guid = cs_problem-guid ip_status_code = cs_problem-status ) then
+                            abap_true
+                        else
+                            abap_false )
+
+                    else abap_false )
+        else abap_false ) .
+
+        cs_problem-processoropendisputeenabled =  cond abap_bool(
+                when mo_slpm_user->is_auth_to_open_dispute_as_pro( ) then
+                    cond abap_bool(
+                        when line_exists( mt_procopdisenab_status_codes[ table_line = cs_problem-status ] ) then
+                            cond abap_bool(
+                                when me->is_stco_cnt_permit_dis_ope_pro( ip_guid = cs_problem-guid ip_status_code = cs_problem-status ) then
+                                    abap_true
+                                else
+                                    abap_false )
+                            else abap_false )
+                    else abap_false ) .
+
+      endif.
+
+      if me->yif_slpm_data_manager~is_problem_dispute_open( cs_problem-guid ) eq abap_true.
+
+        cs_problem-isdisputeopen = abap_true.
+
+        cs_problem-processorclosedisputeenabled =  cond abap_bool(
+                when mo_slpm_user->is_auth_to_clos_dispute_as_pro( ) then abap_true
+                else abap_false ) .
+
+      endif.
+
+    endif.
+
+
   endmethod.
 
-
   method add_problem_to_cache.
-
 
     mo_slpm_cache_controller->add_record( is_problem ).
 
   endmethod.
-
 
   method constructor.
 
@@ -451,6 +545,9 @@ class ycl_slpm_data_manager implementation.
     me->set_procedmodeena_status_codes(  ).
     me->set_procprichgena_status_codes(  ).
     me->set_procretwitena_status_codes(  ).
+    me->set_procopdisena_status_codes( ).
+    me->set_reqopdisena_status_codes( ).
+    me->set_slpm_user( ).
 
   endmethod.
 
@@ -521,10 +618,10 @@ class ycl_slpm_data_manager implementation.
   method filter_out_attachments.
 
     data: lv_visibility       type char1,
-          lo_slpm_user        type ref to yif_slpm_user,
+          "lo_slpm_user        type ref to yif_slpm_user,
           wa_attachments_list like line of et_attachments_list.
 
-    lo_slpm_user = new ycl_slpm_user( sy-uname ).
+"    lo_slpm_user = new ycl_slpm_user( sy-uname ).
 
     loop at it_attachments_list assigning field-symbol(<ls_attachment>).
 
@@ -538,7 +635,7 @@ class ycl_slpm_data_manager implementation.
 
       if ( lv_visibility eq 'I' ).
 
-        if ( lo_slpm_user->is_auth_for_internal_att(  ) eq abap_true ).
+        if ( mo_slpm_user->is_auth_for_internal_att(  ) eq abap_true ).
 
           " For internal visibility we will use field EnabledEdit, as we did not use it anyhow so far
 
@@ -1304,7 +1401,7 @@ update_timestamp update_timezone
       lt_companies       type crmt_bu_partner_t,
       ls_company         type yslpm_ts_company,
       lo_company         type ref to yif_company,
-      lo_slpm_user       type ref to yif_slpm_user,
+     " lo_slpm_user       type ref to yif_slpm_user,
       lv_log_record_text type string.
 
     " Get distinct companies from YSLPM_CUST_PROD
@@ -1313,13 +1410,13 @@ update_timestamp update_timezone
 
     if lt_companies is not initial.
 
-      lo_slpm_user = new ycl_slpm_user( sy-uname ).
+      "lo_slpm_user = new ycl_slpm_user( sy-uname ).
 
       loop at lt_companies assigning field-symbol(<ls_company>).
 
         " User can only see the companies for which he/she is authorized
 
-        if ( lo_slpm_user->is_auth_to_view_company( <ls_company> ) eq abap_false ).
+        if ( mo_slpm_user->is_auth_to_view_company( <ls_company> ) eq abap_false ).
 
           message e003(yslpm_data_manager) with sy-uname <ls_company> into lv_log_record_text.
 
@@ -1663,7 +1760,7 @@ update_timestamp update_timezone
       lv_include_record  type ac_bool,
       lr_entity          type ref to data,
       lo_sorted_table    type ref to data,
-      lo_slpm_user       type ref to yif_slpm_user,
+    "  lo_slpm_user       type ref to yif_slpm_user,
       lv_log_record_text type string,
       lv_product_id      type comt_product_id.
 
@@ -1683,7 +1780,7 @@ update_timestamp update_timezone
 
     if lt_crm_guids is not initial.
 
-      lo_slpm_user = new ycl_slpm_user( sy-uname ).
+     " lo_slpm_user = new ycl_slpm_user( sy-uname ).
 
       loop at lt_crm_guids assigning field-symbol(<ls_crm_guid>).
 
@@ -1734,7 +1831,7 @@ update_timestamp update_timezone
 
         " User can only see the companies for which he/she is authorized
 
-        if ( lo_slpm_user->is_auth_to_view_company( ls_result-companybusinesspartner ) eq abap_false ).
+        if ( mo_slpm_user->is_auth_to_view_company( ls_result-companybusinesspartner ) eq abap_false ).
 
           message e003(yslpm_data_manager) with sy-uname ls_result-companybusinesspartner into lv_log_record_text.
 
@@ -1750,7 +1847,7 @@ update_timestamp update_timezone
         lv_product_id = ls_result-productname.
 
 
-        if ( lo_slpm_user->is_auth_to_view_product( lv_product_id ) eq abap_false ).
+        if ( mo_slpm_user->is_auth_to_view_product( lv_product_id ) eq abap_false ).
 
           message e006(yslpm_data_manager) with sy-uname lv_product_id into lv_log_record_text.
 
@@ -1926,4 +2023,120 @@ update_timestamp update_timezone
 
 
   endmethod.
+
+  method yif_slpm_data_manager~is_problem_dispute_open.
+
+    me->set_slpm_problem_disputes( ip_guid ).
+
+    rp_dispute_active = mo_slpm_problem_disputes_store->is_problem_dispute_open( ).
+
+  endmethod.
+
+  method yif_slpm_data_manager~open_problem_dispute.
+
+    if ( mo_active_configuration->get_parameter_value( 'USE_DISPUTES' ) eq 'X').
+
+      me->set_slpm_problem_disputes( ip_guid ).
+
+      mo_slpm_problem_disputes_store->open_problem_dispute( ).
+
+    endif.
+
+  endmethod.
+
+  method yif_slpm_data_manager~close_problem_dispute.
+
+    if ( mo_active_configuration->get_parameter_value( 'USE_DISPUTES' ) eq 'X').
+
+      me->set_slpm_problem_disputes( ip_guid ).
+
+      mo_slpm_problem_disputes_store->close_problem_dispute( ).
+
+    endif.
+
+  endmethod.
+
+  method yif_slpm_data_manager~get_problem_dispute_history.
+
+    me->set_slpm_problem_disputes( ip_guid ).
+
+    rt_dispute_history = mo_slpm_problem_disputes_store->get_problem_dispute_history( ).
+
+  endmethod.
+
+  method set_slpm_problem_disputes.
+
+    mo_slpm_problem_disputes_store = new ycl_slpm_problem_dispute_store( ip_guid ).
+
+  endmethod.
+
+  method set_procopdisena_status_codes.
+
+    mt_procopdisenab_status_codes = me->get_all_stco_from_storage( 'DISPUTE_OPEN' ).
+
+  endmethod.
+
+  method set_reqopdisena_status_codes.
+
+    mt_reqopdisenab_status_codes = me->get_all_stco_from_storage( 'DISPUTE_OPEN' ).
+
+  endmethod.
+
+  method is_stco_cnt_permit_dis_ope_pro.
+
+    data:
+      lv_minimum_stco_count         type int4,
+      lv_real_stco_count            type int4,
+      lo_slpm_problem_history_store type ref to ycl_slpm_problem_history_store.
+
+    if ( mo_active_configuration->get_parameter_value( 'PROCESSOR_OPEN_DISPUTE_ON_ST_CO_AMOUNT_GE' ) is not initial ).
+
+      lv_minimum_stco_count = mo_active_configuration->get_parameter_value( 'PROCESSOR_OPEN_DISPUTE_ON_ST_CO_AMOUNT_GE' ).
+
+      lo_slpm_problem_history_store = new ycl_slpm_problem_history_store( ip_guid ).
+
+      lv_real_stco_count = lo_slpm_problem_history_store->yif_slpm_problem_history_store~get_dist_stco_count_by_stco( ip_status_code ).
+
+      if lv_real_stco_count ge lv_minimum_stco_count.
+
+        rp_permitted = abap_true.
+
+      endif.
+
+    endif.
+
+
+  endmethod.
+
+  method is_stco_cnt_permit_dis_ope_req.
+
+    data:
+      lv_minimum_stco_count         type int4,
+      lv_real_stco_count            type int4,
+      lo_slpm_problem_history_store type ref to ycl_slpm_problem_history_store.
+
+    if ( mo_active_configuration->get_parameter_value( 'REQUESTER_OPEN_DISPUTE_ON_ST_CO_AMOUNT_GE' ) is not initial ).
+
+      lv_minimum_stco_count = mo_active_configuration->get_parameter_value( 'REQUESTER_OPEN_DISPUTE_ON_ST_CO_AMOUNT_GE' ).
+
+      lo_slpm_problem_history_store = new ycl_slpm_problem_history_store( ip_guid ).
+
+      lv_real_stco_count = lo_slpm_problem_history_store->yif_slpm_problem_history_store~get_dist_stco_count_by_stco( ip_status_code ).
+
+      if lv_real_stco_count ge lv_minimum_stco_count.
+
+        rp_permitted = abap_true.
+
+      endif.
+
+    endif.
+
+  endmethod.
+
+  method set_slpm_user.
+
+    mo_slpm_user ?= mo_system_user.
+
+  endmethod.
+
 endclass.

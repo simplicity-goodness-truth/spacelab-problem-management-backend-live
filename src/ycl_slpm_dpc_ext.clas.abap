@@ -7,7 +7,10 @@ class ycl_slpm_dpc_ext definition
     methods /iwbep/if_mgw_appl_srv_runtime~get_stream redefinition .
     methods /iwbep/if_mgw_appl_srv_runtime~create_stream redefinition.
     methods /iwbep/if_mgw_appl_srv_runtime~delete_stream redefinition.
+    methods /iwbep/if_mgw_appl_srv_runtime~execute_action redefinition.
+
   protected section.
+    methods disputehistoryse_get_entityset redefinition.
     methods problemflowstati_get_entityset redefinition.
     methods frontendconstant_get_entityset redefinition.
     methods supportteamset_get_entityset redefinition.
@@ -1330,6 +1333,83 @@ initial ).
 
     endif.
 
+  endmethod.
+
+  method /iwbep/if_mgw_appl_srv_runtime~execute_action.
+
+    data:
+      lv_function_name      type /iwbep/mgw_tech_name,
+      lv_guid               type crmt_object_guid,
+      lo_slpm_data_provider type ref to yif_slpm_data_manager.
+
+    try.
+
+        lv_function_name = io_tech_request_context->get_function_import_name( ).
+
+        try.
+
+            lv_guid = it_parameter[ name = 'Guid' ]-value.
+
+            if lv_guid is not initial.
+
+              lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
+
+            endif.
+
+            case lv_function_name.
+
+              when 'openProblemDispute'.
+
+                lo_slpm_data_provider->open_problem_dispute( lv_guid ).
+
+              when 'closeProblemDispute'.
+
+                lo_slpm_data_provider->close_problem_dispute( lv_guid ).
+
+            endcase.
+
+          catch cx_sy_itab_line_not_found.
+
+        endtry.
+
+      catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
+        ycx_assistant_utilities_exc ycx_slpm_configuration_exc
+        ycx_system_user_exc into data(lcx_process_exception).
+        raise_exception( lcx_process_exception->get_text(  ) ).
+
+    endtry.
+
+  endmethod.
+
+  method disputehistoryse_get_entityset.
+
+    data: lv_guid               type crmt_object_guid,
+          lo_slpm_data_provider type ref to yif_slpm_data_manager.
+
+
+    read table it_key_tab into data(ls_key_tab) with key name = 'Guid'.
+
+    lv_guid = ls_key_tab-value.
+
+    if lv_guid is not initial.
+
+      try.
+
+          lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
+
+          " Validation of SLPM OData request
+          me->is_valid_slpm_odata_request( lo_slpm_data_provider ).
+
+          et_entityset = lo_slpm_data_provider->get_problem_dispute_history( lv_guid ).
+
+        catch ycx_slpm_odata_exc ycx_crm_order_api_exc ycx_slpm_data_manager_exc
+            ycx_assistant_utilities_exc ycx_slpm_configuration_exc
+            ycx_system_user_exc into data(lcx_process_exception).
+          raise_exception( lcx_process_exception->get_text(  ) ).
+
+      endtry.
+
+    endif.
   endmethod.
 
 endclass.
