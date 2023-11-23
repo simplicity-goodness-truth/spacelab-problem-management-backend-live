@@ -40,6 +40,18 @@ interface yif_slpm_service_operations
 
     clear_mpt_history
       importing
+        ip_password type string,
+
+    archive_dispute_history
+      raising
+        ycx_slpm_data_manager_exc
+        ycx_crm_order_api_exc
+        ycx_assistant_utilities_exc
+        ycx_slpm_configuration_exc
+        ycx_system_user_exc,
+
+    clear_dispute_history
+      importing
         ip_password type string.
 
 

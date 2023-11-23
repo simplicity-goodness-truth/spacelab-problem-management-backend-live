@@ -406,24 +406,24 @@ lo_ref_constraint->add_property( iv_principal_property = 'Guid'   iv_dependent_p
 
 * Navigation Properties for entity - Problem
 lo_entity_type = model->get_entity_type( iv_entity_name = 'Problem' ). "#EC NOTEXT
-lo_nav_property = lo_entity_type->create_navigation_property( iv_property_name  = 'ProblemHistoryHierarchy' "#EC NOTEXT
-                                                              iv_abap_fieldname = 'PROBLEMHISTORYHIERARCHY' "#EC NOTEXT
-                                                              iv_association_name = 'ProblemToProblemHistoryHierarchy' ). "#EC NOTEXT
-lo_nav_property = lo_entity_type->create_navigation_property( iv_property_name  = 'SLAMptHistory' "#EC NOTEXT
-                                                              iv_abap_fieldname = 'SLAMPTHISTORY' "#EC NOTEXT
-                                                              iv_association_name = 'ProblemToSLAMptHistory' ). "#EC NOTEXT
-lo_nav_property = lo_entity_type->create_navigation_property( iv_property_name  = 'SLAIrtHistory' "#EC NOTEXT
-                                                              iv_abap_fieldname = 'SLAIRTHISTORY' "#EC NOTEXT
-                                                              iv_association_name = 'ProblemToSLAIrtHistory' ). "#EC NOTEXT
-lo_nav_property = lo_entity_type->create_navigation_property( iv_property_name  = 'AvailableStatuses' "#EC NOTEXT
-                                                              iv_abap_fieldname = 'STAT' "#EC NOTEXT
-                                                              iv_association_name = 'ProblemToStatus' ). "#EC NOTEXT
-lo_nav_property = lo_entity_type->create_navigation_property( iv_property_name  = 'Attachment' "#EC NOTEXT
-                                                              iv_abap_fieldname = 'ATTACHMENT' "#EC NOTEXT
-                                                              iv_association_name = 'ProblemToAttachment' ). "#EC NOTEXT
 lo_nav_property = lo_entity_type->create_navigation_property( iv_property_name  = 'Text' "#EC NOTEXT
                                                               iv_abap_fieldname = 'TEXT' "#EC NOTEXT
                                                               iv_association_name = 'ProblemToText' ). "#EC NOTEXT
+lo_nav_property = lo_entity_type->create_navigation_property( iv_property_name  = 'Attachment' "#EC NOTEXT
+                                                              iv_abap_fieldname = 'ATTACHMENT' "#EC NOTEXT
+                                                              iv_association_name = 'ProblemToAttachment' ). "#EC NOTEXT
+lo_nav_property = lo_entity_type->create_navigation_property( iv_property_name  = 'AvailableStatuses' "#EC NOTEXT
+                                                              iv_abap_fieldname = 'STAT' "#EC NOTEXT
+                                                              iv_association_name = 'ProblemToStatus' ). "#EC NOTEXT
+lo_nav_property = lo_entity_type->create_navigation_property( iv_property_name  = 'SLAIrtHistory' "#EC NOTEXT
+                                                              iv_abap_fieldname = 'SLAIRTHISTORY' "#EC NOTEXT
+                                                              iv_association_name = 'ProblemToSLAIrtHistory' ). "#EC NOTEXT
+lo_nav_property = lo_entity_type->create_navigation_property( iv_property_name  = 'SLAMptHistory' "#EC NOTEXT
+                                                              iv_abap_fieldname = 'SLAMPTHISTORY' "#EC NOTEXT
+                                                              iv_association_name = 'ProblemToSLAMptHistory' ). "#EC NOTEXT
+lo_nav_property = lo_entity_type->create_navigation_property( iv_property_name  = 'ProblemHistoryHierarchy' "#EC NOTEXT
+                                                              iv_abap_fieldname = 'PROBLEMHISTORYHIERARCHY' "#EC NOTEXT
+                                                              iv_association_name = 'ProblemToProblemHistoryHierarchy' ). "#EC NOTEXT
 lo_nav_property = lo_entity_type->create_navigation_property( iv_property_name  = 'ProblemFlowStatistics' "#EC NOTEXT
                                                               iv_abap_fieldname = 'PROBLEMFLOWSTATISTICS' "#EC NOTEXT
                                                               iv_association_name = 'ProblemToFlowStatistics' ). "#EC NOTEXT
@@ -1196,8 +1196,9 @@ lo_property->/iwbep/if_mgw_odata_annotatabl~create_annotation( 'sap' )->add(
       EXPORTING
         iv_key      = 'unicode'
         iv_value    = 'false' ).
-lo_property = lo_entity_type->create_property( iv_property_name = 'IsDisputeOpen' iv_abap_fieldname = 'ISDISPUTEOPEN' ). "#EC NOTEXT
-lo_property->set_type_edm_boolean( ).
+lo_property = lo_entity_type->create_property( iv_property_name = 'DisputeStatus' iv_abap_fieldname = 'DISPUTESTATUS' ). "#EC NOTEXT
+lo_property->set_type_edm_string( ).
+lo_property->set_maxlength( iv_max_length = 1 ). "#EC NOTEXT
 lo_property->set_creatable( abap_false ).
 lo_property->set_updatable( abap_false ).
 lo_property->set_sortable( abap_false ).
@@ -4055,7 +4056,7 @@ lo_entity_set->set_filter_required( abap_false ).
 *&---------------------------------------------------------------------*
 
 
-  CONSTANTS: lc_gen_date_time TYPE timestamp VALUE '20231116084335'.                  "#EC NOTEXT
+  CONSTANTS: lc_gen_date_time TYPE timestamp VALUE '20231120121728'.                  "#EC NOTEXT
   rv_last_modified = super->get_last_modified( ).
   IF rv_last_modified LT lc_gen_date_time.
     rv_last_modified = lc_gen_date_time.

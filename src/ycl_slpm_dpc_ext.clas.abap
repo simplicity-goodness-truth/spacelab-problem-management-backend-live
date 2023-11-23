@@ -1354,6 +1354,8 @@ initial ).
 
               lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
 
+              me->is_valid_slpm_odata_request( lo_slpm_data_provider ).
+
             endif.
 
             case lv_function_name.

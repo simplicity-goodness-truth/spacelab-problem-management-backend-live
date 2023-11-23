@@ -108,4 +108,16 @@ class ycl_slpm_problem_dispute_store implementation.
 
   endmethod.
 
+  method yif_slpm_problem_dispute_store~is_there_problem_dispute_hist.
+
+    select count( * ) from yslpm_pr_dispute up to 1 rows where problemguid = mv_guid.
+
+    if sy-subrc eq 0.
+
+      rp_dispute_hist_exists = abap_true.
+
+    endif.
+
+  endmethod.
+
 endclass.

@@ -468,16 +468,16 @@ class ycl_slpm_data_manager implementation.
 
     " Dispute related fields
 
-*    data:
-*       lo_slpm_user type ref to yif_slpm_user.
-*
-*    lo_slpm_user = new ycl_slpm_user( sy-uname ).
-
     if ( mo_active_configuration->get_parameter_value( 'USE_DISPUTES' ) eq 'X').
 
       if me->yif_slpm_data_manager~is_problem_dispute_open( cs_problem-guid ) eq abap_false.
 
-        cs_problem-isdisputeopen = abap_false.
+        if ( mo_slpm_user->is_auth_to_view_dispute( ) eq abap_true ) and
+            ( me->yif_slpm_data_manager~is_there_problem_dispute_hist( cs_problem-guid ) eq abap_true ).
+
+          cs_problem-disputestatus = 'C'.
+
+        endif.
 
         cs_problem-requesteropendisputeenabled =  cond abap_bool(
         when mo_slpm_user->is_auth_to_open_dispute_as_req( ) then
@@ -504,11 +504,13 @@ class ycl_slpm_data_manager implementation.
                             else abap_false )
                     else abap_false ) .
 
-      endif.
+      else.
 
-      if me->yif_slpm_data_manager~is_problem_dispute_open( cs_problem-guid ) eq abap_true.
+        if ( mo_slpm_user->is_auth_to_view_dispute( ) eq abap_true ).
 
-        cs_problem-isdisputeopen = abap_true.
+          cs_problem-disputestatus = 'O'.
+
+        endif.
 
         cs_problem-processorclosedisputeenabled =  cond abap_bool(
                 when mo_slpm_user->is_auth_to_clos_dispute_as_pro( ) then abap_true
@@ -621,7 +623,7 @@ class ycl_slpm_data_manager implementation.
           "lo_slpm_user        type ref to yif_slpm_user,
           wa_attachments_list like line of et_attachments_list.
 
-"    lo_slpm_user = new ycl_slpm_user( sy-uname ).
+    "    lo_slpm_user = new ycl_slpm_user( sy-uname ).
 
     loop at it_attachments_list assigning field-symbol(<ls_attachment>).
 
@@ -1401,7 +1403,7 @@ update_timestamp update_timezone
       lt_companies       type crmt_bu_partner_t,
       ls_company         type yslpm_ts_company,
       lo_company         type ref to yif_company,
-     " lo_slpm_user       type ref to yif_slpm_user,
+      " lo_slpm_user       type ref to yif_slpm_user,
       lv_log_record_text type string.
 
     " Get distinct companies from YSLPM_CUST_PROD
@@ -1760,7 +1762,7 @@ update_timestamp update_timezone
       lv_include_record  type ac_bool,
       lr_entity          type ref to data,
       lo_sorted_table    type ref to data,
-    "  lo_slpm_user       type ref to yif_slpm_user,
+      "  lo_slpm_user       type ref to yif_slpm_user,
       lv_log_record_text type string,
       lv_product_id      type comt_product_id.
 
@@ -1780,7 +1782,7 @@ update_timestamp update_timezone
 
     if lt_crm_guids is not initial.
 
-     " lo_slpm_user = new ycl_slpm_user( sy-uname ).
+      " lo_slpm_user = new ycl_slpm_user( sy-uname ).
 
       loop at lt_crm_guids assigning field-symbol(<ls_crm_guid>).
 
@@ -2136,6 +2138,14 @@ update_timestamp update_timezone
   method set_slpm_user.
 
     mo_slpm_user ?= mo_system_user.
+
+  endmethod.
+
+  method yif_slpm_data_manager~is_there_problem_dispute_hist.
+
+    me->set_slpm_problem_disputes( ip_guid ).
+
+    rp_dispute_hist_exists = mo_slpm_problem_disputes_store->is_there_problem_dispute_hist( ).
 
   endmethod.
 

@@ -264,13 +264,21 @@ interface yif_slpm_data_manager
       importing
         ip_guid type crmt_object_guid
       raising
-        ycx_slpm_configuration_exc,
+        ycx_slpm_configuration_exc
+        ycx_slpm_data_manager_exc
+        ycx_crm_order_api_exc
+        ycx_assistant_utilities_exc
+        ycx_system_user_exc,
 
     close_problem_dispute
       importing
         ip_guid type crmt_object_guid
       raising
-        ycx_slpm_configuration_exc,
+        ycx_slpm_configuration_exc
+        ycx_slpm_data_manager_exc
+        ycx_crm_order_api_exc
+        ycx_assistant_utilities_exc
+        ycx_system_user_exc,
 
     get_problem_dispute_history
       importing
@@ -279,6 +287,12 @@ interface yif_slpm_data_manager
         value(rt_dispute_history) type yslpm_tt_dispute_hist
       raising
         ycx_crm_order_api_exc
-        ycx_system_user_exc.
+        ycx_system_user_exc,
+
+    is_there_problem_dispute_hist
+      importing
+        ip_guid                       type crmt_object_guid
+      returning
+        value(rp_dispute_hist_exists) type abap_bool.
 
 endinterface.

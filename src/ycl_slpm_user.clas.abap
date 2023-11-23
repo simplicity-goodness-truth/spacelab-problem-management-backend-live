@@ -355,6 +355,9 @@ class ycl_slpm_user implementation.
 
   method yif_slpm_user~is_auth_to_open_dispute_as_pro.
 
+    authority-check object 'YPRDISOPE'
+       id 'ALLOWED' field 'X'.
+
     if sy-subrc = 0.
 
       rb_authorized = abap_true.
@@ -364,6 +367,9 @@ class ycl_slpm_user implementation.
   endmethod.
 
   method yif_slpm_user~is_auth_to_clos_dispute_as_pro.
+
+    authority-check object 'YPRDISCLO'
+     id 'ALLOWED' field 'X'.
 
     if sy-subrc = 0.
 
@@ -375,6 +381,9 @@ class ycl_slpm_user implementation.
 
   method yif_slpm_user~is_auth_to_open_dispute_as_req.
 
+    authority-check object 'YPRDISOPE'
+     id 'ALLOWED' field 'X'.
+
     if sy-subrc = 0.
 
       rb_authorized = abap_true.
@@ -385,6 +394,19 @@ class ycl_slpm_user implementation.
 
   method yif_slpm_user~is_auth_to_clos_dispute_as_req.
 
+
+  endmethod.
+
+  method yif_slpm_user~is_auth_to_view_dispute.
+
+    authority-check object 'YPRDISVIE'
+      id 'ALLOWED' field 'X'.
+
+    if sy-subrc = 0.
+
+      rb_authorized = abap_true.
+
+    endif.
 
   endmethod.
 

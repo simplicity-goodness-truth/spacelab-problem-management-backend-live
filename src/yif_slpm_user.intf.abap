@@ -87,6 +87,10 @@ interface yif_slpm_user
 
     is_auth_to_clos_dispute_as_req
       returning
+        value(rb_authorized) type bool,
+
+    is_auth_to_view_dispute
+      returning
         value(rb_authorized) type bool.
 
 endinterface.

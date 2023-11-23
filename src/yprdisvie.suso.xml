@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_SUSO" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <TOBJ>
+    <OBJCT>YPRDISVIE</OBJCT>
+    <FIEL1>ALLOWED</FIEL1>
+    <OCLSS>YSLP</OCLSS>
+   </TOBJ>
+   <TOBJT>
+    <LANGU>E</LANGU>
+    <OBJECT>YPRDISVIE</OBJECT>
+    <TTEXT>Problem dispute view permitted</TTEXT>
+   </TOBJT>
+   <TOBJVORFLG>
+    <OBJCT>YPRDISVIE</OBJCT>
+   </TOBJVORFLG>
+  </asx:values>
+ </asx:abap>
+</abapGit>

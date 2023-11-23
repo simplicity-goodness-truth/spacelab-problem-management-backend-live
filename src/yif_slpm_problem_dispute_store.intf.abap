@@ -13,6 +13,10 @@ interface yif_slpm_problem_dispute_store
 
     is_problem_dispute_open
       returning
-        value(rp_dispute_active) type abap_bool.
+        value(rp_dispute_active) type abap_bool,
+
+    is_there_problem_dispute_hist
+      returning
+        value(rp_dispute_hist_exists) type abap_bool.
 
 endinterface.
