@@ -52,7 +52,8 @@ interface yif_slpm_service_operations
 
     clear_dispute_history
       importing
-        ip_password type string.
+        ip_password type string,
 
+    display_custom_table_status.
 
 endinterface.

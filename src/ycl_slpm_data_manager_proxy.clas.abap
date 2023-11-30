@@ -2018,7 +2018,8 @@ ip_guid ).
       exporting
         it_filters = it_filters
         it_order = it_order
-        ip_exclude_exp_fields = ip_exclude_exp_fields ).
+        ip_exclude_exp_fields = ip_exclude_exp_fields
+        ip_search_string = ip_search_string ).
 
     endif.
 

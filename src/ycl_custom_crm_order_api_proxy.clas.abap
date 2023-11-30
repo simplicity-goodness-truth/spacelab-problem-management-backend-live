@@ -539,4 +539,19 @@ class ycl_custom_crm_order_api_proxy implementation.
 
   endmethod.
 
+  method yif_custom_crm_order_organizer~is_order_matching_to_search.
+
+    if ( mo_custom_crm_order_read is bound ).
+
+      mo_custom_crm_order_organizer->is_order_matching_to_search(
+       exporting
+           ip_search_string = ip_search_string
+           ir_entity = ir_entity
+       changing
+            cp_include_record = cp_include_record ).
+
+    endif.
+
+  endmethod.
+
 endclass.

@@ -734,9 +734,12 @@ initial ).
 
     data: lo_slpm_data_provider type ref to yif_slpm_data_manager,
           lv_exception_text     type bapi_msg,
-          lt_set_filters        type /iwbep/t_mgw_select_option.
+          lt_set_filters        type /iwbep/t_mgw_select_option,
+          lv_search_string      type string.
 
     lt_set_filters = io_tech_request_context->get_filter( )->get_filter_select_options( ).
+
+    lv_search_string = io_tech_request_context->get_search_string( ).
 
     try.
         lo_slpm_data_provider = new ycl_slpm_data_manager_proxy(  ).
@@ -748,7 +751,8 @@ initial ).
             exporting
             it_filters = lt_set_filters
             it_order = it_order
-            ip_exclude_exp_fields = abap_true ).
+            ip_exclude_exp_fields = abap_true
+            ip_search_string = lv_search_string ).
 
       catch ycx_slpm_odata_exc ycx_slpm_data_manager_exc ycx_crm_order_api_exc
         ycx_assistant_utilities_exc ycx_slpm_configuration_exc

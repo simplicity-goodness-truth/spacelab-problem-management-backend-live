@@ -2324,7 +2324,7 @@ ls_phio loio = ls_loio.
 
             " Removing HTML tags
 
-            zcl_assistant_utilities=>remove_html_tags(
+            ycl_assistant_utilities=>remove_html_tags(
               changing
                   cs_string = lv_text_to_analyze ).
 
@@ -2560,6 +2560,111 @@ ls_phio loio = ls_loio.
         others                        = 3.
 
     rs_sla_status = lo_cl_ags_crm_1o_api->get_sla_status(  ).
+
+
+  endmethod.
+
+  method yif_custom_crm_order_organizer~is_order_matching_to_search.
+
+    data: lt_filter_sel_opt              type /iwbep/t_cod_select_options,
+          ls_filter_sel_opt              like line of lt_filter_sel_opt,
+          lo_structure_ref               type ref to data,
+          lo_descr_ref                   type ref to cl_abap_typedescr,
+          lt_texts                       type cl_ai_crm_gw_mymessage_mpc=>tt_text,
+          lv_text_contain_string         type abap_bool,
+          lv_text_to_analyze             type string,
+          lv_description_search_result   type abap_bool,
+          lv_communication_search_result type abap_bool,
+          lv_object_id_search_result     type abap_bool.
+
+    field-symbols: <fs_structure> type any,
+                   <fs_value>     type any.
+
+    " ~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~~^~^~^~^~^~^~^~^
+    "   Decode incoming abstract entity
+    " ~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~~^~^~^~^~^~^~^~^
+
+    create data lo_structure_ref type standard table of (mv_structure_name).
+    assign lo_structure_ref->* to <fs_structure>.
+
+    if ( ir_entity is bound ).
+
+      assign ir_entity->* to <fs_structure>.
+
+    endif. " if ( ir_entity is bound )
+
+
+    " Search in description
+
+    if <fs_value> is assigned.
+      unassign <fs_value>.
+    endif.
+
+    assign component 'DESCRIPTION' of structure <fs_structure> to <fs_value>.
+
+    if <fs_value> cs ip_search_string.
+
+      lv_description_search_result = abap_true.
+
+    endif.
+
+    " Search in communication text
+
+    if <fs_value> is assigned.
+      unassign <fs_value>.
+    endif.
+
+    assign component 'GUID' of structure <fs_structure> to <fs_value>.
+
+    me->get_texts(
+        exporting
+            ip_guid = <fs_value>
+        importing
+            et_texts = lt_texts ).
+
+    loop at lt_texts assigning field-symbol(<ls_text>).
+
+      lv_text_contain_string = abap_false.
+
+      lv_text_to_analyze = <ls_text>-text.
+
+      " Removing HTML tags
+
+      ycl_assistant_utilities=>remove_html_tags(
+        changing
+            cs_string = lv_text_to_analyze ).
+
+      if lv_text_to_analyze cs ip_search_string.
+
+        lv_communication_search_result = abap_true.
+        exit.
+
+      endif.
+
+    endloop.
+
+    " Search in object id
+
+    if <fs_value> is assigned.
+      unassign <fs_value>.
+    endif.
+
+    assign component 'OBJECTID' of structure <fs_structure> to <fs_value>.
+
+    if <fs_value> cs ip_search_string.
+
+      lv_object_id_search_result = abap_true.
+
+    endif.
+
+    cp_include_record = cond abap_bool(
+        when lv_description_search_result eq abap_true or
+             lv_communication_search_result eq abap_true or
+             lv_object_id_search_result eq abap_true
+        then
+            abap_true
+        else
+            abap_false ).
 
 
   endmethod.

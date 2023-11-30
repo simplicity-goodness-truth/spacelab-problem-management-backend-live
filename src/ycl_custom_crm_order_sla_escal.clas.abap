@@ -113,7 +113,7 @@ class ycl_custom_crm_order_sla_escal definition
           value(rp_count) type int4,
 
       get_support_team_addresses
-        returning value(rt_addresses) type zmessenger_tt_addresses,
+        returning value(rt_addresses) type ymessenger_tt_addresses,
 
       get_prod_org_unit_for_updates
         returning value(rp_org_unit) type pd_objid_r,
@@ -359,7 +359,7 @@ class ycl_custom_crm_order_sla_escal implementation.
 
                   clear: lv_is_email_address, lv_receiver_email_address.
 
-                  lv_is_email_address = zcl_assistant_utilities=>is_valid_email_address( <ls_receiver> ).
+                  lv_is_email_address = ycl_assistant_utilities=>is_valid_email_address( <ls_receiver> ).
 
                   if <ls_receiver> is initial.
 

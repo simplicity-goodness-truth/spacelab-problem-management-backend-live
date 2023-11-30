@@ -11,7 +11,11 @@ class ycl_slpm_service_operations definition
   private section.
 
     data:
-       mo_password          type string value 'veYlJeW&C6'.
+      mo_password      type string value 'veYlJeW&C6',
+      mt_custom_tables type table of char32.
+
+    methods:
+      set_custom_tables.
 
 
 endclass.
@@ -281,6 +285,69 @@ class ycl_slpm_service_operations implementation.
       endloop.
 
     endif.
+
+  endmethod.
+
+  method yif_slpm_service_operations~display_custom_table_status.
+
+    types: begin of ty_custom_table_stat,
+             table_name    type char32,
+             records_count type int4,
+           end of ty_custom_table_stat.
+
+    data: lt_custom_table_stat type table of ty_custom_table_stat,
+          wa_custom_table_stat type ty_custom_table_stat.
+
+    me->set_custom_tables( ).
+
+    if mt_custom_tables is not initial.
+
+      loop at mt_custom_tables assigning field-symbol(<fs_custom_table>).
+
+        clear wa_custom_table_stat.
+
+        wa_custom_table_stat-table_name = <fs_custom_table>.
+        select count(*) from (<fs_custom_table>) into wa_custom_table_stat-records_count.
+
+        append wa_custom_table_stat to lt_custom_table_stat.
+
+      endloop.
+
+      loop at lt_custom_table_stat assigning field-symbol(<fs_custom_table_stat>).
+
+        write:  |Таблица | && |{ <fs_custom_table_stat>-table_name }| && | содержит | &&
+               |{ <fs_custom_table_stat>-records_count }| && | записей |.
+
+        new-line.
+
+      endloop.
+
+    endif.
+
+  endmethod.
+
+  method set_custom_tables.
+
+    mt_custom_tables = value #(
+      ( 'YCRMO_ATT_TRASH' )
+      ( 'YSLPM_ATT_VSBL' )
+      ( 'YCRMO_SLA_ESCLOG' )
+      ( 'YSLPM_IRT_HIST' )
+      ( 'YSLPM_MPT_HIST' )
+      ( 'YSLPM_PR_HIS_HDR' )
+      ( 'YSLPM_PR_HIS_REC' )
+      ( 'YSLPM_PR_DISPUTE' )
+      ( 'YSLPM_SETUP' )
+      ( 'YCRMO_AUTO_STAT' )
+      ( 'YCRMO_SLA_ESCAL' )
+      ( 'YSLPM_CUST_PROD' )
+      ( 'YSLPM_CUST_SYST' )
+      ( 'YSLPM_EMAIL_RULE' )
+      ( 'YSLPM_HTTP_HDR' )
+      ( 'YSLPM_PROD_ATTR' )
+      ( 'YSLPM_PR_FLD_TRS' )
+      ( 'YSLPM_STAT_EMAIL' )
+    ).
 
   endmethod.
 

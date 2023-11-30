@@ -6,6 +6,7 @@ interface yif_slpm_data_manager
       it_filters            type /iwbep/t_mgw_select_option optional
       it_order              type /iwbep/t_mgw_sorting_order  optional
       ip_exclude_exp_fields type abap_bool optional
+      ip_search_string      type string optional
     returning
       value(et_result)      type ycrm_order_tt_sl_problems
     raising
